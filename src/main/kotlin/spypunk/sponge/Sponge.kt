@@ -28,13 +28,16 @@ class Sponge(
         private val documentContentType = Pattern.compile("text/html.*|(application|text)/\\w*\\+?xml.*")
     }
 
+    private val traversedUris: MutableSet<URI> = mutableSetOf()
+    private val visitedUris: MutableSet<URI> = mutableSetOf()
+
     fun execute() {
         FileUtils.forceMkdir(outputDirectory)
 
         visit(uri)
     }
 
-    private fun visit(uri: URI, depth: Int = 0, parents: MutableSet<URI> = mutableSetOf()) {
+    private fun visit(uri: URI, depth: Int = 0) {
         try {
             val response = Jsoup.connect(uri.toString())
                     .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
@@ -46,7 +49,7 @@ class Sponge(
 
             if (documentContentType.matcher(contentType).matches()) {
                 if (depth < maxDepth) {
-                    visitDocument(uri, depth, response.parse(), depthPrefix, parents)
+                    visitDocument(uri, depth, response.parse(), depthPrefix)
                 }
             } else {
                 visitFile(uri, depthPrefix)
@@ -60,22 +63,29 @@ class Sponge(
             uri: URI,
             depth: Int,
             document: Document,
-            depthPrefix: String,
-            parents: MutableSet<URI>
+            depthPrefix: String
     ) {
+        if (depth < maxDepth - 1) {
+            traversedUris.add(uri)
+            visitedUris.remove(uri)
+        } else {
+            if (visitedUris.contains(uri)) return
+            visitedUris.add(uri)
+        }
+
         println("$depthPrefix$uri")
 
-        parents.add(uri)
+        visitChildren(document, depth)
+    }
 
+    private fun visitChildren(document: Document, depth: Int) {
         document.getElementsByTag("a").asSequence()
                 .map { it.attr("abs:href") }
                 .filterNot(String::isNullOrEmpty)
                 .map { it.toCleanUri() }
                 .distinct()
-                .filterNot { parents.contains(it) }
-                .forEach { visit(it, depth + 1, parents) }
-
-        parents.remove(uri)
+                .filterNot { traversedUris.contains(it) }
+                .forEach { visit(it, depth + 1) }
     }
 
     private fun visitFile(uri: URI, depthPrefix: String) {
@@ -86,6 +96,8 @@ class Sponge(
             FileUtils.copyURLToFile(uri.toURL(), file)
 
             println("$depthPrefix$uri -> ${file.absolutePath} [${file.humanSize()}]")
+
+            traversedUris.add(uri)
         }
     }
 
