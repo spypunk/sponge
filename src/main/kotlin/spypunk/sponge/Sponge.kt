@@ -12,6 +12,7 @@ import com.google.common.net.MediaType
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.HttpHeaders
+import org.apache.http.HttpStatus
 import org.apache.http.client.utils.URIBuilder
 import org.jsoup.Connection
 import org.jsoup.Jsoup
@@ -43,10 +44,9 @@ class Sponge(
         }
 
         try {
-            val response = Jsoup.connect(uri.toString())
-                    .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
-                    .ignoreContentType(true)
-                    .execute()
+            val response = connect(uri)
+
+            if (HttpStatus.SC_OK != response.statusCode()) return
 
             val mediaType = MediaType.parse(response.contentType()).withoutParameters()
             val depthPrefix = "\t".repeat(depth)
@@ -59,6 +59,13 @@ class Sponge(
         } catch (e: Throwable) {
             // ignore
         }
+    }
+
+    private fun connect(uri: URI): Connection.Response {
+        return Jsoup.connect(uri.toString())
+                .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
+                .ignoreContentType(true)
+                .execute()
     }
 
     private fun visitDocument(
