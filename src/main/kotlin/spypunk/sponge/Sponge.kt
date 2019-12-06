@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.HttpHeaders
 import org.apache.http.client.utils.URIBuilder
+import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.io.File
@@ -49,7 +50,7 @@ class Sponge(
 
             if (documentContentType.matcher(contentType).matches()) {
                 if (depth < maxDepth) {
-                    visitDocument(uri, depth, response.parse(), depthPrefix)
+                    visitDocument(uri, depth, response, depthPrefix)
                 }
             } else {
                 visitFile(uri, depthPrefix)
@@ -62,7 +63,7 @@ class Sponge(
     private fun visitDocument(
             uri: URI,
             depth: Int,
-            document: Document,
+            response: Connection.Response,
             depthPrefix: String
     ) {
         if (depth < maxDepth - 1) {
@@ -70,12 +71,13 @@ class Sponge(
             visitedUris.remove(uri)
         } else {
             if (visitedUris.contains(uri)) return
+
             visitedUris.add(uri)
         }
 
         println("$depthPrefix$uri")
 
-        visitChildren(document, depth)
+        visitChildren(response.parse(), depth)
     }
 
     private fun visitChildren(document: Document, depth: Int) {
