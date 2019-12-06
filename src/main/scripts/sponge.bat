@@ -1,1 +1,1 @@
-start javaw -jar sponge.jar
+start javaw -jar sponge.jar %*

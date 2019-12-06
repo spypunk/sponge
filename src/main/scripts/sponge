@@ -1,2 +1,2 @@
 #!/bin/sh
-java -jar sponge.jar
+java -jar sponge.jar "$@"
