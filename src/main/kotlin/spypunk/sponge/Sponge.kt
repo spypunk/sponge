@@ -14,7 +14,6 @@ import org.apache.http.HttpHeaders
 import org.apache.http.client.utils.URIBuilder
 import org.jsoup.Connection
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 import java.io.File
 import java.net.URI
 import java.util.regex.Pattern
@@ -31,6 +30,7 @@ class Sponge(
 
     private val traversedUris: MutableSet<URI> = mutableSetOf()
     private val visitedUris: MutableSet<URI> = mutableSetOf()
+    private val urisChildren: MutableMap<URI, Set<URI>> = mutableMapOf()
 
     fun execute() {
         FileUtils.forceMkdir(outputDirectory)
@@ -66,26 +66,48 @@ class Sponge(
             response: Connection.Response,
             depthPrefix: String
     ) {
+        val children: Set<URI>
+
         if (depth < maxDepth - 1) {
             traversedUris.add(uri)
-            visitedUris.remove(uri)
+
+            if (visitedUris.contains(uri)) {
+                visitedUris.remove(uri)
+
+                children = urisChildren.getValue(uri)
+
+                urisChildren.remove(uri)
+            } else {
+                children = getChildren(response)
+            }
         } else {
             if (visitedUris.contains(uri)) return
 
             visitedUris.add(uri)
+
+            children = getChildren(response)
+
+            urisChildren[uri] = children
         }
 
         println("$depthPrefix$uri")
 
-        visitChildren(response.parse(), depth)
+        visitChildren(children, depth)
     }
 
-    private fun visitChildren(document: Document, depth: Int) {
-        document.getElementsByTag("a").asSequence()
+    private fun getChildren(response: Connection.Response): Set<URI> {
+        return response.parse()
+                .getElementsByTag("a")
+                .asSequence()
                 .map { it.attr("abs:href") }
                 .filterNot(String::isNullOrEmpty)
                 .map { it.toCleanUri() }
                 .distinct()
+                .toSet()
+    }
+
+    private fun visitChildren(children: Set<URI>, depth: Int) {
+        children.asSequence()
                 .filterNot { traversedUris.contains(it) }
                 .forEach { visit(it, depth + 1) }
     }
