@@ -22,21 +22,21 @@ import java.io.File
 import java.net.URI
 
 class SpongeCommand : CliktCommand(name = "sponge") {
-    private val uri: URI by option(help = "URI")
+    private val uri: URI by option("-u", "--uri", help = "URI (example: https://www.google.com)")
             .convert { URI(it) }
             .required()
 
-    private val outputDirectory: File by option(help = "Output directory where files are downloaded")
+    private val outputDirectory: File by option("-o", "--output", help = "Output directory where files are downloaded")
             .file()
             .required()
 
-    private val fileExtensions: List<String> by option(help = "File extensions to download")
+    private val fileExtensions: List<String> by option("-e", "--extensions", help = "File extensions to download")
             .multiple()
             .validate {
                 require(it.isNotEmpty()) { "At least one file extension is required" }
             }
 
-    private val depth: Int by option(help = "Search depth")
+    private val depth: Int by option("-d", "--depth", help = "Search depth")
             .int()
             .restrictTo(1)
             .default(1)

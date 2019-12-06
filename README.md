@@ -3,7 +3,7 @@ sponge is a command line website links crawler and downloader.
 ## How to build and run it ?
 You will need a Java JDK 8+ and maven 3+.
 ~~~
-mvn clean install
+mvn clean package assembly:single
 
 cd target && unzip sponge.zip && cd sponge
 
@@ -14,15 +14,15 @@ cd target && unzip sponge.zip && cd sponge
 Usage: sponge [OPTIONS]
 
 Options:
-  --uri VALUE              URI
-  --output-directory PATH  Output directory where files are downloaded
-  --file-extensions TEXT   File extensions to download
-  --depth INT              Search depth
-  -h, --help               Show this message and exit
+  -u, --uri VALUE        URI (example: https://www.google.com)
+  -o, --output PATH      Output directory where files are downloaded
+  -e, --extensions TEXT  File extensions to download
+  -d, --depth INT        Search depth
+  -h, --help             Show this message and exit
 
 Example: sponge --uri https://www.gutenberg.org/ebooks/search/%3Fsort_order%3Drelease_date \
-                --output-directory output \
-                --file-extensions txt \
+                --output output \
+                --extensions txt \
                 --depth 2
 ~~~
 ## What about license ?
