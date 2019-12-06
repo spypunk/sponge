@@ -16,7 +16,10 @@ Options:
   --depth INT              Search depth
   -h, --help               Show this message and exit
 
-Example: sponge --uri https://www.gutenberg.org/ebooks/search/%3Fsort_order%3Drelease_date --output-directory output --file-extensions txt --depth 2
+Example: sponge --uri https://www.gutenberg.org/ebooks/search/%3Fsort_order%3Drelease_date \
+                --output-directory output \
+                --file-extensions txt \
+                --depth 2
 ~~~
 ## What about license ?
 This project is licensed under the WTFPL (Do What The Fuck You Want To Public License, Version 2)
