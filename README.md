@@ -15,15 +15,16 @@ cd target && unzip sponge.zip && cd sponge
 Usage: sponge [OPTIONS]
 
 Options:
-  -u, --uri VALUE        URI (example: https://www.google.com)
-  -o, --output PATH      Output directory where files are downloaded
-  -e, --extensions TEXT  File extensions to download
-  -d, --depth INT        Search depth
-  -h, --help             Show this message and exit
+  -u, --uri VALUE          URI (example: https://www.google.com)
+  -o, --output PATH        Output directory where files are downloaded
+  -m, --media-types VALUE  Media types to download
+  -d, --depth INT          Search depth
+  -h, --help               Show this message and exit
 
 Example: sponge --uri https://www.gutenberg.org/ebooks/search/%3Fsort_order%3Drelease_date \
                 --output output \
-                --extensions txt \
+                --media-types application/pdf \
+                --media-types text/plain \
                 --depth 2
 ~~~
 ## What about license?

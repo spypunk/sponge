@@ -8,6 +8,7 @@
 
 package spypunk.sponge
 
+import com.google.common.net.MediaType
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.HttpHeaders
@@ -16,18 +17,15 @@ import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.File
 import java.net.URI
-import java.util.regex.Pattern
 
 class Sponge(
         private val uri: URI,
         private val outputDirectory: File,
-        private val fileExtensions: Set<String>,
+        private val mediaTypes: Set<MediaType>,
         private val maxDepth: Int
 ) {
     private companion object {
         private const val downloadTimeout = 1000
-
-        private val documentContentType = Pattern.compile("text/html.*|(application|text)/\\w*\\+?xml.*")
     }
 
     private val traversedUris: MutableSet<URI> = mutableSetOf()
@@ -46,14 +44,14 @@ class Sponge(
                     .ignoreContentType(true)
                     .execute()
 
-            val contentType = response.contentType()
+            val mediaType = MediaType.parse(response.contentType())
             val depthPrefix = "\t".repeat(depth)
 
-            if (documentContentType.matcher(contentType).matches()) {
+            if (MediaType.HTML_UTF_8 == mediaType || MediaType.XHTML_UTF_8 == mediaType) {
                 if (depth < maxDepth) {
                     visitDocument(uri, depth, response, depthPrefix)
                 }
-            } else {
+            } else if (mediaTypes.contains(mediaType)) {
                 visitFile(uri, depthPrefix)
             }
         } catch (e: Throwable) {
@@ -115,7 +113,7 @@ class Sponge(
         val fileName = FilenameUtils.getName(uri.path)
         val file = File(outputDirectory, fileName)
 
-        if (fileExtensions.contains(file.extension) && !file.exists()) {
+        if (!file.exists()) {
             FileUtils.copyURLToFile(uri.toURL(), file, downloadTimeout, downloadTimeout)
 
             println("$depthPrefix$uri -> ${file.absolutePath} [${file.humanSize()}]")

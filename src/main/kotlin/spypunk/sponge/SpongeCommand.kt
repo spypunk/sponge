@@ -18,6 +18,7 @@ import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.restrictTo
+import com.google.common.net.MediaType
 import java.io.File
 import java.net.URI
 
@@ -30,10 +31,11 @@ class SpongeCommand : CliktCommand(name = "sponge") {
             .file()
             .required()
 
-    private val fileExtensions: List<String> by option("-e", "--extensions", help = "File extensions to download")
+    private val mediaTypes: List<MediaType> by option("-m", "--media-types", help = "Media types to download")
+            .convert { MediaType.parse(it) }
             .multiple()
             .validate {
-                require(it.isNotEmpty()) { "At least one file extension is required" }
+                require(it.isNotEmpty()) { "At least one media type is required" }
             }
 
     private val depth: Int by option("-d", "--depth", help = "Search depth")
@@ -41,5 +43,5 @@ class SpongeCommand : CliktCommand(name = "sponge") {
             .restrictTo(1)
             .default(1)
 
-    override fun run() = Sponge(uri, outputDirectory, fileExtensions.toSet(), depth).execute()
+    override fun run() = Sponge(uri, outputDirectory, mediaTypes.toSet(), depth).execute()
 }
