@@ -25,11 +25,12 @@ class Sponge(
         private val maxDepth: Int
 ) {
     private companion object {
+        private const val downloadTimeout = 1000
+
         private val documentContentType = Pattern.compile("text/html.*|(application|text)/\\w*\\+?xml.*")
     }
 
     private val traversedUris: MutableSet<URI> = mutableSetOf()
-    private val visitedUris: MutableSet<URI> = mutableSetOf()
     private val urisChildren: MutableMap<URI, Set<URI>> = mutableMapOf()
 
     fun execute() {
@@ -71,9 +72,7 @@ class Sponge(
         if (depth < maxDepth - 1) {
             traversedUris.add(uri)
 
-            if (visitedUris.contains(uri)) {
-                visitedUris.remove(uri)
-
+            if (urisChildren.contains(uri)) {
                 children = urisChildren.getValue(uri)
 
                 urisChildren.remove(uri)
@@ -81,14 +80,14 @@ class Sponge(
                 children = getChildren(response)
             }
         } else {
-            if (visitedUris.contains(uri)) return
-
-            visitedUris.add(uri)
+            if (urisChildren.contains(uri)) return
 
             children = getChildren(response)
 
             urisChildren[uri] = children
         }
+
+        if (children.isEmpty()) return
 
         println("$depthPrefix$uri")
 
@@ -117,7 +116,7 @@ class Sponge(
         val file = File(outputDirectory, fileName)
 
         if (fileExtensions.contains(file.extension) && !file.exists()) {
-            FileUtils.copyURLToFile(uri.toURL(), file)
+            FileUtils.copyURLToFile(uri.toURL(), file, downloadTimeout, downloadTimeout)
 
             println("$depthPrefix$uri -> ${file.absolutePath} [${file.humanSize()}]")
 
