@@ -38,19 +38,21 @@ class Sponge(
     }
 
     private fun visit(uri: URI, depth: Int = 0) {
+        if (depth == maxDepth) {
+            return
+        }
+
         try {
             val response = Jsoup.connect(uri.toString())
                     .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
                     .ignoreContentType(true)
                     .execute()
 
-            val mediaType = MediaType.parse(response.contentType())
+            val mediaType = MediaType.parse(response.contentType()).withoutParameters()
             val depthPrefix = "\t".repeat(depth)
 
-            if (MediaType.HTML_UTF_8 == mediaType || MediaType.XHTML_UTF_8 == mediaType) {
-                if (depth < maxDepth) {
-                    visitDocument(uri, depth, response, depthPrefix)
-                }
+            if (mediaType.isHtml()) {
+                visitDocument(uri, depth, response, depthPrefix)
             } else if (mediaTypes.contains(mediaType)) {
                 visitFile(uri, depthPrefix)
             }
@@ -132,4 +134,9 @@ class Sponge(
     }
 
     private fun File.humanSize(): String = FileUtils.byteCountToDisplaySize(length())
+
+    private fun MediaType.isHtml(): Boolean {
+        return MediaType.HTML_UTF_8.withoutParameters() == this.withoutParameters()
+                || MediaType.XHTML_UTF_8.withoutParameters() == this.withoutParameters()
+    }
 }

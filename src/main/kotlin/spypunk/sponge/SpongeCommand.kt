@@ -32,7 +32,7 @@ class SpongeCommand : CliktCommand(name = "sponge") {
             .required()
 
     private val mediaTypes: List<MediaType> by option("-m", "--media-types", help = "Media types to download")
-            .convert { MediaType.parse(it) }
+            .convert { MediaType.parse(it).withoutParameters() }
             .multiple()
             .validate {
                 require(it.isNotEmpty()) { "At least one media type is required" }
