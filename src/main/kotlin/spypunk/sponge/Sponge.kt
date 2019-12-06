@@ -73,7 +73,7 @@ class Sponge(
         document.getElementsByTag("a").asSequence()
                 .map { it.attr("abs:href") }
                 .distinct()
-                .filterNot { it.isNullOrEmpty() }
+                .filterNot(String::isNullOrEmpty)
                 .forEach { visit(it.toCleanUri(), depth + 1) }
     }
 
@@ -84,7 +84,7 @@ class Sponge(
         if (fileExtensions.contains(file.extension) && !file.exists()) {
             FileUtils.copyURLToFile(uri.toURL(), file)
 
-            println("$depthPrefix[DOWNLOAD] ${file.absolutePath}")
+            println("$depthPrefix[DOWNLOAD] $uri -> ${file.absolutePath}")
         }
     }
 
