@@ -28,15 +28,13 @@ class Sponge(
         private val documentContentType = Pattern.compile("text/html.*|(application|text)/\\w*\\+?xml.*")
     }
 
-    private val visitedUris: MutableSet<URI> = mutableSetOf()
-
     fun execute() {
         FileUtils.forceMkdir(outputDirectory)
 
         visit(uri)
     }
 
-    private fun visit(uri: URI, depth: Int = 0) {
+    private fun visit(uri: URI, depth: Int = 0, parents: MutableSet<URI> = mutableSetOf()) {
         try {
             val response = Jsoup.connect(uri.toString())
                     .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
@@ -48,7 +46,7 @@ class Sponge(
 
             if (documentContentType.matcher(contentType).matches()) {
                 if (depth < maxDepth) {
-                    visitDocument(uri, depth, response.parse(), depthPrefix)
+                    visitDocument(uri, depth, response.parse(), depthPrefix, parents)
                 }
             } else {
                 visitFile(uri, depthPrefix)
@@ -62,19 +60,22 @@ class Sponge(
             uri: URI,
             depth: Int,
             document: Document,
-            depthPrefix: String
+            depthPrefix: String,
+            parents: MutableSet<URI>
     ) {
-        if (visitedUris.contains(uri)) return
-
-        visitedUris += uri
-
         println("$depthPrefix$uri")
+
+        parents.add(uri)
 
         document.getElementsByTag("a").asSequence()
                 .map { it.attr("abs:href") }
-                .distinct()
                 .filterNot(String::isNullOrEmpty)
-                .forEach { visit(it.toCleanUri(), depth + 1) }
+                .map { it.toCleanUri() }
+                .distinct()
+                .filterNot { parents.contains(it) }
+                .forEach { visit(it, depth + 1, parents) }
+
+        parents.remove(uri)
     }
 
     private fun visitFile(uri: URI, depthPrefix: String) {

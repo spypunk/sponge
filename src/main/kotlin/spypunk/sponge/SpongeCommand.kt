@@ -38,8 +38,8 @@ class SpongeCommand : CliktCommand(name = "sponge") {
 
     private val depth: Int by option("-d", "--depth", help = "Search depth")
             .int()
-            .restrictTo(1)
-            .default(1)
+            .restrictTo(0)
+            .default(0)
 
     override fun run() = Sponge(uri, outputDirectory, fileExtensions.toSet(), depth).execute()
 }
