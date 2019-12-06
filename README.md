@@ -4,6 +4,8 @@ sponge is a command line website links crawler and downloader.
 You will need a Java JDK 8+ and maven 3+.
 ~~~
 mvn clean install
+
+java -jar target/sponge-0.1-SNAPSHOT-jar-with-dependencies.jar [OPTIONS]
 ~~~
 ## How to use it ?
 ~~~
