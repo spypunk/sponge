@@ -27,6 +27,11 @@ class Sponge(
 ) {
     private companion object {
         private const val downloadTimeout = 1000
+
+        private val htmlMediaTypes = setOf(
+                MediaType.HTML_UTF_8.withoutParameters(),
+                MediaType.XHTML_UTF_8.withoutParameters()
+        )
     }
 
     private val traversedUris: MutableSet<URI> = mutableSetOf()
@@ -142,8 +147,5 @@ class Sponge(
 
     private fun File.humanSize(): String = FileUtils.byteCountToDisplaySize(length())
 
-    private fun MediaType.isHtml(): Boolean {
-        return MediaType.HTML_UTF_8.withoutParameters() == this.withoutParameters()
-                || MediaType.XHTML_UTF_8.withoutParameters() == this.withoutParameters()
-    }
+    private fun MediaType.isHtml() = htmlMediaTypes.contains(withoutParameters())
 }
