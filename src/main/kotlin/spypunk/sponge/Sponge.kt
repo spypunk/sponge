@@ -37,10 +37,6 @@ class Sponge(
     }
 
     private fun visit(uri: URI, depth: Int = 0) {
-        if (visitedUris.contains(uri)) return
-
-        visitedUris += uri
-
         try {
             val response = Jsoup.connect(uri.toString())
                     .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
@@ -68,7 +64,11 @@ class Sponge(
             document: Document,
             depthPrefix: String
     ) {
-        println("$depthPrefix[DOCUMENT] $uri")
+        if (visitedUris.contains(uri)) return
+
+        visitedUris += uri
+
+        println("$depthPrefix$uri")
 
         document.getElementsByTag("a").asSequence()
                 .map { it.attr("abs:href") }
@@ -84,7 +84,7 @@ class Sponge(
         if (fileExtensions.contains(file.extension) && !file.exists()) {
             FileUtils.copyURLToFile(uri.toURL(), file)
 
-            println("$depthPrefix[DOWNLOAD] $uri -> ${file.absolutePath}")
+            println("$depthPrefix$uri -> ${file.absolutePath} [${file.humanSize()}]")
         }
     }
 
@@ -96,4 +96,6 @@ class Sponge(
                 }
                 .build()
     }
+
+    private fun File.humanSize(): String = FileUtils.byteCountToDisplaySize(length())
 }
