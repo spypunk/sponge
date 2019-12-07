@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.HttpHeaders
 import org.apache.http.HttpStatus
+import org.apache.http.client.utils.URIBuilder
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import org.jsoup.Jsoup
@@ -135,7 +136,11 @@ class Sponge(
 
     private fun String.toURI(): URI? {
         return try {
-            URI(this)
+            URIBuilder(this)
+                    .apply {
+                        fragment = null
+                    }
+                    .build()
         } catch (e: URISyntaxException) {
             null
         }
