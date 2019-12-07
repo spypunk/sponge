@@ -25,7 +25,7 @@ Example: sponge --uri https://www.gutenberg.org/ebooks/search/%3Fsort_order%3Dre
                 --output output \
                 --mime-type application/pdf \
                 --mime-type text/plain \
-                --depth 2
+                --depth 4
 ~~~
 ## What about license?
 This project is licensed under the WTFPL (Do What The Fuck You Want To Public License, Version 2)

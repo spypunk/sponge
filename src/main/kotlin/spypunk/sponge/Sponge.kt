@@ -49,7 +49,7 @@ class Sponge(
             if (HttpStatus.SC_OK != response.statusCode()) return
 
             val mimeType = ContentType.parse(response.contentType()).mimeType
-            val depthPrefix = "\t".repeat(depth)
+            val depthPrefix = " ".repeat(depth * 4)
 
             if (mimeType.isHtml()) {
                 visitDocument(uri, depth, response, depthPrefix)
