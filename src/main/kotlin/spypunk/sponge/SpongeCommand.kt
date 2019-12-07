@@ -18,7 +18,6 @@ import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.restrictTo
-import org.apache.http.entity.ContentType
 import java.io.File
 import java.net.URI
 
@@ -32,7 +31,6 @@ class SpongeCommand : CliktCommand(name = "sponge") {
             .required()
 
     private val mimeTypes: List<String> by option("-t", "--mime-type", help = "Mime types to download")
-            .convert { ContentType.parse(it).mimeType }
             .multiple()
             .validate {
                 require(it.isNotEmpty()) { "At least one mime type is required" }
