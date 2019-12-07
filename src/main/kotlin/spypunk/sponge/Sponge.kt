@@ -39,10 +39,6 @@ class Sponge(
     }
 
     private fun visit(uri: URI, depth: Int = 0) {
-        if (depth == maxDepth) {
-            return
-        }
-
         try {
             val response = connect(uri)
 
@@ -52,7 +48,9 @@ class Sponge(
             val depthPrefix = " ".repeat(depth * 4)
 
             if (mimeType.isHtmlMimeType()) {
-                visitDocument(uri, depth, response, depthPrefix)
+                if (depth < maxDepth) {
+                    visitDocument(uri, depth, response, depthPrefix)
+                }
             } else if (mimeTypes.contains(mimeType)) {
                 visitFile(uri, depthPrefix)
             }
