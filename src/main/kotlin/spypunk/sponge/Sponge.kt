@@ -51,7 +51,7 @@ class Sponge(
             val mimeType = ContentType.parse(response.contentType()).mimeType
             val depthPrefix = " ".repeat(depth * 4)
 
-            if (mimeType.isHtml()) {
+            if (mimeType.isHtmlMimeType()) {
                 visitDocument(uri, depth, response, depthPrefix)
             } else if (mimeTypes.contains(mimeType)) {
                 visitFile(uri, depthPrefix)
@@ -132,7 +132,7 @@ class Sponge(
 
     private fun File.humanSize(): String = FileUtils.byteCountToDisplaySize(length())
 
-    private fun String.isHtml() = ContentType.TEXT_HTML.mimeType == this
+    private fun String.isHtmlMimeType() = ContentType.TEXT_HTML.mimeType == this
             || ContentType.APPLICATION_XHTML_XML.mimeType == this
 
     private fun String.toURI(): URI? {
