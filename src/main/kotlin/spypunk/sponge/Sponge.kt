@@ -8,12 +8,12 @@
 
 package spypunk.sponge
 
-import com.google.common.net.MediaType
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.HttpHeaders
 import org.apache.http.HttpStatus
 import org.apache.http.client.utils.URIBuilder
+import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.File
@@ -22,16 +22,11 @@ import java.net.URI
 class Sponge(
         private val uri: URI,
         private val outputDirectory: File,
-        private val mediaTypes: Set<MediaType>,
+        private val mimeTypes: Set<String>,
         private val maxDepth: Int
 ) {
     private companion object {
         private const val downloadTimeout = 1000
-
-        private val htmlMediaTypes = setOf(
-                MediaType.HTML_UTF_8.withoutParameters(),
-                MediaType.XHTML_UTF_8.withoutParameters()
-        )
     }
 
     private val traversedUris: MutableSet<URI> = mutableSetOf()
@@ -53,12 +48,12 @@ class Sponge(
 
             if (HttpStatus.SC_OK != response.statusCode()) return
 
-            val mediaType = MediaType.parse(response.contentType()).withoutParameters()
+            val mimeType = ContentType.parse(response.contentType()).mimeType
             val depthPrefix = "\t".repeat(depth)
 
-            if (mediaType.isHtml()) {
+            if (mimeType.isHtml()) {
                 visitDocument(uri, depth, response, depthPrefix)
-            } else if (mediaTypes.contains(mediaType)) {
+            } else if (mimeTypes.contains(mimeType)) {
                 visitFile(uri, depthPrefix)
             }
         } catch (e: Throwable) {
@@ -147,5 +142,6 @@ class Sponge(
 
     private fun File.humanSize(): String = FileUtils.byteCountToDisplaySize(length())
 
-    private fun MediaType.isHtml() = htmlMediaTypes.contains(withoutParameters())
+    private fun String.isHtml() = ContentType.TEXT_HTML.mimeType == this
+            || ContentType.APPLICATION_XHTML_XML.mimeType == this
 }
