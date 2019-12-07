@@ -18,27 +18,21 @@ import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.restrictTo
-import java.io.File
 import java.net.URI
 import java.util.regex.Pattern
 
 class SpongeCommand : CliktCommand(name = "sponge") {
 
-    private companion object {
-        private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
-    }
-
-    private val uri: URI by option("-u", "--uri", help = "URI (example: https://www.google.com)")
+    private val uri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
             .convert { URI(it) }
             .required()
 
-    private val outputDirectory: File by option("-o", "--output",
+    private val outputDirectory by option("-o", "--output",
             help = "Output directory where files are downloaded")
             .file()
             .required()
 
-    private val mimeTypes: List<String> by option("-t", "--mime-type",
-            help = "Mime types to download (example: text/plain)")
+    private val mimeTypes by option("-t", "--mime-type", help = "Mime types to download (example: text/plain)")
             .multiple()
             .validate {
                 require(it.isNotEmpty()) { "At least one mime type is required" }
@@ -48,10 +42,13 @@ class SpongeCommand : CliktCommand(name = "sponge") {
                 }
             }
 
-    private val depth: Int by option("-d", "--depth", help = "Search depth")
+    private val depth by option("-d", "--depth", help = "Search depth")
             .int()
             .restrictTo(1)
             .default(1)
 
-    override fun run() = Sponge(uri, outputDirectory, mimeTypes.toSet(), depth).execute()
+    private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
+    private val spongeService = SpongeService()
+
+    override fun run() = Sponge(spongeService, SpongeInput(uri, outputDirectory, mimeTypes.toSet(), depth)).execute()
 }
