@@ -95,8 +95,8 @@
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.10</version>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.12</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>

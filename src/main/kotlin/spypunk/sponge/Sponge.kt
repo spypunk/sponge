@@ -12,12 +12,12 @@ import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.HttpHeaders
 import org.apache.http.HttpStatus
-import org.apache.http.client.utils.URIBuilder
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.File
 import java.net.URI
+import java.net.URISyntaxException
 
 class Sponge(
         private val uri: URI,
@@ -105,9 +105,8 @@ class Sponge(
         return response.parse()
                 .getElementsByTag("a")
                 .asSequence()
-                .map { it.attr("abs:href") }
-                .filterNot(String::isNullOrEmpty)
-                .map { it.toCleanUri() }
+                .map { it.attr("abs:href").toURI() }
+                .filterNotNull()
                 .distinct()
                 .toSet()
     }
@@ -131,17 +130,16 @@ class Sponge(
         }
     }
 
-    private fun String.toCleanUri(): URI {
-        return URIBuilder(this)
-                .apply {
-                    fragment = null
-                    removeQuery()
-                }
-                .build()
-    }
-
     private fun File.humanSize(): String = FileUtils.byteCountToDisplaySize(length())
 
     private fun String.isHtml() = ContentType.TEXT_HTML.mimeType == this
             || ContentType.APPLICATION_XHTML_XML.mimeType == this
+
+    private fun String.toURI(): URI? {
+        return try {
+            URI(this)
+        } catch (e: URISyntaxException) {
+            null
+        }
+    }
 }
