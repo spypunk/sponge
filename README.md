@@ -20,12 +20,24 @@ Options:
   -t, --mime-type TEXT  Mime types to download (example: text/plain)
   -d, --depth INT       Search depth
   -h, --help            Show this message and exit
+~~~
+~~~
+./sponge --uri https://www.gutenberg.org/ebooks/search/%3Fsort_order%3Drelease_date \
+         --output output \
+         --mime-type application/pdf \
+         --mime-type text/plain \
+         --depth 4
 
-Example: sponge --uri https://www.gutenberg.org/ebooks/search/%3Fsort_order%3Drelease_date \
-                --output output \
-                --mime-type application/pdf \
-                --mime-type text/plain \
-                --depth 4
+﹫ https://www.gutenberg.org/ebooks/search/%3Fsort_order%3Drelease_date
+﹫ https://www.gutenberg.org/ebooks/search/?sort_order=downloads
+﹫ https://www.gutenberg.org/ebooks/search/?sort_order=title
+﹫ https://www.gutenberg.org/ebooks/search/?sort_order=release_date
+﹫ https://www.gutenberg.org/ebooks/search/?sort_order=title&start_index=26
+﹫ https://www.gutenberg.org/ebooks/50921
+⚠ Processing failed for https://www.gutenberg.org/ebooks/send/megaupload/50921.html: HTTP error fetching URL
+⬇ /home/tux/output/50921.txt.utf-8 [304 bytes]
+﹫ https://www.gutenberg.org/ebooks/42474
+...
 ~~~
 ## What about license?
 This project is licensed under the WTFPL (Do What The Fuck You Want To Public License, Version 2)

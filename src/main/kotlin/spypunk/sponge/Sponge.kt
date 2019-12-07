@@ -11,7 +11,6 @@ package spypunk.sponge
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.HttpHeaders
-import org.apache.http.HttpStatus
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
@@ -42,21 +41,19 @@ class Sponge(
     private fun visit(uri: URI, depth: Int = 0) {
         try {
             val response = connect(uri)
-
-            if (HttpStatus.SC_OK != response.statusCode()) return
-
             val mimeType = ContentType.parse(response.contentType()).mimeType
-            val depthPrefix = " ".repeat(depth * 4)
 
             if (mimeType.isHtmlMimeType()) {
                 if (depth < maxDepth) {
-                    visitDocument(uri, depth, response, depthPrefix)
+                    visitDocument(uri, depth, response)
                 }
             } else if (mimeTypes.contains(mimeType)) {
-                visitFile(uri, depthPrefix)
+                visitFile(uri)
             }
         } catch (e: Throwable) {
-            // ignore
+            System.err.println("⚠ Processing failed for $uri: ${e.message}")
+
+            traversedUris.add(uri)
         }
     }
 
@@ -67,12 +64,7 @@ class Sponge(
                 .execute()
     }
 
-    private fun visitDocument(
-            uri: URI,
-            depth: Int,
-            response: Connection.Response,
-            depthPrefix: String
-    ) {
+    private fun visitDocument(uri: URI, depth: Int, response: Connection.Response) {
         val children: Set<URI>
 
         if (depth < maxDepth - 1) {
@@ -95,7 +87,7 @@ class Sponge(
 
         if (children.isEmpty()) return
 
-        println("$depthPrefix$uri")
+        println("﹫ $uri")
 
         visitChildren(children, depth)
     }
@@ -104,7 +96,9 @@ class Sponge(
         return response.parse()
                 .getElementsByTag("a")
                 .asSequence()
-                .map { it.attr("abs:href").toURI() }
+                .map { it.attr("abs:href") }
+                .filterNot { it.isNullOrEmpty() }
+                .map { it.toURI() }
                 .filterNotNull()
                 .distinct()
                 .toSet()
@@ -116,14 +110,14 @@ class Sponge(
                 .forEach { visit(it, depth + 1) }
     }
 
-    private fun visitFile(uri: URI, depthPrefix: String) {
+    private fun visitFile(uri: URI) {
         val fileName = FilenameUtils.getName(uri.path)
         val file = File(outputDirectory, fileName)
 
         if (!file.exists()) {
             FileUtils.copyURLToFile(uri.toURL(), file, downloadTimeout, downloadTimeout)
 
-            println("$depthPrefix$uri -> ${file.absolutePath} [${file.humanSize()}]")
+            println("⬇ ${file.absolutePath} [${file.humanSize()}]")
 
             traversedUris.add(uri)
         }
@@ -142,6 +136,7 @@ class Sponge(
                     }
                     .build()
         } catch (e: URISyntaxException) {
+            System.err.println("⚠ URI parsing failed for $this: ${e.message}")
             null
         }
     }
