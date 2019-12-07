@@ -15,11 +15,11 @@ cd target && unzip sponge.zip && cd sponge
 Usage: sponge [OPTIONS]
 
 Options:
-  -u, --uri VALUE        URI (example: https://www.google.com)
-  -o, --output PATH      Output directory where files are downloaded
-  -t, --mime-type VALUE  Mime types to download
-  -d, --depth INT        Search depth
-  -h, --help             Show this message and exit
+  -u, --uri VALUE       URI (example: https://www.google.com)
+  -o, --output PATH     Output directory where files are downloaded
+  -t, --mime-type TEXT  Mime types to download (example: text/plain)
+  -d, --depth INT       Search depth
+  -h, --help            Show this message and exit
 
 Example: sponge --uri https://www.gutenberg.org/ebooks/search/%3Fsort_order%3Drelease_date \
                 --output output \
