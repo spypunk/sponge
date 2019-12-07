@@ -16,7 +16,9 @@ import java.io.File
 import java.net.URI
 
 class SpongeService {
-    private val downloadTimeout = 1000
+    private companion object {
+        private const val downloadTimeout = 1000
+    }
 
     fun connect(uri: URI): Connection.Response {
         return Jsoup.connect(uri.toString())
