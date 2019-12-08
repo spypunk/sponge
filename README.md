@@ -1,6 +1,6 @@
 # sponge
 ## What is it?
-Sponge is a website crawler and links downloader command line tool.
+sponge is a website crawler and links downloader command line tool.
 ## How to build and run it?
 You will need a Java JDK 8+ and maven 3+.
 ~~~
@@ -22,11 +22,11 @@ Options:
   -h, --help            Show this message and exit
 ~~~
 ~~~
-./sponge --uri https://www.gutenberg.org/ebooks/search/%3Fsort_order%3Drelease_date \
-         --output output \
-         --mime-type application/pdf \
-         --mime-type text/plain \
-         --depth 4
+./sponge -u https://www.gutenberg.org/ebooks/search/%3Fsort_order%3Drelease_date \
+         -o output \
+         -t application/pdf \
+         -t text/plain \
+         -d 4
 
 ...
 ﹫ https://www.gutenberg.org/ebooks/send/dropbox/50921.epub.images
