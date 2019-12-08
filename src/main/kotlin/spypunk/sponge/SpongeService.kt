@@ -23,6 +23,7 @@ class SpongeService {
     fun connect(uri: URI): Connection.Response {
         return Jsoup.connect(uri.toString())
                 .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
+                .ignoreHttpErrors(true)
                 .ignoreContentType(true)
                 .execute()
     }
