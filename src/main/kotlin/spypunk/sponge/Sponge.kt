@@ -8,7 +8,6 @@
 
 package spypunk.sponge
 
-import com.google.common.net.InternetDomainName
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
@@ -81,8 +80,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 .filterNotNull()
                 .distinct()
                 .filter {
-                    it.hasSameDomain(spongeInput.uri)
-                            || spongeInput.includeSubdomains && it.hasSameRootDomain(spongeInput.uri)
+                    it.domain() == spongeInput.domain
+                            || spongeInput.includeSubdomains && it.rootDomain() == spongeInput.rootDomain
                 }
                 .toSet()
     }
@@ -119,9 +118,4 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             null
         }
     }
-
-    private fun URI.domain() = InternetDomainName.from(host)
-    private fun URI.rootDomain() = InternetDomainName.from(host).topPrivateDomain()
-    private fun URI.hasSameDomain(uri: URI) = domain() == uri.domain()
-    private fun URI.hasSameRootDomain(uri: URI) = rootDomain() == uri.rootDomain()
 }

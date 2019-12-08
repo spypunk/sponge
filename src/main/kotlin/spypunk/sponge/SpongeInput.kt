@@ -8,6 +8,7 @@
 
 package spypunk.sponge
 
+import com.google.common.net.InternetDomainName
 import java.io.File
 import java.net.URI
 
@@ -17,4 +18,10 @@ class SpongeInput(
         val mimeTypes: Set<String>,
         val maxDepth: Int = 1,
         val includeSubdomains: Boolean = false
-)
+) {
+    val domain = uri.domain()
+    val rootDomain = uri.rootDomain()
+}
+
+fun URI.domain(): InternetDomainName = InternetDomainName.from(host)
+fun URI.rootDomain(): InternetDomainName = InternetDomainName.from(host).topPrivateDomain()
