@@ -28,15 +28,22 @@ Options:
          --mime-type text/plain \
          --depth 4
 
-﹫ https://www.gutenberg.org/ebooks/search/%3Fsort_order%3Drelease_date
-﹫ https://www.gutenberg.org/ebooks/search/?sort_order=downloads
-﹫ https://www.gutenberg.org/ebooks/search/?sort_order=title
-﹫ https://www.gutenberg.org/ebooks/search/?sort_order=release_date
-﹫ https://www.gutenberg.org/ebooks/search/?sort_order=title&start_index=26
-﹫ https://www.gutenberg.org/ebooks/50921
-⚠ Processing failed for https://www.gutenberg.org/ebooks/send/megaupload/50921.html: HTTP error fetching URL
+...
+﹫ https://www.gutenberg.org/ebooks/send/dropbox/50921.epub.images
+﹫ https://www.gutenberg.org/ebooks/send/gdrive/50921.epub.images
+﹫ https://www.gutenberg.org/ebooks/send/msdrive/50921.epub.images
+﹫ https://www.gutenberg.org/ebooks/send/dropbox/50921.epub.noimages
+﹫ https://www.gutenberg.org/ebooks/send/gdrive/50921.epub.noimages
+﹫ https://www.gutenberg.org/ebooks/send/msdrive/50921.epub.noimages
+﹫ https://www.gutenberg.org/ebooks/send/dropbox/50921.kindle.images
+﹫ https://www.gutenberg.org/ebooks/send/gdrive/50921.kindle.images
+﹫ https://www.gutenberg.org/ebooks/send/msdrive/50921.kindle.images
+﹫ https://www.gutenberg.org/ebooks/send/dropbox/50921.kindle.noimages
+﹫ https://www.gutenberg.org/ebooks/send/gdrive/50921.kindle.noimages
+﹫ https://www.gutenberg.org/ebooks/send/msdrive/50921.kindle.noimages
 ⬇ /home/tux/output/50921.txt.utf-8 [304 bytes]
-﹫ https://www.gutenberg.org/ebooks/42474
+﹫ https://www.gutenberg.org/files/50921/
+﹫ https://www.gutenberg.org/wiki/Main_Page
 ...
 ~~~
 ## What about license?
