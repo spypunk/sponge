@@ -14,6 +14,7 @@ import org.apache.http.client.utils.URIBuilder
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import java.io.File
+import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
 
@@ -41,7 +42,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             } else if (spongeInput.mimeTypes.contains(mimeType)) {
                 visitFile(uri)
             }
-        } catch (e: Throwable) {
+        } catch (e: IOException) {
             System.err.println("⚠ Processing failed for $uri: ${e.message}")
 
             traversedUris.add(uri)
