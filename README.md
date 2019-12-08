@@ -1,6 +1,6 @@
-# sponge
-## What is it?
-sponge is a website crawler and links downloader command line tool.
+# sponge - A website crawler and links downloader command line tool
+[![License](http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png)](http://www.wtfpl.net/)
+[![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/fold_left.svg?style=social&label=Follow)](https://twitter.com/spypunkk)
 ## How to build and run it?
 You will need a Java JDK 8+ and maven 3+.
 ~~~
