@@ -33,8 +33,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             val mimeType = ContentType.parse(response.contentType()).mimeType
 
             if (mimeType.isHtmlMimeType()) {
-                println("﹫ $uri")
-
                 if (depth < spongeInput.maxDepth) {
                     visitDocument(uri, depth, response)
                 }
@@ -53,6 +51,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
         if (depth < spongeInput.maxDepth) {
             traversedUris.add(uri)
+
+            println("﹫ $uri")
 
             if (urisChildren.contains(uri)) {
                 children = urisChildren.getValue(uri)
