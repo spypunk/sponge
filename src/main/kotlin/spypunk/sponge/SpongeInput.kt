@@ -20,8 +20,7 @@ class SpongeInput(
         val includeSubdomains: Boolean = false
 ) {
     val domain = uri.domain()
-    val rootDomain = uri.rootDomain()
+    val topPrivateDomain: InternetDomainName = domain.topPrivateDomain()
 }
 
 fun URI.domain(): InternetDomainName = InternetDomainName.from(host)
-fun URI.rootDomain(): InternetDomainName = InternetDomainName.from(host).topPrivateDomain()

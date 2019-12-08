@@ -79,11 +79,15 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 .map { it.toURI() }
                 .filterNotNull()
                 .distinct()
-                .filter {
-                    it.domain() == spongeInput.domain
-                            || spongeInput.includeSubdomains && it.rootDomain() == spongeInput.rootDomain
-                }
+                .filter { shouldVisitUri(it) }
                 .toSet()
+    }
+
+    private fun shouldVisitUri(uri: URI): Boolean {
+        val domain = uri.domain()
+
+        return domain == spongeInput.domain
+                || spongeInput.includeSubdomains && domain.topPrivateDomain() == spongeInput.topPrivateDomain
     }
 
     private fun visitChildren(children: Set<URI>, depth: Int) {
