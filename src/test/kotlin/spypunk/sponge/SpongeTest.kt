@@ -8,13 +8,54 @@
 
 package spypunk.sponge
 
-import org.junit.jupiter.api.Assertions
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import org.jsoup.Connection
+import org.jsoup.helper.DataUtil
 import org.junit.jupiter.api.Test
+import java.io.ByteArrayInputStream
+import java.io.File
+import java.net.URI
+import java.nio.charset.StandardCharsets
 
 class SpongeTest {
+    private val spongeService = mockk<SpongeService>()
 
     @Test
-    fun dummyTest() {
-        Assertions.assertTrue(true)
+    fun testDocumentWithoutLinks() {
+        val spongeInput = SpongeInput(
+                URI("https://www.test.com"),
+                File("output"),
+                setOf("text/plain"),
+                1
+        )
+
+        every { spongeService.connect(spongeInput.uri) } returns
+                response("text/html", "<html></html>", spongeInput.uri)
+
+        executeSponge(spongeInput)
+
+        verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
+        verify(exactly = 0) { spongeService.download(any(), any()) }
+    }
+
+    private fun response(contentType: String, content: String, uri: URI): Connection.Response {
+        val response = mockk<Connection.Response>()
+
+        every { response.contentType() } returns contentType
+
+        every { response.parse() } returns
+                DataUtil.load(
+                        ByteArrayInputStream(content.toByteArray(StandardCharsets.UTF_8)),
+                        StandardCharsets.UTF_8.name(),
+                        uri.toString()
+                )
+
+        return response
+    }
+
+    private fun executeSponge(spongeInput: SpongeInput) {
+        Sponge(spongeService, spongeInput).execute()
     }
 }
