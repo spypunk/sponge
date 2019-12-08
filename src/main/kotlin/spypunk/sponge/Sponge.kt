@@ -11,7 +11,6 @@ package spypunk.sponge
 import com.google.common.net.InternetDomainName
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
-import org.apache.http.client.utils.URIBuilder
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import java.io.File
@@ -78,9 +77,9 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         return response.parse().getElementsByTag("a").asSequence()
                 .map { it.attr("abs:href") }
                 .filterNot { it.isNullOrEmpty() }
-                .distinct()
                 .map { it.toURI() }
                 .filterNotNull()
+                .distinct()
                 .filter {
                     it.hasSameDomain(spongeInput.uri)
                             || spongeInput.includeSubdomains && it.hasSameRootDomain(spongeInput.uri)
@@ -114,11 +113,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private fun String.toURI(): URI? {
         return try {
-            URIBuilder(this)
-                    .apply {
-                        fragment = null
-                    }
-                    .build()
+            URI(this)
         } catch (e: URISyntaxException) {
             System.err.println("⚠ URI parsing failed for $this: ${e.message}")
             null
