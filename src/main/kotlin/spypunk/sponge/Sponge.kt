@@ -8,6 +8,7 @@
 
 package spypunk.sponge
 
+import com.google.common.net.InternetDomainName
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.client.utils.URIBuilder
@@ -74,14 +75,16 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun getChildren(response: Connection.Response): Set<URI> {
-        return response.parse()
-                .getElementsByTag("a")
-                .asSequence()
+        return response.parse().getElementsByTag("a").asSequence()
                 .map { it.attr("abs:href") }
                 .filterNot { it.isNullOrEmpty() }
+                .distinct()
                 .map { it.toURI() }
                 .filterNotNull()
-                .distinct()
+                .filter {
+                    it.hasSameDomain(spongeInput.uri)
+                            || spongeInput.includeSubdomains && it.hasSameRootDomain(spongeInput.uri)
+                }
                 .toSet()
     }
 
@@ -121,4 +124,9 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             null
         }
     }
+
+    private fun URI.domain() = InternetDomainName.from(host)
+    private fun URI.rootDomain() = InternetDomainName.from(host).topPrivateDomain()
+    private fun URI.hasSameDomain(uri: URI) = domain() == uri.domain()
+    private fun URI.hasSameRootDomain(uri: URI) = rootDomain() == uri.rootDomain()
 }

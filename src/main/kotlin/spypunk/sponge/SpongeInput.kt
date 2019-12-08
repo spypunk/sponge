@@ -11,4 +11,10 @@ package spypunk.sponge
 import java.io.File
 import java.net.URI
 
-class SpongeInput(val uri: URI, val outputDirectory: File, val mimeTypes: Set<String>, val maxDepth: Int)
+class SpongeInput(
+        val uri: URI,
+        val outputDirectory: File,
+        val mimeTypes: Set<String>,
+        val maxDepth: Int = 1,
+        val includeSubdomains: Boolean = false
+)

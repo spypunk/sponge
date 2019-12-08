@@ -11,6 +11,7 @@ package spypunk.sponge
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
@@ -42,13 +43,19 @@ class SpongeCommand : CliktCommand(name = "sponge") {
                 }
             }
 
-    private val depth by option("-d", "--depth", help = "Search depth")
+    private val depth by option("-d", "--depth", help = "Search depth (default: 1)")
             .int()
             .restrictTo(1)
             .default(1)
 
+    private val includeSubdomains by option("-s", "--include-subdomains", help = "Include subdomains").flag()
+
     private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
+
     private val spongeService = SpongeService()
 
-    override fun run() = Sponge(spongeService, SpongeInput(uri, outputDirectory, mimeTypes.toSet(), depth)).execute()
+    override fun run() = Sponge(
+            spongeService,
+            SpongeInput(uri, outputDirectory, mimeTypes.toSet(), depth, includeSubdomains)
+    ).execute()
 }

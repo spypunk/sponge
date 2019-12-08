@@ -27,8 +27,7 @@ class SpongeTest {
         val spongeInput = SpongeInput(
                 URI("https://www.test.com"),
                 File("output"),
-                setOf("text/plain"),
-                1
+                setOf("text/plain")
         )
 
         every { spongeService.connect(spongeInput.uri) } returns
