@@ -28,6 +28,7 @@ class SpongeCommand(private val spongeService: SpongeService) : CliktCommand(nam
             .convert { URI(it) }
             .required()
             .validate {
+                require(setOf("http", "https").contains(it.scheme)) { "Unsupported scheme: ${it.scheme}" }
                 require(!it.host.isNullOrEmpty()) { "Host name cannot be empty" }
             }
 
