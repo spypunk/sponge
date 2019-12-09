@@ -27,6 +27,9 @@ class SpongeCommand : CliktCommand(name = "sponge") {
     private val uri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
             .convert { URI(it) }
             .required()
+            .validate {
+                require(!it.host.isNullOrEmpty()) { "Host name cannot be empty" }
+            }
 
     private val outputDirectory by option("-o", "--output",
             help = "Output directory where files are downloaded")
@@ -48,10 +51,10 @@ class SpongeCommand : CliktCommand(name = "sponge") {
             .restrictTo(1)
             .default(1)
 
-    private val includeSubdomains by option("-s", "--include-subdomains", help = "Include subdomains").flag()
+    private val includeSubdomains by option("-s", "--include-subdomains", help = "Include subdomains")
+            .flag()
 
     private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
-
     private val spongeService = SpongeService()
 
     override fun run() = Sponge(

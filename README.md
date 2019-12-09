@@ -31,21 +31,18 @@ Options:
          -d 4
 
 ...
-﹫ https://www.gutenberg.org/ebooks/send/dropbox/50921.epub.images
-﹫ https://www.gutenberg.org/ebooks/send/gdrive/50921.epub.images
-﹫ https://www.gutenberg.org/ebooks/send/msdrive/50921.epub.images
-﹫ https://www.gutenberg.org/ebooks/send/dropbox/50921.epub.noimages
-﹫ https://www.gutenberg.org/ebooks/send/gdrive/50921.epub.noimages
-﹫ https://www.gutenberg.org/ebooks/send/msdrive/50921.epub.noimages
-﹫ https://www.gutenberg.org/ebooks/send/dropbox/50921.kindle.images
-﹫ https://www.gutenberg.org/ebooks/send/gdrive/50921.kindle.images
-﹫ https://www.gutenberg.org/ebooks/send/msdrive/50921.kindle.images
-﹫ https://www.gutenberg.org/ebooks/send/dropbox/50921.kindle.noimages
-﹫ https://www.gutenberg.org/ebooks/send/gdrive/50921.kindle.noimages
-﹫ https://www.gutenberg.org/ebooks/send/msdrive/50921.kindle.noimages
-⬇ /home/tux/output/50921.txt.utf-8 [304 bytes]
-﹫ https://www.gutenberg.org/files/50921/
-﹫ https://www.gutenberg.org/wiki/Main_Page
+﹫ https://www.gutenberg.org/ebooks/search/?sort_order=release_date
+﹫ https://www.gutenberg.org/ebooks/search/?sort_order=downloads
+﹫ https://www.gutenberg.org/ebooks/search/?sort_order=title
+﹫ https://www.gutenberg.org/ebooks/search/?sort_order=title&start_index=26
+﹫ https://www.gutenberg.org/ebooks/50921
+⬇ /home/spypunk/output/50921.txt.utf-8 [304 bytes]
+﹫ https://www.gutenberg.org/ebooks/42474
+⬇ /home/spypunk/output/42474-0.txt [217 KB]
+﹫ https://www.gutenberg.org/ebooks/56796
+⬇ /home/spypunk/output/56796-0.txt [336 KB]
+﹫ https://www.gutenberg.org/ebooks/14403
+⬇ /home/spypunk/output/14403.txt.utf-8 [304 bytes]
 ...
 ~~~
 ## What about license?

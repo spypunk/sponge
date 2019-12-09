@@ -24,10 +24,14 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     fun execute() {
         FileUtils.forceMkdir(spongeInput.outputDirectory)
 
-        visit(spongeInput.uri)
+        visitUri()
     }
 
-    private fun visit(uri: URI, depth: Int = 0) {
+    private fun visitUri(uri: URI = spongeInput.uri, depth: Int = 0) {
+        if (traversedUris.contains(uri)) {
+            return
+        }
+
         try {
             val response = spongeService.connect(uri)
             val mimeType = ContentType.parse(response.contentType()).mimeType
@@ -69,31 +73,25 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             urisChildren[uri] = children
         }
 
-        visitChildren(children, depth)
+        children.forEach { visitUri(it, depth + 1) }
     }
 
     private fun getChildren(response: Connection.Response): Set<URI> {
         return response.parse().getElementsByTag("a").asSequence()
                 .map { it.attr("abs:href") }
                 .filterNot { it.isNullOrEmpty() }
+                .distinct()
                 .map { it.toURI() }
                 .filterNotNull()
-                .distinct()
-                .filter { shouldVisitUri(it) }
+                .filter(this::shouldVisitUri)
                 .toSet()
     }
 
     private fun shouldVisitUri(uri: URI): Boolean {
-        val domain = uri.domain()
+        val domain = uri.domain() ?: return false
 
         return domain == spongeInput.domain
-                || spongeInput.includeSubdomains && domain.topPrivateDomain() == spongeInput.topPrivateDomain
-    }
-
-    private fun visitChildren(children: Set<URI>, depth: Int) {
-        children.asSequence()
-                .filterNot { traversedUris.contains(it) }
-                .forEach { visit(it, depth + 1) }
+                || spongeInput.includeSubdomains && domain.endsWith(spongeInput.domain)
     }
 
     private fun visitFile(uri: URI) {

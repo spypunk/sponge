@@ -8,9 +8,18 @@
 
 package spypunk.sponge
 
-import com.google.common.net.InternetDomainName
 import java.io.File
 import java.net.URI
+
+const val WWW_PREFIX = "www."
+
+fun URI.domain(): String? {
+    return when {
+        host.isNullOrEmpty() -> null
+        host.startsWith(WWW_PREFIX) -> host.substring(WWW_PREFIX.length)
+        else -> host
+    }
+}
 
 class SpongeInput(
         val uri: URI,
@@ -19,8 +28,5 @@ class SpongeInput(
         val maxDepth: Int = 1,
         val includeSubdomains: Boolean = false
 ) {
-    val domain = uri.domain()
-    val topPrivateDomain: InternetDomainName = domain.topPrivateDomain()
+    val domain = uri.domain()!!
 }
-
-fun URI.domain(): InternetDomainName = InternetDomainName.from(host)
