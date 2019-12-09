@@ -22,7 +22,7 @@ import com.github.ajalt.clikt.parameters.types.restrictTo
 import java.net.URI
 import java.util.regex.Pattern
 
-class SpongeCommand : CliktCommand(name = "sponge") {
+class SpongeCommand(private val spongeService: SpongeService) : CliktCommand(name = "sponge") {
 
     private val uri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
             .convert { URI(it) }
@@ -55,10 +55,10 @@ class SpongeCommand : CliktCommand(name = "sponge") {
             .flag()
 
     private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
-    private val spongeService = SpongeService()
 
-    override fun run() = Sponge(
-            spongeService,
-            SpongeInput(uri, outputDirectory, mimeTypes.toSet(), depth, includeSubdomains)
-    ).execute()
+    override fun run() {
+        val spongeInput = SpongeInput(uri, outputDirectory, mimeTypes.toSet(), depth, includeSubdomains)
+
+        Sponge(spongeService, spongeInput).execute()
+    }
 }

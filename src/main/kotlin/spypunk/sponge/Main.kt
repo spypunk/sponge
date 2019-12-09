@@ -13,11 +13,15 @@ import kotlin.system.exitProcess
 object Main {
     @JvmStatic
     fun main(args: Array<String>) {
+        val spongeService = SpongeService()
+
         try {
-            SpongeCommand().main(args)
+            SpongeCommand(spongeService).main(args)
         } catch (t: Throwable) {
             System.err.println("Unexpected error encountered: ${t.message}")
             exitProcess(1)
+        } finally {
+            spongeService.stop()
         }
     }
 }

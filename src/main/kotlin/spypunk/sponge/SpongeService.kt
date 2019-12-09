@@ -13,9 +13,13 @@ import org.apache.http.HttpHeaders
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.File
+import java.io.IOException
 import java.net.URI
+import java.util.concurrent.Executors
 
 class SpongeService {
+    private val executorService = Executors.newSingleThreadExecutor()
+
     fun connect(uri: URI): Connection.Response {
         return Jsoup.connect(uri.toString())
                 .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
@@ -28,11 +32,19 @@ class SpongeService {
     }
 
     fun download(response: Connection.Response, file: File) {
-        response.bodyStream().use {
-            FileUtils.copyToFile(it, file)
+        executorService.execute {
+            try {
+                response.bodyStream().use { FileUtils.copyToFile(it, file) }
 
-            println("⬇ ${file.absolutePath} [${file.humanSize()}]")
+                println("⬇ ${file.absolutePath} [${file.humanSize()}]")
+            } catch (e: IOException) {
+                System.err.println("⚠ Error encountered while downloading ${response.url()}: ${e.message}")
+            }
         }
+    }
+
+    fun stop() {
+        executorService.shutdown()
     }
 
     private fun File.humanSize(): String = FileUtils.byteCountToDisplaySize(length())
