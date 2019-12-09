@@ -17,16 +17,21 @@ import java.net.URI
 
 class SpongeService {
     private companion object {
-        private const val downloadTimeout = 1000
+        private const val CONNECTION_TIMEOUT = 5000
+        private const val READ_TIMEOUT = 2000
     }
 
     fun connect(uri: URI): Connection.Response {
         return Jsoup.connect(uri.toString())
                 .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
+                .referrer("https://www.google.com")
+                .timeout(CONNECTION_TIMEOUT)
+                .maxBodySize(0)
                 .ignoreHttpErrors(true)
                 .ignoreContentType(true)
+                .followRedirects(true)
                 .execute()
     }
 
-    fun download(uri: URI, file: File) = FileUtils.copyURLToFile(uri.toURL(), file, downloadTimeout, downloadTimeout)
+    fun download(uri: URI, file: File) = FileUtils.copyURLToFile(uri.toURL(), file, CONNECTION_TIMEOUT, READ_TIMEOUT)
 }
