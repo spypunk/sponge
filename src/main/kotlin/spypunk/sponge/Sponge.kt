@@ -41,7 +41,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                     visitDocument(uri, depth, response)
                 }
             } else if (spongeInput.mimeTypes.contains(mimeType)) {
-                visitFile(uri)
+                visitFile(uri, response)
             }
         } catch (e: IOException) {
             System.err.println("⚠ Processing failed for $uri: ${e.message}")
@@ -94,14 +94,14 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 || spongeInput.includeSubdomains && domain.endsWith(spongeInput.domain)
     }
 
-    private fun visitFile(uri: URI) {
+    private fun visitFile(uri: URI, response: Connection.Response) {
         traversedUris.add(uri)
 
         val fileName = FilenameUtils.getName(uri.path)
         val file = File(spongeInput.outputDirectory, fileName)
 
         if (!file.exists()) {
-            spongeService.download(uri, file)
+            spongeService.download(response, file)
         }
     }
 

@@ -16,11 +16,6 @@ import java.io.File
 import java.net.URI
 
 class SpongeService {
-    private companion object {
-        private const val CONNECTION_TIMEOUT = 5000
-        private const val READ_TIMEOUT = 2000
-    }
-
     fun connect(uri: URI): Connection.Response {
         return Jsoup.connect(uri.toString())
                 .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
@@ -32,10 +27,12 @@ class SpongeService {
                 .execute()
     }
 
-    fun download(uri: URI, file: File) {
-        FileUtils.copyURLToFile(uri.toURL(), file, CONNECTION_TIMEOUT, READ_TIMEOUT)
+    fun download(response: Connection.Response, file: File) {
+        response.bodyStream().use {
+            FileUtils.copyToFile(it, file)
 
-        println("⬇ ${file.absolutePath} [${file.humanSize()}]")
+            println("⬇ ${file.absolutePath} [${file.humanSize()}]")
+        }
     }
 
     private fun File.humanSize(): String = FileUtils.byteCountToDisplaySize(length())

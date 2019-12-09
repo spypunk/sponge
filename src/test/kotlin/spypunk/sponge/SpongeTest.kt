@@ -20,6 +20,7 @@ import java.net.URI
 
 class SpongeTest {
     private val spongeService = mockk<SpongeService>(relaxed = true)
+
     private val spongeInput = SpongeInput(
             URI("https://www.test.com"),
             File("output"),
@@ -56,15 +57,15 @@ class SpongeTest {
                 response(htmlContent, spongeInput.uri)
 
         val fileUri = URI("${spongeInput.uri}/$fileName")
+        val fileResponse = response(ContentType.TEXT_PLAIN.mimeType)
 
-        every { spongeService.connect(fileUri) } returns
-                response(ContentType.TEXT_PLAIN.mimeType)
+        every { spongeService.connect(fileUri) } returns fileResponse
 
         executeSponge(spongeInput)
 
         verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
         verify(exactly = 1) { spongeService.connect(fileUri) }
-        verify(exactly = 1) { spongeService.download(fileUri, File(spongeInput.outputDirectory, fileName)) }
+        verify(exactly = 1) { spongeService.download(fileResponse, File(spongeInput.outputDirectory, fileName)) }
     }
 
     private fun response(htmlContent: String, baseUri: URI): Connection.Response {
