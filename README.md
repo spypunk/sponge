@@ -7,7 +7,7 @@ You will need a Java JDK 8+ and maven 3+.
 ~~~
 mvn clean package assembly:single
 
-cd target && unzip sponge-0.1-SNAPSHOT.zip && cd sponge-0.1-SNAPSHOT
+cd target && unzip sponge-0.2-SNAPSHOT.zip && cd sponge-0.2-SNAPSHOT
 
 ./sponge [OPTIONS]
 ~~~
