@@ -95,19 +95,15 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun visitFile(uri: URI) {
+        traversedUris.add(uri)
+
         val fileName = FilenameUtils.getName(uri.path)
         val file = File(spongeInput.outputDirectory, fileName)
 
         if (!file.exists()) {
             spongeService.download(uri, file)
-
-            println("⬇ ${file.absolutePath} [${file.humanSize()}]")
-
-            traversedUris.add(uri)
         }
     }
-
-    private fun File.humanSize(): String = FileUtils.byteCountToDisplaySize(length())
 
     private fun String.isHtmlMimeType() = ContentType.TEXT_HTML.mimeType == this
             || ContentType.APPLICATION_XHTML_XML.mimeType == this

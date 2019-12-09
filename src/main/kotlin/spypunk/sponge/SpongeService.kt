@@ -25,7 +25,6 @@ class SpongeService {
         return Jsoup.connect(uri.toString())
                 .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
                 .referrer("https://www.google.com")
-                .timeout(CONNECTION_TIMEOUT)
                 .maxBodySize(0)
                 .ignoreHttpErrors(true)
                 .ignoreContentType(true)
@@ -33,5 +32,11 @@ class SpongeService {
                 .execute()
     }
 
-    fun download(uri: URI, file: File) = FileUtils.copyURLToFile(uri.toURL(), file, CONNECTION_TIMEOUT, READ_TIMEOUT)
+    fun download(uri: URI, file: File) {
+        FileUtils.copyURLToFile(uri.toURL(), file, CONNECTION_TIMEOUT, READ_TIMEOUT)
+
+        println("⬇ ${file.absolutePath} [${file.humanSize()}]")
+    }
+
+    private fun File.humanSize(): String = FileUtils.byteCountToDisplaySize(length())
 }
