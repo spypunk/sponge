@@ -24,7 +24,7 @@ Options:
   -h, --help                Show this message and exit
 ~~~
 ~~~
-./sponge -u https://www.gutenberg.org/ebooks/search/%3Fsort_order%3Drelease_date \
+./sponge -u https://www.gutenberg.org/ebooks/search/?sort_order=release_date \
          -o output \
          -t application/pdf \
          -t text/plain \
