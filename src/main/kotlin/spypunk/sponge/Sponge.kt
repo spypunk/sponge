@@ -24,13 +24,12 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         Files.createDirectories(spongeInput.outputDirectory);
 
         visitUri()
+
+        traversedUris.clear()
+        urisChildren.clear()
     }
 
     private fun visitUri(uri: URI = spongeInput.uri, depth: Int = 0) {
-        if (traversedUris.contains(uri)) {
-            return
-        }
-
         try {
             val response = spongeService.connect(uri)
             val mimeType = ContentType.parse(response.contentType()).mimeType
@@ -72,7 +71,15 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             urisChildren[uri] = children
         }
 
-        children.forEach { visitUri(it, depth + 1) }
+        visitChildren(children, depth)
+    }
+
+    private fun visitChildren(children: Set<URI>, depth: Int) {
+        children.forEach {
+            if (!traversedUris.contains(it)) {
+                visitUri(it, depth + 1)
+            }
+        }
     }
 
     private fun getChildren(response: Connection.Response): Set<URI> {

@@ -21,7 +21,7 @@ fun URI.domain(): String? {
     }
 }
 
-class SpongeInput(
+data class SpongeInput(
         val uri: URI,
         val outputDirectory: Path,
         val mimeTypes: Set<String>,

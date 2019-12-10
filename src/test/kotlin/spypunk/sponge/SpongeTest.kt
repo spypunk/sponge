@@ -23,12 +23,17 @@ import java.nio.file.Path
 class SpongeTest {
     private val spongeService = mockk<SpongeService>(relaxed = true)
     private val outputDirectory = Path.of("output").toAbsolutePath()
+    private val fileName = "test.txt"
 
     private val spongeInput = SpongeInput(
             URI("https://www.test.com"),
             outputDirectory,
             setOf(ContentType.TEXT_PLAIN.mimeType)
     )
+
+    private val spongeInputWithSubdomains = spongeInput.copy(includeSubdomains = true)
+    private val spongeInputWithDepthTwo = spongeInput.copy(maxDepth = 2)
+
 
     @BeforeEach
     fun beforeEach() {
@@ -37,10 +42,7 @@ class SpongeTest {
 
     @Test
     fun testEmptyDocument() {
-        val htmlContent = "<html></html>"
-
-        every { spongeService.connect(spongeInput.uri) } returns
-                response(htmlContent, spongeInput.uri)
+        givenDocument(spongeInput.uri, "<html></html>")
 
         executeSponge(spongeInput)
 
@@ -49,25 +51,21 @@ class SpongeTest {
     }
 
     @Test
-    fun testDocumentWithTextLink() {
-        val fileName = "test.txt"
+    fun testDocumentWithLink() {
+        val fileUri = URI("${spongeInput.uri}/$fileName")
 
-        val htmlContent =
+        givenDocument(
+                spongeInput.uri,
                 """
                     <html>
                         <body>
-                            <a href="/$fileName" />
+                            <a href="$fileUri" />
                         </body>
                     </html>
                 """
+        )
 
-        every { spongeService.connect(spongeInput.uri) } returns
-                response(htmlContent, spongeInput.uri)
-
-        val fileUri = URI("${spongeInput.uri}/$fileName")
-        val fileResponse = response(ContentType.TEXT_PLAIN.mimeType)
-
-        every { spongeService.connect(fileUri) } returns fileResponse
+        val fileResponse = givenFile(fileUri)
 
         executeSponge(spongeInput)
 
@@ -77,46 +75,135 @@ class SpongeTest {
     }
 
     @Test
-    fun testDocumentWithInvalidTextLink() {
-        val fileName = "test.txt"
+    fun testDocumentWithInvalidLink() {
+        val fileUri = URI("${spongeInput.uri}/$fileName")
 
-        val htmlContent =
+        givenDocument(
+                spongeInput.uri,
                 """
                     <html>
                         <body>
                             <a href="/#/#" />
-                            <a href="/$fileName" />
+                            <a href="$fileUri" />
                         </body>
                     </html>
                 """
+        )
 
-        every { spongeService.connect(spongeInput.uri) } returns
-                response(htmlContent, spongeInput.uri)
-
-        val fileUri = URI("${spongeInput.uri}/$fileName")
-        val fileResponse = response(ContentType.TEXT_PLAIN.mimeType)
-
-        every { spongeService.connect(fileUri) } returns fileResponse
+        val fileResponse = givenFile(fileUri)
 
         executeSponge(spongeInput)
 
         verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
+        verify(exactly = 1) { spongeService.connect(fileUri) }
         verify(exactly = 1) { spongeService.download(fileResponse, spongeInput.outputDirectory.resolve(fileName)) }
     }
 
-    private fun response(htmlContent: String, baseUri: URI): Connection.Response {
+    @Test
+    fun testDocumentWithLinkAndSubdomainDisabled() {
+        val fileUri = URI("https://www.test.test.com/$fileName")
+
+        givenDocument(
+                spongeInput.uri,
+                """
+                    <html>
+                        <body>
+                            <a href="$fileUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        val fileResponse = givenFile(fileUri)
+
+        executeSponge(spongeInput)
+
+        verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
+        verify(exactly = 0) { spongeService.connect(fileUri) }
+        verify(exactly = 0) { spongeService.download(fileResponse, spongeInput.outputDirectory.resolve(fileName)) }
+    }
+
+    @Test
+    fun testDocumentWithLinkAndSubdomainEnabled() {
+        val fileUri = URI("https://www.test.test.com/$fileName")
+
+        givenDocument(
+                spongeInputWithSubdomains.uri,
+                """
+                    <html>
+                        <body>
+                            <a href="$fileUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        val fileResponse = givenFile(fileUri)
+
+        executeSponge(spongeInputWithSubdomains)
+
+        verify(exactly = 1) { spongeService.connect(spongeInputWithSubdomains.uri) }
+        verify(exactly = 1) { spongeService.connect(fileUri) }
+
+        verify(exactly = 1) {
+            spongeService.download(fileResponse, spongeInputWithSubdomains.outputDirectory.resolve(fileName))
+        }
+    }
+
+    @Test
+    fun testDocumentWithChildDocumentAndLink() {
+        val childDocumentUri = URI("https://www.test.com/test")
+        val fileUri = URI("${spongeInputWithDepthTwo.uri}/$fileName")
+
+        givenDocument(
+                spongeInputWithDepthTwo.uri,
+                """
+                    <html>
+                        <body>
+                            <a href="$childDocumentUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        givenDocument(
+                childDocumentUri,
+                """
+                    <html>
+                        <body>
+                            <a href="$fileUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        val fileResponse = givenFile(fileUri)
+
+        executeSponge(spongeInputWithDepthTwo)
+
+        verify(exactly = 1) { spongeService.connect(spongeInputWithDepthTwo.uri) }
+        verify(exactly = 1) { spongeService.connect(childDocumentUri) }
+        verify(exactly = 1) { spongeService.connect(fileUri) }
+
+        verify(exactly = 1) {
+            spongeService.download(fileResponse, spongeInputWithDepthTwo.outputDirectory.resolve(fileName))
+        }
+    }
+
+    private fun givenDocument(uri: URI, htmlContent: String) {
         val response = mockk<Connection.Response>()
 
         every { response.contentType() } returns ContentType.TEXT_HTML.mimeType
-        every { response.parse() } returns Jsoup.parse(htmlContent, baseUri.toString())
+        every { response.parse() } returns Jsoup.parse(htmlContent, uri.toString())
 
-        return response
+        every { spongeService.connect(uri) } returns response
     }
 
-    private fun response(contentType: String): Connection.Response {
+    private fun givenFile(uri: URI): Connection.Response {
         val response = mockk<Connection.Response>()
 
-        every { response.contentType() } returns contentType
+        every { response.contentType() } returns ContentType.TEXT_PLAIN.mimeType
+        every { spongeService.connect(uri) } returns response
 
         return response
     }
