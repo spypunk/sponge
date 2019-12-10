@@ -52,7 +52,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
             if (responseData.mimeType.isHtmlMimeType()) {
                 if (depth < spongeInput.maxDepth) {
-                    visitDocument(uri, depth, responseData.response)
+                    visitChildren(uri, depth, responseData.response)
                 }
             } else if (spongeInput.mimeTypes.contains(responseData.mimeType)) {
                 visitFile(uri, responseData.response)
@@ -64,11 +64,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         }
     }
 
-    private fun visitDocument(uri: URI, depth: Int, response: Connection.Response) {
-        if (depth == spongeInput.maxDepth && urisChildren.contains(uri)) {
-            return
-        }
-
+    private fun visitChildren(uri: URI, depth: Int, response: Connection.Response) {
         urisChildren.computeIfAbsent(uri) { getChildren(response) }
                 .forEach { visitUri(it, depth + 1) }
     }
