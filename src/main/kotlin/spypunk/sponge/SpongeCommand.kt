@@ -18,18 +18,16 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.restrictTo
-import java.net.URI
 import java.nio.file.Paths
 import java.util.regex.Pattern
 
 class SpongeCommand(private val spongeService: SpongeService) : CliktCommand(name = "sponge") {
 
     private val uri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
-            .convert { URI(it) }
+            .convert { it.toUri() }
             .required()
             .validate {
                 require(setOf("http", "https").contains(it.scheme)) { "Unsupported scheme: ${it.scheme}" }
-                require(!it.host.isNullOrEmpty()) { "Host name cannot be empty" }
             }
 
     private val outputDirectory by option("-o", "--output",

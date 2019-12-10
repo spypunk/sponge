@@ -75,31 +75,6 @@ class SpongeTest {
     }
 
     @Test
-    fun testDocumentWithInvalidLink() {
-        val fileUri = URI("${spongeInput.uri}/$fileName")
-
-        givenDocument(
-                spongeInput.uri,
-                """
-                    <html>
-                        <body>
-                            <a href="/#/#" />
-                            <a href="$fileUri" />
-                        </body>
-                    </html>
-                """
-        )
-
-        val fileResponse = givenFile(fileUri)
-
-        executeSponge(spongeInput)
-
-        verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
-        verify(exactly = 1) { spongeService.connect(fileUri) }
-        verify(exactly = 1) { spongeService.download(fileResponse, spongeInput.outputDirectory.resolve(fileName)) }
-    }
-
-    @Test
     fun testDocumentWithLinkAndSubdomainDisabled() {
         val fileUri = URI("https://www.test.test.com/$fileName")
 

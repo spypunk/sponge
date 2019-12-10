@@ -12,17 +12,13 @@ import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import java.io.IOException
+import java.net.MalformedURLException
 import java.net.URI
 import java.net.URISyntaxException
 import java.nio.file.Files
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
 
-    private class ResponseData(val response: Connection.Response) {
-        val mimeType: String = ContentType.parse(response.contentType()).mimeType
-    }
-
-    private val urisResponseData = mutableMapOf<URI, ResponseData>()
     private val urisChildren = mutableMapOf<URI, Set<URI>>()
     private val failedUris = mutableSetOf<URI>()
 
@@ -31,7 +27,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
         visitUri()
 
-        urisResponseData.clear()
         urisChildren.clear()
         failedUris.clear()
     }
@@ -42,20 +37,13 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         }
 
         try {
-            val responseData = urisResponseData.computeIfAbsent(uri) {
-                val response = spongeService.connect(it)
+            val response = spongeService.connect(uri)
+            val mimeType = ContentType.parse(response.contentType()).mimeType
 
-                println("﹫ $uri")
-
-                ResponseData(response)
-            }
-
-            if (responseData.mimeType.isHtmlMimeType()) {
-                if (depth < spongeInput.maxDepth) {
-                    visitChildren(uri, depth, responseData.response)
-                }
-            } else if (spongeInput.mimeTypes.contains(responseData.mimeType)) {
-                visitFile(uri, responseData.response)
+            if (mimeType.isHtmlMimeType()) {
+                visitChildren(uri, depth, response)
+            } else if (spongeInput.mimeTypes.contains(mimeType)) {
+                visitFile(uri, response)
             }
         } catch (e: IOException) {
             System.err.println("⚠ Processing failed for $uri: ${e.message}")
@@ -65,17 +53,25 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun visitChildren(uri: URI, depth: Int, response: Connection.Response) {
-        urisChildren.computeIfAbsent(uri) { getChildren(response) }
-                .forEach { visitUri(it, depth + 1) }
+        urisChildren.computeIfAbsent(uri) {
+            println("﹫ $uri")
+
+            getChildren(response)
+        }
+
+        if (depth < spongeInput.maxDepth) {
+            urisChildren.getValue(uri)
+                    .forEach { visitUri(it, depth + 1) }
+        }
     }
 
     private fun getChildren(response: Connection.Response): Set<URI> {
         return response.parse().getElementsByTag("a").asSequence()
                 .map { it.attr("abs:href") }
                 .filterNot { it.isNullOrEmpty() }
-                .distinct()
-                .map { it.toURI() }
+                .map { it.toOptionalUri() }
                 .filterNotNull()
+                .distinct()
                 .filter(this::hasValidDomain)
                 .toSet()
     }
@@ -99,12 +95,18 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private fun String.isHtmlMimeType() = ContentType.TEXT_HTML.mimeType == this
             || ContentType.APPLICATION_XHTML_XML.mimeType == this
 
-    private fun String.toURI(): URI? {
+    private fun String.toOptionalUri(): URI? {
         return try {
-            URI(this)
+            toUri()
         } catch (e: URISyntaxException) {
-            System.err.println("⚠ URI parsing failed for $this: ${e.message}")
-            null
+            handleToUriException(e)
+        } catch (e: MalformedURLException) {
+            handleToUriException(e)
         }
+    }
+
+    private fun String.handleToUriException(e: Exception): Nothing? {
+        System.err.println("⚠ URI parsing failed for $this: ${e.message}")
+        return null
     }
 }
