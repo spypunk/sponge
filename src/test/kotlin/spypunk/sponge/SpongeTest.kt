@@ -11,13 +11,13 @@ package spypunk.sponge
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.apache.commons.io.FileUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.net.URI
-import java.nio.file.Files
 import java.nio.file.Path
 
 class SpongeTest {
@@ -32,7 +32,7 @@ class SpongeTest {
 
     @BeforeEach
     fun beforeEach() {
-        Files.deleteIfExists(outputDirectory)
+        FileUtils.deleteDirectory(outputDirectory.toFile())
     }
 
     @Test
@@ -77,8 +77,31 @@ class SpongeTest {
     }
 
     @Test
-    fun testDocumentWithInvalidAndValidTextLink() {
+    fun testDocumentWithInvalidTextLink() {
+        val fileName = "test.txt"
 
+        val htmlContent =
+                """
+                    <html>
+                        <body>
+                            <a href="/#/#" />
+                            <a href="/$fileName" />
+                        </body>
+                    </html>
+                """
+
+        every { spongeService.connect(spongeInput.uri) } returns
+                response(htmlContent, spongeInput.uri)
+
+        val fileUri = URI("${spongeInput.uri}/$fileName")
+        val fileResponse = response(ContentType.TEXT_PLAIN.mimeType)
+
+        every { spongeService.connect(fileUri) } returns fileResponse
+
+        executeSponge(spongeInput)
+
+        verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
+        verify(exactly = 1) { spongeService.download(fileResponse, spongeInput.outputDirectory.resolve(fileName)) }
     }
 
     private fun response(htmlContent: String, baseUri: URI): Connection.Response {
