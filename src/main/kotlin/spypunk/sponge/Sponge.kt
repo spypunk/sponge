@@ -17,65 +17,60 @@ import java.net.URISyntaxException
 import java.nio.file.Files
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
-    private val traversedUris = mutableSetOf<URI>()
+
+    private class ResponseData(val response: Connection.Response) {
+        val mimeType: String = ContentType.parse(response.contentType()).mimeType
+    }
+
+    private val urisResponseData = mutableMapOf<URI, ResponseData>()
     private val urisChildren = mutableMapOf<URI, Set<URI>>()
+    private val failedUris = mutableSetOf<URI>()
 
     fun execute() {
         Files.createDirectories(spongeInput.outputDirectory)
 
         visitUri()
 
-        traversedUris.clear()
+        urisResponseData.clear()
         urisChildren.clear()
+        failedUris.clear()
     }
 
     private fun visitUri(uri: URI = spongeInput.uri, depth: Int = 0) {
-        if (traversedUris.contains(uri)) {
+        if (failedUris.contains(uri)) {
             return
         }
 
         try {
-            val response = spongeService.connect(uri)
-            val mimeType = ContentType.parse(response.contentType()).mimeType
+            val responseData = urisResponseData.computeIfAbsent(uri) {
+                val response = spongeService.connect(it)
 
-            if (mimeType.isHtmlMimeType()) {
+                println("﹫ $uri")
+
+                ResponseData(response)
+            }
+
+            if (responseData.mimeType.isHtmlMimeType()) {
                 if (depth < spongeInput.maxDepth) {
-                    visitDocument(uri, depth, response)
+                    visitDocument(uri, depth, responseData.response)
                 }
-            } else if (spongeInput.mimeTypes.contains(mimeType)) {
-                visitFile(uri, response)
+            } else if (spongeInput.mimeTypes.contains(responseData.mimeType)) {
+                visitFile(uri, responseData.response)
             }
         } catch (e: IOException) {
             System.err.println("⚠ Processing failed for $uri: ${e.message}")
 
-            traversedUris.add(uri)
+            failedUris.add(uri)
         }
     }
 
     private fun visitDocument(uri: URI, depth: Int, response: Connection.Response) {
-        val children: Set<URI>
-
-        if (depth < spongeInput.maxDepth) {
-            traversedUris.add(uri)
-
-            println("﹫ $uri")
-
-            if (urisChildren.contains(uri)) {
-                children = urisChildren.getValue(uri)
-
-                urisChildren.remove(uri)
-            } else {
-                children = getChildren(response)
-            }
-        } else if (urisChildren.contains(uri)) {
+        if (depth == spongeInput.maxDepth && urisChildren.contains(uri)) {
             return
-        } else {
-            children = getChildren(response)
-
-            urisChildren[uri] = children
         }
 
-        children.forEach { visitUri(it, depth + 1) }
+        urisChildren.computeIfAbsent(uri) { getChildren(response) }
+                .forEach { visitUri(it, depth + 1) }
     }
 
     private fun getChildren(response: Connection.Response): Set<URI> {
@@ -97,8 +92,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun visitFile(uri: URI, response: Connection.Response) {
-        traversedUris.add(uri)
-
         val fileName = FilenameUtils.getName(uri.path)
         val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
 
