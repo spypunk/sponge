@@ -21,7 +21,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private val urisChildren = mutableMapOf<URI, Set<URI>>()
 
     fun execute() {
-        Files.createDirectories(spongeInput.outputDirectory);
+        Files.createDirectories(spongeInput.outputDirectory)
 
         visitUri()
 
@@ -30,6 +30,10 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun visitUri(uri: URI = spongeInput.uri, depth: Int = 0) {
+        if (traversedUris.contains(uri)) {
+            return
+        }
+
         try {
             val response = spongeService.connect(uri)
             val mimeType = ContentType.parse(response.contentType()).mimeType
@@ -71,15 +75,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             urisChildren[uri] = children
         }
 
-        visitChildren(children, depth)
-    }
-
-    private fun visitChildren(children: Set<URI>, depth: Int) {
-        children.forEach {
-            if (!traversedUris.contains(it)) {
-                visitUri(it, depth + 1)
-            }
-        }
+        children.forEach { visitUri(it, depth + 1) }
     }
 
     private fun getChildren(response: Connection.Response): Set<URI> {
@@ -89,11 +85,11 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 .distinct()
                 .map { it.toURI() }
                 .filterNotNull()
-                .filter(this::shouldVisitUri)
+                .filter(this::hasValidDomain)
                 .toSet()
     }
 
-    private fun shouldVisitUri(uri: URI): Boolean {
+    private fun hasValidDomain(uri: URI): Boolean {
         val domain = uri.domain() ?: return false
 
         return domain == spongeInput.domain
