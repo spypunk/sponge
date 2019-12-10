@@ -14,18 +14,26 @@ import io.mockk.verify
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import org.jsoup.Jsoup
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.io.File
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
 
 class SpongeTest {
     private val spongeService = mockk<SpongeService>(relaxed = true)
+    private val outputDirectory = Path.of("output").toAbsolutePath()
 
     private val spongeInput = SpongeInput(
             URI("https://www.test.com"),
-            File("output"),
+            outputDirectory,
             setOf(ContentType.TEXT_PLAIN.mimeType)
     )
+
+    @BeforeEach
+    fun beforeEach() {
+        Files.deleteIfExists(outputDirectory)
+    }
 
     @Test
     fun testEmptyDocument() {
@@ -65,7 +73,12 @@ class SpongeTest {
 
         verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
         verify(exactly = 1) { spongeService.connect(fileUri) }
-        verify(exactly = 1) { spongeService.download(fileResponse, File(spongeInput.outputDirectory, fileName)) }
+        verify(exactly = 1) { spongeService.download(fileResponse, spongeInput.outputDirectory.resolve(fileName)) }
+    }
+
+    @Test
+    fun testDocumentWithInvalidAndValidTextLink() {
+
     }
 
     private fun response(htmlContent: String, baseUri: URI): Connection.Response {

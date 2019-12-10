@@ -8,21 +8,20 @@
 
 package spypunk.sponge
 
-import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
-import java.io.File
 import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
+import java.nio.file.Files
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
     private val traversedUris = mutableSetOf<URI>()
     private val urisChildren = mutableMapOf<URI, Set<URI>>()
 
     fun execute() {
-        FileUtils.forceMkdir(spongeInput.outputDirectory)
+        Files.createDirectories(spongeInput.outputDirectory);
 
         visitUri()
     }
@@ -98,10 +97,10 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         traversedUris.add(uri)
 
         val fileName = FilenameUtils.getName(uri.path)
-        val file = File(spongeInput.outputDirectory, fileName)
+        val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
 
-        if (!file.exists()) {
-            spongeService.download(response, file)
+        if (!Files.exists(filePath)) {
+            spongeService.download(response, filePath)
         }
     }
 

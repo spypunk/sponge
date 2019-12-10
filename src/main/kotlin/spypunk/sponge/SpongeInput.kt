@@ -8,8 +8,8 @@
 
 package spypunk.sponge
 
-import java.io.File
 import java.net.URI
+import java.nio.file.Path
 
 const val WWW_PREFIX = "www."
 
@@ -23,7 +23,7 @@ fun URI.domain(): String? {
 
 class SpongeInput(
         val uri: URI,
-        val outputDirectory: File,
+        val outputDirectory: Path,
         val mimeTypes: Set<String>,
         val maxDepth: Int = 1,
         val includeSubdomains: Boolean = false

@@ -12,9 +12,10 @@ import org.apache.commons.io.FileUtils
 import org.apache.http.HttpHeaders
 import org.jsoup.Connection
 import org.jsoup.Jsoup
-import java.io.File
 import java.io.IOException
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.concurrent.Executors
 
 class SpongeService {
@@ -31,12 +32,12 @@ class SpongeService {
                 .execute()
     }
 
-    fun download(response: Connection.Response, file: File) {
+    fun download(response: Connection.Response, path: Path) {
         executorService.execute {
             try {
-                response.bodyStream().use { FileUtils.copyToFile(it, file) }
+                response.bodyStream().use { Files.copy(it, path) }
 
-                println("⬇ ${file.absolutePath} [${file.humanSize()}]")
+                println("⬇ $path [${path.humanSize()}]")
             } catch (e: IOException) {
                 System.err.println("⚠ Error encountered while downloading ${response.url()}: ${e.message}")
             }
@@ -47,5 +48,5 @@ class SpongeService {
         executorService.shutdown()
     }
 
-    private fun File.humanSize(): String = FileUtils.byteCountToDisplaySize(length())
+    private fun Path.humanSize(): String = FileUtils.byteCountToDisplaySize(Files.size(this))
 }

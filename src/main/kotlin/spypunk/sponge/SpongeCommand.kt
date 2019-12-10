@@ -16,10 +16,10 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.validate
-import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.restrictTo
 import java.net.URI
+import java.nio.file.Paths
 import java.util.regex.Pattern
 
 class SpongeCommand(private val spongeService: SpongeService) : CliktCommand(name = "sponge") {
@@ -34,7 +34,7 @@ class SpongeCommand(private val spongeService: SpongeService) : CliktCommand(nam
 
     private val outputDirectory by option("-o", "--output",
             help = "Output directory where files are downloaded")
-            .file()
+            .convert { Paths.get(it) }
             .required()
 
     private val mimeTypes by option("-t", "--mime-type", help = "Mime types to download (example: text/plain)")
