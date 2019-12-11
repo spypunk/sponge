@@ -16,6 +16,7 @@ import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.io.IOException
 import java.net.URI
 import java.nio.file.Path
 
@@ -164,6 +165,41 @@ class SpongeTest {
         }
     }
 
+    @Test
+    fun testDocumentWithLinkAndFailedConnection() {
+        val fileUri = URI("${spongeInput.uri}/$fileName")
+        val failingFileName = "test2.txt"
+        val failingFileUri = URI("${spongeInput.uri}/$failingFileName")
+
+        givenDocument(
+                spongeInput.uri,
+                """
+                    <html>
+                        <body>
+                            <a href="$failingFileUri" />
+                            <a href="$fileUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        givenUriFailsConnection(failingFileUri)
+
+        val fileResponse = givenFile(fileUri)
+
+        executeSponge(spongeInput)
+
+        verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
+        verify(exactly = 1) { spongeService.connect(failingFileUri) }
+
+        verify(exactly = 0) {
+            spongeService.download(fileResponse, spongeInput.outputDirectory.resolve(failingFileName))
+        }
+
+        verify(exactly = 1) { spongeService.connect(fileUri) }
+        verify(exactly = 1) { spongeService.download(fileResponse, spongeInput.outputDirectory.resolve(fileName)) }
+    }
+
     private fun givenDocument(uri: URI, htmlContent: String) {
         val response = mockk<Connection.Response>()
 
@@ -181,6 +217,10 @@ class SpongeTest {
         every { spongeService.connect(uri) } returns response
 
         return response
+    }
+
+    private fun givenUriFailsConnection(uri: URI) {
+        every { spongeService.connect(uri) } throws IOException()
     }
 
     private fun executeSponge(spongeInput: SpongeInput) {
