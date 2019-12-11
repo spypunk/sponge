@@ -7,7 +7,7 @@ You will need a Java JDK 8+ and maven 3.3.9 or above.
 ~~~
 mvn clean package assembly:single
 
-cd target && unzip sponge-0.2-SNAPSHOT.zip && cd sponge-0.2-SNAPSHOT
+cd target && unzip sponge-X.X-SNAPSHOT.zip && cd sponge-X.X-SNAPSHOT
 
 ./sponge [OPTIONS]
 ~~~
@@ -31,18 +31,21 @@ Options:
          -d 4
 
 ...
-﹫ https://www.gutenberg.org/ebooks/search/?sort_order=release_date
-﹫ https://www.gutenberg.org/ebooks/search/?sort_order=downloads
-﹫ https://www.gutenberg.org/ebooks/search/?sort_order=title
-﹫ https://www.gutenberg.org/ebooks/search/?sort_order=title&start_index=26
-﹫ https://www.gutenberg.org/ebooks/50921
-⬇ /home/spypunk/output/50921.txt.utf-8 [304 bytes]
-﹫ https://www.gutenberg.org/ebooks/42474
-⬇ /home/spypunk/output/42474-0.txt [217 KB]
-﹫ https://www.gutenberg.org/ebooks/56796
-⬇ /home/spypunk/output/56796-0.txt [336 KB]
-﹫ https://www.gutenberg.org/ebooks/14403
-⬇ /home/spypunk/output/14403.txt.utf-8 [304 bytes]
+﹫ https://www.gutenberg.org/ebooks/send/dropbox/60891.kindle.noimages
+﹫ https://www.gutenberg.org/ebooks/send/gdrive/60891.kindle.noimages
+﹫ https://www.gutenberg.org/ebooks/send/msdrive/60891.kindle.noimages
+﹫ https://www.gutenberg.org/files/60891/
+⬇ /home/spypunk/output/60891.txt.utf-8 [501 KB]
+﹫ https://www.gutenberg.org/ebooks/60890
+﹫ https://www.gutenberg.org/ebooks/author/2274
+﹫ https://www.gutenberg.org/ebooks/60890/also/
+﹫ https://www.gutenberg.org/files/60890/60890-h/60890-h.htm
+﹫ https://www.gutenberg.org/ebooks/send/megaupload/60890.html
+﹫ https://www.gutenberg.org/ebooks/send/dropbox/60890.epub.images
+﹫ https://www.gutenberg.org/ebooks/send/gdrive/60890.epub.images
+﹫ https://www.gutenberg.org/ebooks/send/msdrive/60890.epub.images
+﹫ https://www.gutenberg.org/ebooks/send/dropbox/60890.epub.noimages
+﹫ https://www.gutenberg.org/ebooks/send/gdrive/60890.epub.noimages
 ...
 ~~~
 ## What about license?
