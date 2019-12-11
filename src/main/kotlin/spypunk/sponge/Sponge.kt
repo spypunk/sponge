@@ -71,16 +71,16 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 .map { it.toOptionalUri() }
                 .filterNotNull()
                 .distinct()
-                .filter(this::hasValidDomain)
+                .filter(this::hasValidHost)
                 .map { it.toString() }
                 .toSet()
     }
 
-    private fun hasValidDomain(uri: URI): Boolean {
-        val domain = uri.domain() ?: return false
+    private fun hasValidHost(uri: URI): Boolean {
+        val normalizedHost = uri.normalizedHost() ?: return false
 
-        return domain == spongeInput.domain
-                || spongeInput.includeSubdomains && domain.endsWith(spongeInput.domain)
+        return normalizedHost == spongeInput.normalizedHost
+                || spongeInput.includeSubdomains && normalizedHost.endsWith(spongeInput.normalizedHost)
     }
 
     private fun visitFile(uri: String, response: Connection.Response) {

@@ -18,5 +18,5 @@ data class SpongeInput(
         val maxDepth: Int = 1,
         val includeSubdomains: Boolean = false
 ) {
-    val domain = uri.domain()!!
+    val normalizedHost = uri.normalizedHost()!!
 }
