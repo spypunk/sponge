@@ -28,13 +28,16 @@ fun String.toUri(): URI {
                 pathSegments = URLEncodedUtils.parsePathSegments(url.path).map {
                     urlPathSegmentEscaper.escape(it)
                 }
+                port = url.port
+                userInfo = url.userInfo
+
+                if (url.query != null) {
+                    setCustomQuery(url.query)
+                }
 
                 if (url.ref != null) {
                     fragment = urlFragmentEscaper.escape(url.ref)
                 }
-
-                port = url.port
-                userInfo = url.userInfo
             }
             .build()
 }
