@@ -18,8 +18,8 @@ import java.net.URISyntaxException
 import java.nio.file.Files
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
-    private val urisChildren = mutableMapOf<URI, Set<URI>>()
-    private val failedUris = mutableSetOf<URI>()
+    private val urisChildren = mutableMapOf<String, Set<String>>()
+    private val failedUris = mutableSetOf<String>()
 
     fun execute() {
         Files.createDirectories(spongeInput.outputDirectory)
@@ -30,7 +30,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         failedUris.clear()
     }
 
-    private fun visitUri(uri: URI = spongeInput.uri, depth: Int = 0) {
+    private fun visitUri(uri: String = spongeInput.uri.toString(), depth: Int = 0) {
         if (failedUris.contains(uri)) {
             return
         }
@@ -51,7 +51,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         }
     }
 
-    private fun visitChildren(uri: URI, depth: Int, response: Connection.Response) {
+    private fun visitChildren(uri: String, depth: Int, response: Connection.Response) {
         urisChildren.computeIfAbsent(uri) {
             println("﹫ $uri")
 
@@ -64,14 +64,13 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         }
     }
 
-    private fun getChildren(response: Connection.Response): Set<URI> {
-        return response.parse().getElementsByTag("a").asSequence()
-                .map { it.attr("abs:href") }
-                .filterNot { it.isNullOrEmpty() }
-                .map { it.toOptionalUri() }
+    private fun getChildren(response: Connection.Response): Set<String> {
+        return response.parse().select("a[href]").asSequence()
+                .map { it.attr("abs:href").toOptionalUri() }
                 .filterNotNull()
                 .distinct()
                 .filter(this::hasValidDomain)
+                .map { it.toString() }
                 .toSet()
     }
 
@@ -82,8 +81,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 || spongeInput.includeSubdomains && domain.endsWith(spongeInput.domain)
     }
 
-    private fun visitFile(uri: URI, response: Connection.Response) {
-        val fileName = FilenameUtils.getName(uri.path)
+    private fun visitFile(uri: String, response: Connection.Response) {
+        val fileName = FilenameUtils.getName(uri)
         val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
 
         if (!Files.exists(filePath)) {

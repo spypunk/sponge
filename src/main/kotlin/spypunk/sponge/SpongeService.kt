@@ -13,7 +13,6 @@ import org.apache.http.HttpHeaders
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.IOException
-import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.Executors
@@ -21,8 +20,8 @@ import java.util.concurrent.Executors
 class SpongeService {
     private val executorService = Executors.newSingleThreadExecutor()
 
-    fun connect(uri: URI): Connection.Response {
-        return Jsoup.connect(uri.toString())
+    fun connect(uri: String): Connection.Response {
+        return Jsoup.connect(uri)
                 .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
                 .referrer("https://www.google.com")
                 .maxBodySize(0)

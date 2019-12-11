@@ -46,7 +46,7 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
+        verify(exactly = 1) { spongeService.connect(spongeInput.uri.toString()) }
         verify(exactly = 0) { spongeService.download(any(), any()) }
     }
 
@@ -69,8 +69,8 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
-        verify(exactly = 1) { spongeService.connect(fileUri) }
+        verify(exactly = 1) { spongeService.connect(spongeInput.uri.toString()) }
+        verify(exactly = 1) { spongeService.connect(fileUri.toString()) }
         verify(exactly = 1) { spongeService.download(fileResponse, spongeInput.outputDirectory.resolve(fileName)) }
     }
 
@@ -93,8 +93,8 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
-        verify(exactly = 0) { spongeService.connect(fileUri) }
+        verify(exactly = 1) { spongeService.connect(spongeInput.uri.toString()) }
+        verify(exactly = 0) { spongeService.connect(fileUri.toString()) }
         verify(exactly = 0) { spongeService.download(fileResponse, spongeInput.outputDirectory.resolve(fileName)) }
     }
 
@@ -117,8 +117,8 @@ class SpongeTest {
 
         executeSponge(spongeInputWithSubdomains)
 
-        verify(exactly = 1) { spongeService.connect(spongeInputWithSubdomains.uri) }
-        verify(exactly = 1) { spongeService.connect(fileUri) }
+        verify(exactly = 1) { spongeService.connect(spongeInputWithSubdomains.uri.toString()) }
+        verify(exactly = 1) { spongeService.connect(fileUri.toString()) }
 
         verify(exactly = 1) {
             spongeService.download(fileResponse, spongeInputWithSubdomains.outputDirectory.resolve(fileName))
@@ -156,9 +156,9 @@ class SpongeTest {
 
         executeSponge(spongeInputWithDepthTwo)
 
-        verify(exactly = 1) { spongeService.connect(spongeInputWithDepthTwo.uri) }
-        verify(exactly = 1) { spongeService.connect(childDocumentUri) }
-        verify(exactly = 1) { spongeService.connect(fileUri) }
+        verify(exactly = 1) { spongeService.connect(spongeInputWithDepthTwo.uri.toString()) }
+        verify(exactly = 1) { spongeService.connect(childDocumentUri.toString()) }
+        verify(exactly = 1) { spongeService.connect(fileUri.toString()) }
 
         verify(exactly = 1) {
             spongeService.download(fileResponse, spongeInputWithDepthTwo.outputDirectory.resolve(fileName))
@@ -171,14 +171,14 @@ class SpongeTest {
         every { response.contentType() } returns ContentType.TEXT_HTML.mimeType
         every { response.parse() } returns Jsoup.parse(htmlContent, uri.toString())
 
-        every { spongeService.connect(uri) } returns response
+        every { spongeService.connect(uri.toString()) } returns response
     }
 
     private fun givenFile(uri: URI): Connection.Response {
         val response = mockk<Connection.Response>()
 
         every { response.contentType() } returns ContentType.TEXT_PLAIN.mimeType
-        every { spongeService.connect(uri) } returns response
+        every { spongeService.connect(uri.toString()) } returns response
 
         return response
     }
