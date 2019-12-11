@@ -11,11 +11,13 @@ package spypunk.sponge
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
+import org.jsoup.Jsoup
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URISyntaxException
 import java.nio.file.Files
+
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
     private val urisChildren = mutableMapOf<URI, Set<URI>>()
@@ -64,15 +66,19 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         }
     }
 
-    private fun getChildren(response: Connection.Response) =
-            response.parse().select("a[href]").asSequence()
-                    .map { it.attr("abs:href") }
-                    .filterNot { it.isNullOrEmpty() }
-                    .map { it.toOptionalUri() }
-                    .filterNotNull()
-                    .distinct()
-                    .filter(this::hasValidHost)
-                    .toSet()
+    private fun getChildren(response: Connection.Response): Set<URI> {
+        val body = response.body()
+        val externalForm = response.url().toExternalForm()
+
+        return Jsoup.parse(body, externalForm).select("a[href]").asSequence()
+                .map { it.attr("abs:href") }
+                .filterNot { it.isNullOrEmpty() }
+                .map { it.toOptionalUri() }
+                .filterNotNull()
+                .distinct()
+                .filter(this::hasValidHost)
+                .toSet()
+    }
 
     private fun hasValidHost(uri: URI): Boolean {
         val normalizedHost = uri.normalizedHost() ?: return false

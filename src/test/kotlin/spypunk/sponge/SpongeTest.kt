@@ -14,7 +14,6 @@ import io.mockk.verify
 import org.apache.commons.io.FileUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
-import org.jsoup.Jsoup
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -169,7 +168,8 @@ class SpongeTest {
         val response = mockk<Connection.Response>()
 
         every { response.contentType() } returns ContentType.TEXT_HTML.mimeType
-        every { response.parse() } returns Jsoup.parse(htmlContent, uri.toString())
+        every { response.body() } returns htmlContent
+        every { response.url() } returns uri.toURL()
 
         every { spongeService.connect(uri) } returns response
     }
