@@ -66,7 +66,9 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private fun getChildren(response: Connection.Response): Set<String> {
         return response.parse().select("a[href]").asSequence()
-                .map { it.attr("abs:href").toOptionalUri() }
+                .map { it.attr("abs:href") }
+                .filterNot { it.isNullOrEmpty() }
+                .map { it.toOptionalUri() }
                 .filterNotNull()
                 .distinct()
                 .filter(this::hasValidDomain)
