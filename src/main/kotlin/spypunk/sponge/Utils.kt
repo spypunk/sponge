@@ -15,8 +15,18 @@ import org.apache.http.client.utils.URLEncodedUtils
 import java.net.URI
 import java.net.URL
 
+private const val WWW_PREFIX = "www."
+
 private val urlPathSegmentEscaper: Escaper = UrlEscapers.urlPathSegmentEscaper()
 private val urlFragmentEscaper: Escaper = UrlEscapers.urlFragmentEscaper()
+
+fun URI.domain(): String? {
+    return when {
+        host.isNullOrEmpty() -> null
+        host.startsWith(WWW_PREFIX) -> host.substring(WWW_PREFIX.length)
+        else -> host
+    }
+}
 
 fun String.toUri(): URI {
     val url = URL(this)

@@ -11,16 +11,6 @@ package spypunk.sponge
 import java.net.URI
 import java.nio.file.Path
 
-const val WWW_PREFIX = "www."
-
-fun URI.domain(): String? {
-    return when {
-        host.isNullOrEmpty() -> null
-        host.startsWith(WWW_PREFIX) -> host.substring(WWW_PREFIX.length)
-        else -> host
-    }
-}
-
 data class SpongeInput(
         val uri: URI,
         val outputDirectory: Path,

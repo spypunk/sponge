@@ -18,7 +18,6 @@ import java.net.URISyntaxException
 import java.nio.file.Files
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
-
     private val urisChildren = mutableMapOf<URI, Set<URI>>()
     private val failedUris = mutableSetOf<URI>()
 
