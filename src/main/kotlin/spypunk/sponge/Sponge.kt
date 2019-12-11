@@ -64,16 +64,15 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         }
     }
 
-    private fun getChildren(response: Connection.Response): Set<URI> {
-        return response.parse().select("a[href]").asSequence()
-                .map { it.attr("abs:href") }
-                .filterNot { it.isNullOrEmpty() }
-                .map { it.toOptionalUri() }
-                .filterNotNull()
-                .distinct()
-                .filter(this::hasValidHost)
-                .toSet()
-    }
+    private fun getChildren(response: Connection.Response) =
+            response.parse().select("a[href]").asSequence()
+                    .map { it.attr("abs:href") }
+                    .filterNot { it.isNullOrEmpty() }
+                    .map { it.toOptionalUri() }
+                    .filterNotNull()
+                    .distinct()
+                    .filter(this::hasValidHost)
+                    .toSet()
 
     private fun hasValidHost(uri: URI): Boolean {
         val normalizedHost = uri.normalizedHost() ?: return false
@@ -94,15 +93,14 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private fun String.isHtmlMimeType() = ContentType.TEXT_HTML.mimeType == this
             || ContentType.APPLICATION_XHTML_XML.mimeType == this
 
-    private fun String.toOptionalUri(): URI? {
-        return try {
-            toUri()
-        } catch (e: URISyntaxException) {
-            handleToUriException(e)
-        } catch (e: MalformedURLException) {
-            handleToUriException(e)
-        }
-    }
+    private fun String.toOptionalUri() =
+            try {
+                toUri()
+            } catch (e: URISyntaxException) {
+                handleToUriException(e)
+            } catch (e: MalformedURLException) {
+                handleToUriException(e)
+            }
 
     private fun String.handleToUriException(e: Exception): Nothing? {
         System.err.println("⚠ URI parsing failed for $this: ${e.message}")

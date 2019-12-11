@@ -21,32 +21,28 @@ import java.util.concurrent.Executors
 class SpongeService {
     private val executorService = Executors.newSingleThreadExecutor()
 
-    fun connect(uri: URI): Connection.Response {
-        return Jsoup.connect(uri.toString())
-                .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
-                .referrer("https://www.google.com")
-                .maxBodySize(0)
-                .ignoreHttpErrors(true)
-                .ignoreContentType(true)
-                .followRedirects(true)
-                .execute()
-    }
+    fun connect(uri: URI): Connection.Response =
+            Jsoup.connect(uri.toString())
+                    .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
+                    .referrer("https://www.google.com")
+                    .maxBodySize(0)
+                    .ignoreHttpErrors(true)
+                    .ignoreContentType(true)
+                    .followRedirects(true)
+                    .execute()
 
-    fun download(response: Connection.Response, path: Path) {
-        executorService.execute {
-            try {
-                response.bodyStream().use { Files.copy(it, path) }
+    fun download(response: Connection.Response, path: Path) =
+            executorService.execute {
+                try {
+                    response.bodyStream().use { Files.copy(it, path) }
 
-                println("⬇ $path [${path.humanSize()}]")
-            } catch (e: IOException) {
-                System.err.println("⚠ Error encountered while downloading ${response.url()}: ${e.message}")
+                    println("⬇ $path [${path.humanSize()}]")
+                } catch (e: IOException) {
+                    System.err.println("⚠ Error encountered while downloading ${response.url()}: ${e.message}")
+                }
             }
-        }
-    }
 
-    fun stop() {
-        executorService.shutdown()
-    }
+    fun stop() = executorService.shutdown()
 
-    private fun Path.humanSize(): String = FileUtils.byteCountToDisplaySize(Files.size(this))
+    private fun Path.humanSize() = FileUtils.byteCountToDisplaySize(Files.size(this))
 }
