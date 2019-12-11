@@ -12,7 +12,6 @@ import org.apache.commons.io.FileUtils
 import org.apache.http.HttpHeaders
 import org.jsoup.Connection
 import org.jsoup.Jsoup
-import java.io.IOException
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
@@ -37,8 +36,8 @@ class SpongeService {
                     response.bodyStream().use { Files.copy(it, path) }
 
                     println("⬇ $path [${path.humanSize()}]")
-                } catch (e: IOException) {
-                    System.err.println("⚠ Error encountered while downloading ${response.url()}: ${e.message}")
+                } catch (t: Throwable) {
+                    System.err.println("⚠ Error encountered while downloading ${response.url()}: ${t.message}")
                 }
             }
 

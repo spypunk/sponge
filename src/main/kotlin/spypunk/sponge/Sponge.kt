@@ -12,10 +12,7 @@ import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import org.jsoup.Jsoup
-import java.io.IOException
-import java.net.MalformedURLException
 import java.net.URI
-import java.net.URISyntaxException
 import java.nio.file.Files
 
 
@@ -46,8 +43,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             } else if (spongeInput.mimeTypes.contains(mimeType)) {
                 visitFile(uri, response)
             }
-        } catch (e: IOException) {
-            System.err.println("⚠ Processing failed for $uri: ${e.message}")
+        } catch (t: Throwable) {
+            System.err.println("⚠ Processing failed for $uri: ${t.message}")
 
             failedUris.add(uri)
         }
@@ -102,14 +99,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private fun String.toOptionalUri() =
             try {
                 toUri()
-            } catch (e: URISyntaxException) {
-                handleToUriException(e)
-            } catch (e: MalformedURLException) {
-                handleToUriException(e)
+            } catch (t: Throwable) {
+                System.err.println("⚠ URI parsing failed for $this: ${t.message}")
+                null
             }
-
-    private fun String.handleToUriException(e: Exception): Nothing? {
-        System.err.println("⚠ URI parsing failed for $this: ${e.message}")
-        return null
-    }
 }
