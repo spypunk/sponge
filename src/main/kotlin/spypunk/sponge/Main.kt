@@ -8,20 +8,5 @@
 
 package spypunk.sponge
 
-import kotlin.system.exitProcess
+fun main(args: Array<String>) = SpongeCommand().main(args)
 
-object Main {
-    @JvmStatic
-    fun main(args: Array<String>) {
-        val spongeService = SpongeService()
-
-        try {
-            SpongeCommand(spongeService).main(args)
-        } catch (t: Throwable) {
-            System.err.println("Unexpected error encountered: ${t.message}")
-            exitProcess(1)
-        } finally {
-            spongeService.stop()
-        }
-    }
-}

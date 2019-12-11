@@ -20,9 +20,9 @@ import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.restrictTo
 import java.nio.file.Paths
 import java.util.regex.Pattern
+import kotlin.system.exitProcess
 
-class SpongeCommand(private val spongeService: SpongeService) : CliktCommand(name = "sponge") {
-
+class SpongeCommand : CliktCommand(name = "sponge") {
     private val uri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
             .convert { it.toUri() }
             .required()
@@ -56,8 +56,16 @@ class SpongeCommand(private val spongeService: SpongeService) : CliktCommand(nam
     private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
 
     override fun run() {
+        val spongeService = SpongeService()
         val spongeInput = SpongeInput(uri, outputDirectory, mimeTypes.toSet(), depth, includeSubdomains)
 
-        Sponge(spongeService, spongeInput).execute()
+        try {
+            Sponge(spongeService, spongeInput).execute()
+        } catch (t: Throwable) {
+            System.err.println("Unexpected error encountered: ${t.message}")
+            exitProcess(1)
+        } finally {
+            spongeService.stop()
+        }
     }
 }
