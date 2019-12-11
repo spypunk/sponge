@@ -3,7 +3,7 @@
 [![License](http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png)](http://www.wtfpl.net/)
 [![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/fold_left.svg?style=social&label=Follow)](https://twitter.com/spypunkk)
 ## How to build and run it?
-You will need a Java JDK 8+ and maven 3+.
+You will need a Java JDK 8+ and maven 3.3.9 or above.
 ~~~
 mvn clean package assembly:single
 
