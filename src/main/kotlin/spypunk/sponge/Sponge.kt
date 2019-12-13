@@ -20,13 +20,15 @@ import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.net.URI
 import java.nio.file.Files
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArraySet
 
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
-    private val urisChildren = mutableMapOf<URI, Set<URI>>()
-    private val failedUris = mutableSetOf<URI>()
+    private val urisChildren = ConcurrentHashMap<URI, Set<URI>>()
+    private val failedUris = CopyOnWriteArraySet<URI>()
 
     fun execute() {
         Files.createDirectories(spongeInput.outputDirectory)
@@ -61,12 +63,10 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun cacheChildren(uri: URI, response: Connection.Response) {
-        synchronized(urisChildren) {
-            urisChildren.computeIfAbsent(uri) {
-                println("﹫ $uri")
+        urisChildren.computeIfAbsent(uri) {
+            println("﹫ $uri")
 
-                getChildren(response)
-            }
+            getChildren(response)
         }
     }
 
