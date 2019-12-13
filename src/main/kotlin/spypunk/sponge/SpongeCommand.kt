@@ -26,9 +26,7 @@ class SpongeCommand : CliktCommand(name = "sponge") {
     private val uri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
             .convert { it.toUri() }
             .required()
-            .validate {
-                require(setOf("http", "https").contains(it.scheme)) { "Unsupported scheme: ${it.scheme}" }
-            }
+            .validate { require(setOf("http", "https").contains(it.scheme)) { "Unsupported scheme: ${it.scheme}" } }
 
     private val outputDirectory by option("-o", "--output",
             help = "Output directory where files are downloaded")
@@ -55,17 +53,34 @@ class SpongeCommand : CliktCommand(name = "sponge") {
 
     private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
 
-    override fun run() {
-        val spongeService = SpongeService()
-        val spongeInput = SpongeInput(uri, outputDirectory, mimeTypes.toSet(), depth, includeSubdomains)
+    private val concurrentRequests by option("-R", "--concurrent-requests",
+            help = "Concurrent requests (default: 1)")
+            .int()
+            .restrictTo(1)
+            .default(1)
 
+    private val concurrentDownloads by option("-D", "--concurrent-downloads",
+            help = "Concurrent downloads (default: 1)")
+            .int()
+            .restrictTo(1)
+            .default(1)
+
+    override fun run() {
         try {
+            val spongeService = SpongeService()
+            val spongeInput = SpongeInput(
+                    uri,
+                    outputDirectory,
+                    mimeTypes.toSet(),
+                    depth,
+                    includeSubdomains,
+                    concurrentRequests,
+                    concurrentDownloads)
+
             Sponge(spongeService, spongeInput).execute()
         } catch (t: Throwable) {
             System.err.println("Unexpected error encountered: ${t.message}")
             exitProcess(1)
-        } finally {
-            spongeService.stop()
         }
     }
 }

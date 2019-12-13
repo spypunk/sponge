@@ -168,7 +168,6 @@ exceptions:
     exceptionNames:
       - ArrayIndexOutOfBoundsException
       - Error
-      - Exception
       - IllegalMonitorStateException
       - NullPointerException
       - IndexOutOfBoundsException

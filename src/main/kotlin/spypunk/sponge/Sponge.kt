@@ -8,6 +8,12 @@
 
 package spypunk.sponge
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.newFixedThreadPoolContext
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
@@ -17,49 +23,53 @@ import java.nio.file.Files
 
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
+    private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
+    private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
     private val urisChildren = mutableMapOf<URI, Set<URI>>()
     private val failedUris = mutableSetOf<URI>()
 
     fun execute() {
         Files.createDirectories(spongeInput.outputDirectory)
 
-        visitUri()
+        runBlocking { visitUri() }
 
         urisChildren.clear()
         failedUris.clear()
     }
 
-    private fun visitUri(uri: URI = spongeInput.uri, depth: Int = 0) {
-        if (failedUris.contains(uri)) {
-            return
-        }
+    private suspend fun visitUri(uri: URI = spongeInput.uri, depth: Int = 0) {
+        if (failedUris.contains(uri)) return
 
         try {
-            val response = spongeService.connect(uri)
+            val response = spongeService.request(uri)
             val mimeType = ContentType.parse(response.contentType()).mimeType
 
-            if (mimeType.isHtmlMimeType()) {
-                visitChildren(uri, depth, response)
-            } else if (spongeInput.mimeTypes.contains(mimeType)) {
-                visitFile(uri, response)
-            }
-        } catch (t: Throwable) {
-            System.err.println("⚠ Processing failed for $uri: ${t.message}")
+            if (mimeType.isHtmlMimeType()) visitChildren(uri, depth, response)
+            else if (spongeInput.mimeTypes.contains(mimeType)) downloadFile(uri)
+        } catch (e: Exception) {
+            System.err.println("⚠ Processing failed for $uri: ${e.message}")
 
             failedUris.add(uri)
         }
     }
 
-    private fun visitChildren(uri: URI, depth: Int, response: Connection.Response) {
-        urisChildren.computeIfAbsent(uri) {
-            println("﹫ $uri")
-
-            getChildren(response)
-        }
+    private suspend fun visitChildren(uri: URI, depth: Int, response: Connection.Response) {
+        cacheChildren(uri, response)
 
         if (depth < spongeInput.maxDepth) {
             urisChildren.getValue(uri)
-                    .forEach { visitUri(it, depth + 1) }
+                    .map { GlobalScope.async(requestContext) { visitUri(it, depth + 1) } }
+                    .awaitAll()
+        }
+    }
+
+    private fun cacheChildren(uri: URI, response: Connection.Response) {
+        synchronized(urisChildren) {
+            urisChildren.computeIfAbsent(uri) {
+                println("﹫ $uri")
+
+                getChildren(response)
+            }
         }
     }
 
@@ -84,23 +94,23 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 || spongeInput.includeSubdomains && normalizedHost.endsWith(spongeInput.normalizedHost)
     }
 
-    private fun visitFile(uri: URI, response: Connection.Response) {
+    private suspend fun downloadFile(uri: URI) {
         val fileName = FilenameUtils.getName(uri.path)
         val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
 
-        if (!Files.exists(filePath)) {
-            spongeService.download(response, filePath)
-        }
+        if (!Files.exists(filePath)) withContext(downloadContext) { spongeService.download(uri, filePath) }
     }
 
-    private fun String.isHtmlMimeType() = ContentType.TEXT_HTML.mimeType == this
-            || ContentType.APPLICATION_XHTML_XML.mimeType == this
+    private fun String.isHtmlMimeType(): Boolean {
+        return ContentType.TEXT_HTML.mimeType == this || ContentType.APPLICATION_XHTML_XML.mimeType == this
+    }
 
-    private fun String.toOptionalUri() =
-            try {
-                toUri()
-            } catch (t: Throwable) {
-                System.err.println("⚠ URI parsing failed for $this: ${t.message}")
-                null
-            }
+    private fun String.toOptionalUri(): URI? {
+        return try {
+            toUri()
+        } catch (e: Exception) {
+            System.err.println("⚠ URI parsing failed for $this: ${e.message}")
+            null
+        }
+    }
 }

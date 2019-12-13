@@ -9,4 +9,3 @@
 package spypunk.sponge
 
 fun main(args: Array<String>) = SpongeCommand().main(args)
-

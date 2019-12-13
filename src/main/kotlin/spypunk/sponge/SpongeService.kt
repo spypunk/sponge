@@ -15,33 +15,28 @@ import org.jsoup.Jsoup
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.Executors
 
 class SpongeService {
-    private val executorService = Executors.newSingleThreadExecutor()
+    fun request(uri: URI): Connection.Response {
+        return Jsoup.connect(uri.toString())
+                .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
+                .referrer("https://www.google.com")
+                .maxBodySize(0)
+                .ignoreHttpErrors(true)
+                .ignoreContentType(true)
+                .followRedirects(true)
+                .execute()
+    }
 
-    fun connect(uri: URI): Connection.Response =
-            Jsoup.connect(uri.toString())
-                    .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
-                    .referrer("https://www.google.com")
-                    .maxBodySize(0)
-                    .ignoreHttpErrors(true)
-                    .ignoreContentType(true)
-                    .followRedirects(true)
-                    .execute()
+    fun download(uri: URI, path: Path) {
+        try {
+            FileUtils.copyURLToFile(uri.toURL(), path.toFile())
 
-    fun download(response: Connection.Response, path: Path) =
-            executorService.execute {
-                try {
-                    response.bodyStream().use { Files.copy(it, path) }
-
-                    println("⬇ $path [${path.humanSize()}]")
-                } catch (t: Throwable) {
-                    System.err.println("⚠ Error encountered while downloading ${response.url()}: ${t.message}")
-                }
-            }
-
-    fun stop() = executorService.shutdown()
+            println("⬇ $path [${path.humanSize()}]")
+        } catch (e: Exception) {
+            System.err.println("⚠ Error encountered while downloading $uri: ${e.message}")
+        }
+    }
 
     private fun Path.humanSize() = FileUtils.byteCountToDisplaySize(Files.size(this))
 }

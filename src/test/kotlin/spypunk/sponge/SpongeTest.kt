@@ -46,7 +46,7 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
+        verify(exactly = 1) { spongeService.request(spongeInput.uri) }
         verify(exactly = 0) { spongeService.download(any(), any()) }
     }
 
@@ -65,13 +65,13 @@ class SpongeTest {
                 """
         )
 
-        val fileResponse = givenFile(fileUri)
+        givenFile(fileUri)
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
-        verify(exactly = 1) { spongeService.connect(fileUri) }
-        verify(exactly = 1) { spongeService.download(fileResponse, spongeInput.outputDirectory.resolve(fileName)) }
+        verify(exactly = 1) { spongeService.request(spongeInput.uri) }
+        verify(exactly = 1) { spongeService.request(fileUri) }
+        verify(exactly = 1) { spongeService.download(fileUri, spongeInput.outputDirectory.resolve(fileName)) }
     }
 
     @Test
@@ -89,13 +89,13 @@ class SpongeTest {
                 """
         )
 
-        val fileResponse = givenFile(fileUri)
+        givenFile(fileUri)
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
-        verify(exactly = 0) { spongeService.connect(fileUri) }
-        verify(exactly = 0) { spongeService.download(fileResponse, spongeInput.outputDirectory.resolve(fileName)) }
+        verify(exactly = 1) { spongeService.request(spongeInput.uri) }
+        verify(exactly = 0) { spongeService.request(fileUri) }
+        verify(exactly = 0) { spongeService.download(fileUri, spongeInput.outputDirectory.resolve(fileName)) }
     }
 
     @Test
@@ -113,15 +113,15 @@ class SpongeTest {
                 """
         )
 
-        val fileResponse = givenFile(fileUri)
+        givenFile(fileUri)
 
         executeSponge(spongeInputWithSubdomains)
 
-        verify(exactly = 1) { spongeService.connect(spongeInputWithSubdomains.uri) }
-        verify(exactly = 1) { spongeService.connect(fileUri) }
+        verify(exactly = 1) { spongeService.request(spongeInputWithSubdomains.uri) }
+        verify(exactly = 1) { spongeService.request(fileUri) }
 
         verify(exactly = 1) {
-            spongeService.download(fileResponse, spongeInputWithSubdomains.outputDirectory.resolve(fileName))
+            spongeService.download(fileUri, spongeInputWithSubdomains.outputDirectory.resolve(fileName))
         }
     }
 
@@ -152,16 +152,16 @@ class SpongeTest {
                 """
         )
 
-        val fileResponse = givenFile(fileUri)
+        givenFile(fileUri)
 
         executeSponge(spongeInputWithDepthTwo)
 
-        verify(exactly = 1) { spongeService.connect(spongeInputWithDepthTwo.uri) }
-        verify(exactly = 1) { spongeService.connect(childDocumentUri) }
-        verify(exactly = 1) { spongeService.connect(fileUri) }
+        verify(exactly = 1) { spongeService.request(spongeInputWithDepthTwo.uri) }
+        verify(exactly = 1) { spongeService.request(childDocumentUri) }
+        verify(exactly = 1) { spongeService.request(fileUri) }
 
         verify(exactly = 1) {
-            spongeService.download(fileResponse, spongeInputWithDepthTwo.outputDirectory.resolve(fileName))
+            spongeService.download(fileUri, spongeInputWithDepthTwo.outputDirectory.resolve(fileName))
         }
     }
 
@@ -185,19 +185,19 @@ class SpongeTest {
 
         givenUriFailsConnection(failingFileUri)
 
-        val fileResponse = givenFile(fileUri)
+        givenFile(fileUri)
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.connect(spongeInput.uri) }
-        verify(exactly = 1) { spongeService.connect(failingFileUri) }
+        verify(exactly = 1) { spongeService.request(spongeInput.uri) }
+        verify(exactly = 1) { spongeService.request(failingFileUri) }
 
         verify(exactly = 0) {
-            spongeService.download(fileResponse, spongeInput.outputDirectory.resolve(failingFileName))
+            spongeService.download(failingFileUri, spongeInput.outputDirectory.resolve(failingFileName))
         }
 
-        verify(exactly = 1) { spongeService.connect(fileUri) }
-        verify(exactly = 1) { spongeService.download(fileResponse, spongeInput.outputDirectory.resolve(fileName)) }
+        verify(exactly = 1) { spongeService.request(fileUri) }
+        verify(exactly = 1) { spongeService.download(fileUri, spongeInput.outputDirectory.resolve(fileName)) }
     }
 
     private fun givenDocument(uri: URI, htmlContent: String) {
@@ -207,20 +207,18 @@ class SpongeTest {
         every { response.body() } returns htmlContent
         every { response.url() } returns uri.toURL()
 
-        every { spongeService.connect(uri) } returns response
+        every { spongeService.request(uri) } returns response
     }
 
-    private fun givenFile(uri: URI): Connection.Response {
+    private fun givenFile(uri: URI) {
         val response = mockk<Connection.Response>()
 
         every { response.contentType() } returns ContentType.TEXT_PLAIN.mimeType
-        every { spongeService.connect(uri) } returns response
-
-        return response
+        every { spongeService.request(uri) } returns response
     }
 
     private fun givenUriFailsConnection(uri: URI) {
-        every { spongeService.connect(uri) } throws IOException()
+        every { spongeService.request(uri) } throws IOException()
     }
 
     private fun executeSponge(spongeInput: SpongeInput) {
