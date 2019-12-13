@@ -23,6 +23,8 @@ import java.util.regex.Pattern
 import kotlin.system.exitProcess
 
 class SpongeCommand : CliktCommand(name = "sponge") {
+    private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
+
     private val uri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
             .convert { it.toUri() }
             .required()
@@ -50,8 +52,6 @@ class SpongeCommand : CliktCommand(name = "sponge") {
 
     private val includeSubdomains by option("-s", "--include-subdomains", help = "Include subdomains")
             .flag()
-
-    private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
 
     private val concurrentRequests by option("-R", "--concurrent-requests",
             help = "Concurrent requests (default: 1)")

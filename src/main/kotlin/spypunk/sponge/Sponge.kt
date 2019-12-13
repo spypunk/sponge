@@ -23,7 +23,6 @@ import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 
-
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")

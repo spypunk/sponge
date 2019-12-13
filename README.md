@@ -16,36 +16,37 @@ cd target && unzip sponge-X.X-SNAPSHOT.zip && cd sponge-X.X-SNAPSHOT
 Usage: sponge [OPTIONS]
 
 Options:
-  -u, --uri VALUE           URI (example: https://www.google.com)
-  -o, --output PATH         Output directory where files are downloaded
-  -t, --mime-type TEXT      Mime types to download (example: text/plain)
-  -d, --depth INT           Search depth (default: 1)
-  -s, --include-subdomains  Include subdomains
-  -h, --help                Show this message and exit
+  -u, --uri VALUE                 URI (example: https://www.google.com)
+  -o, --output VALUE              Output directory where files are downloaded
+  -t, --mime-type TEXT            Mime types to download (example: text/plain)
+  -d, --depth INT                 Search depth (default: 1)
+  -s, --include-subdomains        Include subdomains
+  -R, --concurrent-requests INT   Concurrent requests (default: 1)
+  -D, --concurrent-downloads INT  Concurrent downloads (default: 1)
+  -h, --help                      Show this message and exit
 ~~~
 ~~~
 ./sponge -u https://www.gutenberg.org/ebooks/search/?sort_order=release_date \
          -o output \
          -t application/pdf \
          -t text/plain \
-         -d 4
-
+         -d 2
+         -R 5
+         -D 5
 ...
-﹫ https://www.gutenberg.org/ebooks/send/dropbox/60891.kindle.noimages
-﹫ https://www.gutenberg.org/ebooks/send/gdrive/60891.kindle.noimages
-﹫ https://www.gutenberg.org/ebooks/send/msdrive/60891.kindle.noimages
-﹫ https://www.gutenberg.org/files/60891/
-⬇ /home/spypunk/output/60891.txt.utf-8 [501 KB]
-﹫ https://www.gutenberg.org/ebooks/60890
-﹫ https://www.gutenberg.org/ebooks/author/2274
-﹫ https://www.gutenberg.org/ebooks/60890/also/
-﹫ https://www.gutenberg.org/files/60890/60890-h/60890-h.htm
-﹫ https://www.gutenberg.org/ebooks/send/megaupload/60890.html
-﹫ https://www.gutenberg.org/ebooks/send/dropbox/60890.epub.images
-﹫ https://www.gutenberg.org/ebooks/send/gdrive/60890.epub.images
-﹫ https://www.gutenberg.org/ebooks/send/msdrive/60890.epub.images
-﹫ https://www.gutenberg.org/ebooks/send/dropbox/60890.epub.noimages
-﹫ https://www.gutenberg.org/ebooks/send/gdrive/60890.epub.noimages
+﹫ https://www.gutenberg.org/ebooks/send/dropbox/60892.kindle.images
+﹫ https://www.gutenberg.org/ebooks/send/gdrive/60892.kindle.noimages
+﹫ https://www.gutenberg.org/ebooks/send/msdrive/60892.kindle.images
+﹫ https://www.gutenberg.org/ebooks/send/dropbox/60892.kindle.noimages
+﹫ https://www.gutenberg.org/files/60892/
+﹫ https://www.gutenberg.org/ebooks/send/msdrive/60892.kindle.noimages
+⬇ /home/spypunk/output/60892.txt.utf-8 [304 bytes]
+﹫ https://www.gutenberg.org/ebooks/search/?sort_order=random
+﹫ https://www.gutenberg.org/ebooks/author/1351
+﹫ https://www.gutenberg.org/ebooks/subject/138
+﹫ https://www.gutenberg.org/ebooks/subject/3316
+﹫ https://www.gutenberg.org/ebooks/subject/12294
+﹫ https://www.gutenberg.org/ebooks/60891/also/
 ...
 ~~~
 ## What about license?
