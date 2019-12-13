@@ -32,9 +32,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         Files.createDirectories(spongeInput.outputDirectory)
 
         runBlocking { visitUri() }
-
-        urisChildren.clear()
-        failedUris.clear()
     }
 
     private suspend fun visitUri(uri: URI = spongeInput.uri, depth: Int = 0) {
