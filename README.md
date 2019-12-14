@@ -20,9 +20,10 @@ Options:
   -o, --output VALUE              Output directory where files are downloaded
   -t, --mime-type TEXT            Mime types to download (example: text/plain)
   -d, --depth INT                 Search depth (default: 1)
-  -s, --include-subdomains        Include subdomains
+  -s, --include-subdomains        Include subdomains (default: false)
   -R, --concurrent-requests INT   Concurrent requests (default: 1)
   -D, --concurrent-downloads INT  Concurrent downloads (default: 1)
+  -v, --version                   Show the version and exit
   -h, --help                      Show this message and exit
 ~~~
 ~~~
@@ -30,8 +31,8 @@ Options:
          -o output \
          -t application/pdf \
          -t text/plain \
-         -d 2
-         -R 5
+         -d 2 \
+         -R 5 \
          -D 5
 ...
 ﹫ https://www.gutenberg.org/ebooks/send/dropbox/60892.kindle.images

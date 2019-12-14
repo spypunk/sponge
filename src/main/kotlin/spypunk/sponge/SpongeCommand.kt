@@ -16,13 +16,17 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.validate
+import com.github.ajalt.clikt.parameters.options.versionOption
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.restrictTo
+import com.natpryce.konfig.ConfigurationProperties
+import com.natpryce.konfig.Key
+import com.natpryce.konfig.stringType
 import java.nio.file.Paths
 import java.util.regex.Pattern
 import kotlin.system.exitProcess
 
-class SpongeCommand : CliktCommand(name = "sponge") {
+class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true) {
     private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
 
     private val uri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
@@ -49,7 +53,8 @@ class SpongeCommand : CliktCommand(name = "sponge") {
             .restrictTo(1)
             .default(1)
 
-    private val includeSubdomains by option("-s", "--include-subdomains", help = "Include subdomains")
+    private val includeSubdomains by option("-s", "--include-subdomains",
+            help = "Include subdomains (default: false)")
             .flag()
 
     private val concurrentRequests by option("-R", "--concurrent-requests",
@@ -63,6 +68,13 @@ class SpongeCommand : CliktCommand(name = "sponge") {
             .int()
             .restrictTo(1)
             .default(1)
+
+    init {
+        val version = ConfigurationProperties
+                .fromResource("sponge.properties")[Key("version", stringType)]
+
+        versionOption(names = setOf("-v", "--version"), version = version) { it }
+    }
 
     override fun run() {
         try {
