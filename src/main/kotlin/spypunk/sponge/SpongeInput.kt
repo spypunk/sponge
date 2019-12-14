@@ -19,6 +19,4 @@ data class SpongeInput(
         val includeSubdomains: Boolean = false,
         val concurrentRequests: Int = 1,
         val concurrentDownloads: Int = 1
-) {
-    val normalizedHost = uri.normalizedHost()!!
-}
+)

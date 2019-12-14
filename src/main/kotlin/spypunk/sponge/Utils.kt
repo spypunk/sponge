@@ -17,31 +17,33 @@ import java.net.URL
 
 private const val WWW_PREFIX = "www."
 
+private val supportedSchemes = setOf("http", "https")
 private val urlPathSegmentEscaper: Escaper = UrlEscapers.urlPathSegmentEscaper()
 
-fun URI.normalizedHost(): String? {
-    return when {
-        host.isNullOrEmpty() -> null
-        host.startsWith(WWW_PREFIX) -> host.substring(WWW_PREFIX.length)
-        else -> host
-    }
-}
-
-fun String.toUri(): URI {
+fun String.toNormalizedUri(): URI {
     val url = URL(this)
+
+    if (!supportedSchemes.contains(url.protocol)) error("Unsupported scheme: ${url.protocol}")
+    if (url.host.isNullOrEmpty()) error("Hostname cannot be empty")
 
     return URIBuilder()
             .apply {
                 scheme = url.protocol
-                host = url.host
-                pathSegments = URLEncodedUtils.parsePathSegments(url.path).map {
-                    urlPathSegmentEscaper.escape(it)
-                }
                 port = url.port
                 userInfo = url.userInfo
 
-                if (url.query != null) {
+                host = if (url.host.startsWith(WWW_PREFIX)) {
+                    url.host.substring(WWW_PREFIX.length)
+                } else {
+                    url.host
+                }
+
+                if (!url.query.isNullOrEmpty()) {
                     setCustomQuery(url.query)
+                }
+
+                if (!url.path.isNullOrEmpty()) {
+                    pathSegments = URLEncodedUtils.parsePathSegments(url.path).map(urlPathSegmentEscaper::escape)
                 }
             }
             .build()

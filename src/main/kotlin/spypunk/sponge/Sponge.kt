@@ -32,18 +32,21 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     fun execute() {
         Files.createDirectories(spongeInput.outputDirectory)
 
-        runBlocking { visitUri() }
+        runBlocking { processUri() }
     }
 
-    private suspend fun visitUri(uri: URI = spongeInput.uri, depth: Int = 0) {
+    private suspend fun processUri(uri: URI = spongeInput.uri, depth: Int = 0) {
         if (failedUris.contains(uri)) return
 
         try {
             val response = spongeService.request(uri)
             val mimeType = ContentType.parse(response.contentType()).mimeType
 
-            if (mimeType.isHtmlMimeType()) visitChildren(uri, depth, response)
-            else if (spongeInput.mimeTypes.contains(mimeType)) downloadFile(uri)
+            if (mimeType.isHtmlMimeType()) {
+                processChildren(uri, depth, response)
+            } else if (spongeInput.mimeTypes.contains(mimeType)) {
+                downloadFile(uri)
+            }
         } catch (e: Exception) {
             System.err.println("⚠ Processing failed for $uri: ${e.message}")
 
@@ -51,12 +54,12 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         }
     }
 
-    private suspend fun visitChildren(uri: URI, depth: Int, response: Connection.Response) {
+    private suspend fun processChildren(uri: URI, depth: Int, response: Connection.Response) {
         cacheChildren(uri, response)
 
         if (depth < spongeInput.maxDepth) {
             urisChildren.getValue(uri)
-                    .map { GlobalScope.async(requestContext) { visitUri(it, depth + 1) } }
+                    .map { GlobalScope.async(requestContext) { processUri(it, depth + 1) } }
                     .awaitAll()
         }
     }
@@ -76,18 +79,14 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         return Jsoup.parse(body, externalForm).select("a[href]").asSequence()
                 .map { it.attr("abs:href") }
                 .filterNot { it.isNullOrEmpty() }
-                .map { it.toOptionalUri() }
-                .filterNotNull()
-                .distinct()
-                .filter(this::hasValidHost)
+                .mapNotNull { it.toUri() }
+                .filter(this::isHostEligible)
                 .toSet()
     }
 
-    private fun hasValidHost(uri: URI): Boolean {
-        val normalizedHost = uri.normalizedHost() ?: return false
-
-        return normalizedHost == spongeInput.normalizedHost
-                || spongeInput.includeSubdomains && normalizedHost.endsWith(spongeInput.normalizedHost)
+    private fun isHostEligible(uri: URI): Boolean {
+        return uri.host == spongeInput.uri.host
+                || spongeInput.includeSubdomains && uri.host.endsWith(spongeInput.uri.host)
     }
 
     private suspend fun downloadFile(uri: URI) {
@@ -101,9 +100,9 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         return ContentType.TEXT_HTML.mimeType == this || ContentType.APPLICATION_XHTML_XML.mimeType == this
     }
 
-    private fun String.toOptionalUri(): URI? {
+    private fun String.toUri(): URI? {
         return try {
-            toUri()
+            toNormalizedUri()
         } catch (e: Exception) {
             System.err.println("⚠ URI parsing failed for $this: ${e.message}")
             null

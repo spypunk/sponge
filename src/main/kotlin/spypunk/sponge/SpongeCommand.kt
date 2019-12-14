@@ -26,9 +26,8 @@ class SpongeCommand : CliktCommand(name = "sponge") {
     private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
 
     private val uri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
-            .convert { it.toUri() }
+            .convert { it.toNormalizedUri() }
             .required()
-            .validate { require(setOf("http", "https").contains(it.scheme)) { "Unsupported scheme: ${it.scheme}" } }
 
     private val outputDirectory by option("-o", "--output",
             help = "Output directory where files are downloaded")
