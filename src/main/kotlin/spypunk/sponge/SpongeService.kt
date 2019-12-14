@@ -19,7 +19,7 @@ import java.nio.file.Path
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
 
-class SpongeService() {
+class SpongeService {
     fun request(uri: URI): Connection.Response {
         val connection = Jsoup.connect(uri.toString())
                 .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")

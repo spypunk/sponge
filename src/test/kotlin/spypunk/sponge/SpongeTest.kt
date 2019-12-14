@@ -26,7 +26,7 @@ class SpongeTest {
     private val fileName = "test.txt"
 
     private val spongeInput = SpongeInput(
-            URI("https://www.test.com"),
+            URI("https://test.com"),
             outputDirectory,
             setOf(ContentType.TEXT_PLAIN.mimeType)
     )
@@ -100,7 +100,7 @@ class SpongeTest {
 
     @Test
     fun testDocumentWithLinkAndSubdomainEnabled() {
-        val fileUri = URI("https://www.test.test.com/$fileName")
+        val fileUri = URI("https://test.test.com/$fileName")
 
         givenDocument(
                 spongeInputWithSubdomains.uri,
@@ -127,7 +127,7 @@ class SpongeTest {
 
     @Test
     fun testDocumentWithChildDocumentAndLink() {
-        val childDocumentUri = URI("https://www.test.com/test")
+        val childDocumentUri = URI("https://test.com/test")
         val fileUri = URI("${spongeInputWithDepthTwo.uri}/$fileName")
 
         givenDocument(
