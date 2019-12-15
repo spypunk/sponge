@@ -55,17 +55,16 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private suspend fun processChildren(uri: URI, depth: Int, response: Connection.Response) {
-        cacheChildren(uri, response)
+        val children = getChildren(uri, response)
 
         if (depth < spongeInput.maxDepth) {
-            urisChildren.getValue(uri)
-                    .map { GlobalScope.async(requestContext) { processUri(it, depth + 1) } }
+            children.map { GlobalScope.async(requestContext) { processUri(it, depth + 1) } }
                     .awaitAll()
         }
     }
 
-    private fun cacheChildren(uri: URI, response: Connection.Response) {
-        urisChildren.computeIfAbsent(uri) {
+    private fun getChildren(uri: URI, response: Connection.Response): Set<URI> {
+        return urisChildren.computeIfAbsent(uri) {
             println("﹫ $uri")
 
             getChildren(response)

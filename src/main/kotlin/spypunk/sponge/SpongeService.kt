@@ -34,7 +34,10 @@ class SpongeService {
 
     fun download(uri: URI, path: Path) {
         try {
-            FileUtils.copyURLToFile(uri.toURL(), path.toFile())
+            val url = uri.toURL()
+            val file = path.toFile()
+
+            retry(IOException::class) { FileUtils.copyURLToFile(url, file) }
 
             println("⬇ $path [${path.humanSize()}]")
         } catch (e: Exception) {
