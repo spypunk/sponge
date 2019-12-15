@@ -27,7 +27,12 @@ import java.util.regex.Pattern
 import kotlin.system.exitProcess
 
 class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true) {
-    private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
+    private companion object {
+        private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
+
+        private val version = ConfigurationProperties
+                .fromResource("sponge.properties")[Key("version", stringType)]
+    }
 
     private val uri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
             .convert { it.toNormalizedUri() }
@@ -70,9 +75,6 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
             .default(1)
 
     init {
-        val version = ConfigurationProperties
-                .fromResource("sponge.properties")[Key("version", stringType)]
-
         versionOption(names = setOf("-v", "--version"), version = version) { it }
     }
 
