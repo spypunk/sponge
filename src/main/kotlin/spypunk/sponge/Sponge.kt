@@ -25,28 +25,33 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
+    private companion object {
+        private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
+    }
+
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
     private val urisChildren = ConcurrentHashMap<URI, Set<URI>>()
     private val failedUris = CopyOnWriteArraySet<URI>()
+    private val mimeTypes = ConcurrentHashMap<String, String>()
 
     fun execute() {
         Files.createDirectories(spongeInput.outputDirectory)
 
-        runBlocking { processUri() }
+        runBlocking { visitUri() }
     }
 
-    private suspend fun processUri(uri: URI = spongeInput.uri, depth: Int = 0) {
+    private suspend fun visitUri(uri: URI = spongeInput.uri, depth: Int = 0) {
         if (failedUris.contains(uri)) return
 
         try {
             val response = spongeService.request(uri)
-            val mimeType = ContentType.parse(response.contentType()).mimeType
+            val mimeType = mimeTypes.computeIfAbsent(response.contentType()) { ContentType.parse(it).mimeType }
 
-            if (isEligibleForDownload(mimeType, uri)) {
+            if (canDownload(mimeType, uri)) {
                 download(uri)
-            } else if (mimeType.isHtmlMimeType()) {
-                processChildren(uri, depth, response)
+            } else if (canVisitChildren(depth, mimeType)) {
+                visitChildren(uri, depth, response)
             }
         } catch (e: Exception) {
             System.err.println("⚠ Processing failed for $uri: ${e.message}")
@@ -55,31 +60,27 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         }
     }
 
-    private suspend fun processChildren(uri: URI, depth: Int, response: Connection.Response) {
-        val children = getChildren(uri, response)
+    private fun canVisitChildren(depth: Int, mimeType: String): Boolean {
+        return depth < spongeInput.maxDepth && htmlMimeTypes.contains(mimeType)
+    }
 
-        if (depth < spongeInput.maxDepth) {
-            children.map { GlobalScope.async(requestContext) { processUri(it, depth + 1) } }
-                    .awaitAll()
-        }
+    private suspend fun visitChildren(uri: URI, depth: Int, response: Connection.Response) {
+        getChildren(uri, response)
+                .map { GlobalScope.async(requestContext) { visitUri(it, depth + 1) } }
+                .awaitAll()
     }
 
     private fun getChildren(uri: URI, response: Connection.Response): Set<URI> {
         return urisChildren.computeIfAbsent(uri) {
             println("﹫ $uri")
 
-            getChildren(response)
+            val document = Jsoup.parse(response.body(), response.url().toExternalForm())
+            val links = getLinks(document) + getImageLinks(document)
+
+            links.mapNotNull { it.toUri() }
+                    .filter(this::isHostEligible)
+                    .toSet()
         }
-    }
-
-    private fun getChildren(response: Connection.Response): Set<URI> {
-        val document = Jsoup.parse(response.body(), response.url().toExternalForm())
-        val links = getLinks(document) + getImageLinks(document)
-
-        return links
-                .mapNotNull { it.toUri() }
-                .filter(this::isHostEligible)
-                .toSet()
     }
 
     private fun getLinks(document: Document): Sequence<String> {
@@ -101,7 +102,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 || spongeInput.includeSubdomains && uri.host.endsWith(spongeInput.uri.host)
     }
 
-    private fun isEligibleForDownload(mimeType: String, uri: URI): Boolean {
+    private fun canDownload(mimeType: String, uri: URI): Boolean {
         return spongeInput.mimeTypes.contains(mimeType)
                 || spongeInput.fileExtensions.contains(FilenameUtils.getExtension(uri.path))
     }
@@ -110,11 +111,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         val fileName = FilenameUtils.getName(uri.path)
         val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
 
-        if (!Files.exists(filePath)) withContext(downloadContext) { spongeService.download(uri, filePath) }
-    }
-
-    private fun String.isHtmlMimeType(): Boolean {
-        return ContentType.TEXT_HTML.mimeType == this || ContentType.APPLICATION_XHTML_XML.mimeType == this
+        withContext(downloadContext) { spongeService.download(uri, filePath) }
     }
 
     private fun String.toUri(): URI? {
