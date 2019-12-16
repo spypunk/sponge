@@ -27,7 +27,7 @@ Options:
   -v, --version                   Show the version and exit
   -h, --help                      Show this message and exit
 ~~~
-###Examples
+### Examples
 ~~~
 ./sponge -u https://www.gutenberg.org/ebooks/search/?sort_order=release_date \
          -o output \
