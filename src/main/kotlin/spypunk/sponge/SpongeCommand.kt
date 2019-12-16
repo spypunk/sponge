@@ -52,8 +52,7 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
                 }
             }
 
-    private val fileExtensions by option("-e", "--file-extension",
-            help = "Extensions to download (example: png)")
+    private val fileExtensions by option("-e", "--file-extension", help = "Extensions to download (example: png)")
             .multiple()
 
     private val depth by option("-d", "--depth", help = "Search depth (default: 1)")
