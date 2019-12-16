@@ -24,11 +24,13 @@ class SpongeTest {
     private val spongeService = mockk<SpongeService>(relaxed = true)
     private val outputDirectory = Path.of("output").toAbsolutePath()
     private val fileName = "test.txt"
+    private val imageFileName = "test.png"
 
     private val spongeInput = SpongeInput(
             URI("https://test.com"),
             outputDirectory,
-            setOf(ContentType.TEXT_PLAIN.mimeType)
+            setOf(ContentType.TEXT_PLAIN.mimeType),
+            setOf("png")
     )
 
     private val spongeInputWithSubdomains = spongeInput.copy(includeSubdomains = true)
@@ -72,6 +74,35 @@ class SpongeTest {
         verify(exactly = 1) { spongeService.request(spongeInput.uri) }
         verify(exactly = 1) { spongeService.request(fileUri) }
         verify(exactly = 1) { spongeService.download(fileUri, spongeInput.outputDirectory.resolve(fileName)) }
+    }
+
+    @Test
+    fun testDocumentWithLinkAndImage() {
+        val fileUri = URI("${spongeInput.uri}/$fileName")
+        val imageFileUri = URI("${spongeInput.uri}/$imageFileName")
+
+        givenDocument(
+                spongeInput.uri,
+                """
+                    <html>
+                        <body>
+                            <a href="$fileUri" />
+                            <img src="$imageFileUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        givenFile(fileUri)
+        givenFile(imageFileUri, ContentType.IMAGE_PNG.mimeType)
+
+        executeSponge(spongeInput)
+
+        verify(exactly = 1) { spongeService.request(spongeInput.uri) }
+        verify(exactly = 1) { spongeService.request(fileUri) }
+        verify(exactly = 1) { spongeService.download(fileUri, spongeInput.outputDirectory.resolve(fileName)) }
+        verify(exactly = 1) { spongeService.request(imageFileUri) }
+        verify(exactly = 1) { spongeService.download(imageFileUri, spongeInput.outputDirectory.resolve(imageFileName)) }
     }
 
     @Test
@@ -210,10 +241,10 @@ class SpongeTest {
         every { spongeService.request(uri) } returns response
     }
 
-    private fun givenFile(uri: URI) {
+    private fun givenFile(uri: URI, mimeType: String = ContentType.TEXT_PLAIN.mimeType) {
         val response = mockk<Connection.Response>()
 
-        every { response.contentType() } returns ContentType.TEXT_PLAIN.mimeType
+        every { response.contentType() } returns mimeType
         every { spongeService.request(uri) } returns response
     }
 

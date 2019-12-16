@@ -6,7 +6,7 @@
     <artifactId>sponge</artifactId>
     <version>0.5-SNAPSHOT</version>
     <name>sponge</name>
-    <description>A website crawler and links downloader command line tool</description>
+    <description>A website crawler and links/images downloader command line tool</description>
     <url>https://github.com/spypunk/sponge</url>
 
     <licenses>
@@ -199,18 +199,18 @@
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.6</minimum>
+                                            <minimum>0.8</minimum>
                                         </limit>
                                         <limit>
                                             <counter>BRANCH</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.4</minimum>
+                                            <minimum>0.5</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
                             </rules>
                             <excludes>
-                                <exclude>**/SpongeCommand.class,**/MainKt.class</exclude>
+                                <exclude>**/SpongeService.class,**/SpongeCommand.class,**/MainKt.class</exclude>
                             </excludes>
                         </configuration>
                     </execution>

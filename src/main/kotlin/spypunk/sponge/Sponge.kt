@@ -18,6 +18,7 @@ import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import java.net.URI
 import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
@@ -42,10 +43,10 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             val response = spongeService.request(uri)
             val mimeType = ContentType.parse(response.contentType()).mimeType
 
-            if (mimeType.isHtmlMimeType()) {
+            if (isEligibleForDownload(mimeType, uri)) {
+                download(uri)
+            } else if (mimeType.isHtmlMimeType()) {
                 processChildren(uri, depth, response)
-            } else if (spongeInput.mimeTypes.contains(mimeType)) {
-                downloadFile(uri)
             }
         } catch (e: Exception) {
             System.err.println("⚠ Processing failed for $uri: ${e.message}")
@@ -72,15 +73,27 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun getChildren(response: Connection.Response): Set<URI> {
-        val body = response.body()
-        val externalForm = response.url().toExternalForm()
+        val document = Jsoup.parse(response.body(), response.url().toExternalForm())
+        val links = getLinks(document) + getImageLinks(document)
 
-        return Jsoup.parse(body, externalForm).select("a[href]").asSequence()
-                .map { it.attr("abs:href") }
-                .filterNot { it.isNullOrEmpty() }
+        return links
                 .mapNotNull { it.toUri() }
                 .filter(this::isHostEligible)
                 .toSet()
+    }
+
+    private fun getLinks(document: Document): Sequence<String> {
+        return getAttributeValues(document, "a[href]", "abs:href")
+    }
+
+    private fun getImageLinks(document: Document): Sequence<String> {
+        return getAttributeValues(document, "img[src]", "abs:src")
+    }
+
+    private fun getAttributeValues(document: Document, cssQuery: String, attributeKey: String): Sequence<String> {
+        return document.select(cssQuery).asSequence()
+                .mapNotNull { it.attr(attributeKey) }
+                .filterNot { it.isEmpty() }
     }
 
     private fun isHostEligible(uri: URI): Boolean {
@@ -88,7 +101,12 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 || spongeInput.includeSubdomains && uri.host.endsWith(spongeInput.uri.host)
     }
 
-    private suspend fun downloadFile(uri: URI) {
+    private fun isEligibleForDownload(mimeType: String, uri: URI): Boolean {
+        return spongeInput.mimeTypes.contains(mimeType)
+                || spongeInput.fileExtensions.contains(FilenameUtils.getExtension(uri.path))
+    }
+
+    private suspend fun download(uri: URI) {
         val fileName = FilenameUtils.getName(uri.path)
         val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
 

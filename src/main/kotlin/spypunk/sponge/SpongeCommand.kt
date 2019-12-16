@@ -9,6 +9,7 @@
 package spypunk.sponge
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -46,12 +47,14 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
     private val mimeTypes by option("-t", "--mime-type", help = "Mime types to download (example: text/plain)")
             .multiple()
             .validate {
-                require(it.isNotEmpty()) { "At least one mime type is required" }
-
                 it.forEach { mimeType ->
                     require(mimeTypePattern.matcher(mimeType).matches()) { "$mimeType is not a valid mime type" }
                 }
             }
+
+    private val fileExtensions by option("-e", "--file-extension",
+            help = "Extensions to download (example: png)")
+            .multiple()
 
     private val depth by option("-d", "--depth", help = "Search depth (default: 1)")
             .int()
@@ -79,12 +82,17 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
     }
 
     override fun run() {
+        if (mimeTypes.isEmpty() && fileExtensions.isEmpty()) {
+            throw UsageError("At least one mime type or one file extension is required")
+        }
+
         try {
             val spongeService = SpongeService()
             val spongeInput = SpongeInput(
                     uri,
                     outputDirectory,
                     mimeTypes.toSet(),
+                    fileExtensions.toSet(),
                     depth,
                     includeSubdomains,
                     concurrentRequests,
