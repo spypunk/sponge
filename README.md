@@ -53,7 +53,7 @@ Options:
 ...
 ~~~
 ~~~
-./sponge -u https://www.pexels.com/public-domain-images/
+./sponge -u https://www.pexels.com/public-domain-images/ \
          -o output \
          -e jpeg \
          -e svg \
