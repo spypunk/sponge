@@ -86,7 +86,7 @@ Options:
 ## What about license?
 This project is licensed under the WTFPL (Do What The Fuck You Want To Public License, Version 2)
 
-[![WTFPL](http://www.wtfpl.net/wp-content/uploads/2012/12/logo-220x1601.png)](http://www.wtfpl.net/)
+[![WTFPL](http://www.wtfpl.net/wp-content/uploads/2012/12/logo-160x116.png)](http://www.wtfpl.net/)
 
 Copyright © 2019 spypunk [spypunk@gmail.com](mailto:spypunk@gmail.com)
 
