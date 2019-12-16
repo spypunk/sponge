@@ -199,7 +199,7 @@
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.8</minimum>
+                                            <minimum>0.7</minimum>
                                         </limit>
                                         <limit>
                                             <counter>BRANCH</counter>
@@ -210,7 +210,7 @@
                                 </rule>
                             </rules>
                             <excludes>
-                                <exclude>**/SpongeService.class,**/SpongeCommand.class,**/MainKt.class</exclude>
+                                <exclude>**/SpongeCommand.class,**/MainKt.class</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -308,6 +308,18 @@
             <groupId>io.mockk</groupId>
             <artifactId>mockk</artifactId>
             <version>1.9.3.kotlin12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mock-server</groupId>
+            <artifactId>mockserver-netty</artifactId>
+            <version>5.8.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.29</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
