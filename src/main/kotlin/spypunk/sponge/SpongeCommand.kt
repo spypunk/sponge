@@ -10,6 +10,8 @@ package spypunk.sponge
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.UsageError
+import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -55,29 +57,30 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
     private val fileExtensions by option("-e", "--file-extension", help = "Extensions to download (example: png)")
             .multiple()
 
-    private val depth by option("-d", "--depth", help = "Search depth (default: 1)")
+    private val depth by option("-d", "--depth", help = "Search depth")
             .int()
             .restrictTo(1)
             .default(1)
 
-    private val includeSubdomains by option("-s", "--include-subdomains",
-            help = "Include subdomains (default: false)")
+    private val includeSubdomains by option("-s", "--include-subdomains", help = "Include subdomains")
             .flag()
 
-    private val concurrentRequests by option("-R", "--concurrent-requests",
-            help = "Concurrent requests (default: 1)")
+    private val concurrentRequests by option("-R", "--concurrent-requests", help = "Concurrent requests")
             .int()
             .restrictTo(1)
             .default(1)
 
-    private val concurrentDownloads by option("-D", "--concurrent-downloads",
-            help = "Concurrent downloads (default: 1)")
+    private val concurrentDownloads by option("-D", "--concurrent-downloads", help = "Concurrent downloads")
             .int()
             .restrictTo(1)
             .default(1)
 
     init {
         versionOption(names = setOf("-v", "--version"), version = version) { it }
+
+        context {
+            helpFormatter = CliktHelpFormatter(showDefaultValues = true)
+        }
     }
 
     override fun run() {

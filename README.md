@@ -19,7 +19,7 @@ Options:
   -t, --mime-type TEXT            Mime types to download (example: text/plain)
   -e, --file-extension TEXT       Extensions to download (example: png)
   -d, --depth INT                 Search depth (default: 1)
-  -s, --include-subdomains        Include subdomains (default: false)
+  -s, --include-subdomains        Include subdomains
   -R, --concurrent-requests INT   Concurrent requests (default: 1)
   -D, --concurrent-downloads INT  Concurrent downloads (default: 1)
   -v, --version                   Show the version and exit
