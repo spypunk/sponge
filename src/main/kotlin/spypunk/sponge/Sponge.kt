@@ -99,7 +99,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private fun isHostEligible(uri: URI): Boolean {
         return uri.host == spongeInput.uri.host
-                || spongeInput.includeSubdomains && uri.host.endsWith(spongeInput.uri.host)
+                || (spongeInput.includeSubdomains && uri.host.endsWith(spongeInput.uri.host))
     }
 
     private fun canDownload(mimeType: String, uri: URI): Boolean {
@@ -111,6 +111,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         val fileName = FilenameUtils.getName(uri.path)
         val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
 
+        println("⬇ Download scheduled: $uri")
+
         withContext(downloadContext) { spongeService.download(uri, filePath) }
     }
 
@@ -118,7 +120,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         return try {
             toNormalizedUri()
         } catch (e: Exception) {
-            System.err.println("⚠ URI parsing failed for $this: ${e.message}")
             null
         }
     }

@@ -49,7 +49,7 @@ class SpongeServiceTest {
 
     @Test
     fun testDownload() {
-        spongeService.download(URI("http://localhost:12345/${filePath.fileName}"), filePath)
+        spongeService.download(URI("http://localhost:$port/${filePath.fileName}"), filePath)
 
         Assertions.assertEquals(fileContent, FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8))
     }

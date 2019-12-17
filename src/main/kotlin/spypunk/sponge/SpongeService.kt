@@ -21,14 +21,16 @@ import kotlin.reflect.full.isSuperclassOf
 
 class SpongeService {
     private companion object {
+        private const val REQUEST_TIMEOUT = 30000
         private const val ENCODING = "gzip, deflate"
         private const val REFERRER = "https://www.google.com"
         private const val USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/78.0.3904.97 Safari/537.36"
     }
 
-    fun request(uri: URI): Connection.Response {
+    fun request(uri: URI, timeout: Int = REQUEST_TIMEOUT): Connection.Response {
         val connection = Jsoup.connect(uri.toString())
+                .timeout(timeout)
                 .header(HttpHeaders.ACCEPT_ENCODING, ENCODING)
                 .referrer(REFERRER)
                 .userAgent(USER_AGENT)
@@ -42,10 +44,10 @@ class SpongeService {
 
     fun download(uri: URI, path: Path) {
         try {
-            request(uri).bodyStream()
+            request(uri, 0).bodyStream()
                     .use { FileUtils.copyToFile(it, path.toFile()) }
 
-            println("⬇ $path [${path.humanSize()}]")
+            println("⬇ Download completed: $path [${path.humanSize()}]")
         } catch (e: Exception) {
             System.err.println("⚠ Error encountered while downloading $uri: ${e.message}")
         }
