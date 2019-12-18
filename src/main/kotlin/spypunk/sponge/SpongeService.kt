@@ -14,6 +14,7 @@ import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.IOException
 import java.net.URI
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
@@ -45,6 +46,8 @@ class SpongeService {
         try {
             request(uri, 0).bodyStream()
                     .use { FileUtils.copyToFile(it, path.toFile()) }
+
+            println("↓ $path [${path.humanSize()}]")
         } catch (e: Exception) {
             System.err.println("⚠ Error encountered while downloading $uri: ${e.message}")
         }
@@ -67,4 +70,6 @@ class SpongeService {
 
         throw exception!!
     }
+
+    private fun Path.humanSize() = FileUtils.byteCountToDisplaySize(Files.size(this))
 }

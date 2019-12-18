@@ -14,7 +14,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
@@ -22,20 +21,23 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.net.URI
 import java.nio.file.Files
-import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
+
+    private class UriMetadata(val canDownload: Boolean = false, val children: Set<URI> = setOf())
+
     private companion object {
         private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
+        private val defaultUriMetadata = UriMetadata()
     }
 
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
     private val urisChildren = ConcurrentHashMap<URI, Set<URI>>()
     private val failedUris = CopyOnWriteArraySet<URI>()
-    private val mimeTypes = ConcurrentHashMap<String, String>()
+    private val uriMetadatas = ConcurrentHashMap<URI, UriMetadata>()
 
     fun execute() {
         Files.createDirectories(spongeInput.outputDirectory)
@@ -47,13 +49,21 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         if (failedUris.contains(uri)) return
 
         try {
-            val response = spongeService.request(uri)
-            val mimeType = mimeTypes.computeIfAbsent(response.contentType()) { ContentType.parse(it).mimeType }
+            val uriMetadata = uriMetadatas.computeIfAbsent(uri) {
+                val response = spongeService.request(uri)
+                val mimeType = ContentType.parse(response.contentType()).mimeType
 
-            if (canDownload(mimeType, uri)) {
+                when {
+                    canDownload(mimeType, uri) -> UriMetadata(canDownload = true)
+                    htmlMimeTypes.contains(mimeType) -> UriMetadata(children = getChildren(uri, response))
+                    else -> defaultUriMetadata
+                }
+            }
+
+            if (uriMetadata.canDownload) {
                 download(uri)
-            } else if (canVisitChildren(depth, mimeType)) {
-                visitChildren(uri, depth, response)
+            } else if (depth < spongeInput.maxDepth) {
+                visitChildren(uriMetadata.children, depth)
             }
         } catch (e: Exception) {
             System.err.println("⚠ Processing failed for $uri: ${e.message}")
@@ -62,12 +72,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         }
     }
 
-    private fun canVisitChildren(depth: Int, mimeType: String): Boolean {
-        return depth < spongeInput.maxDepth && htmlMimeTypes.contains(mimeType)
-    }
-
-    private suspend fun visitChildren(uri: URI, depth: Int, response: Connection.Response) {
-        getChildren(uri, response)
+    private suspend fun visitChildren(children: Set<URI>, depth: Int) {
+        children
                 .map { GlobalScope.async(requestContext) { visitUri(it, depth + 1) } }
                 .awaitAll()
     }
@@ -115,11 +121,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
         println("⇩ $uri")
 
-        withContext(downloadContext) {
-            spongeService.download(uri, filePath)
-
-            println("↓ $filePath [${filePath.humanSize()}]")
-        }
+        withContext(downloadContext) { spongeService.download(uri, filePath) }
     }
 
     private fun String.toUri(): URI? {
@@ -129,6 +131,4 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             null
         }
     }
-
-    private fun Path.humanSize() = FileUtils.byteCountToDisplaySize(Files.size(this))
 }
