@@ -55,8 +55,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             if (uriMetadata.canDownload) {
                 download(uri)
             } else if (parents.size < spongeInput.maxDepth) {
-                println("↺ $uri")
-
                 visitUris(uriMetadata.children, parents + uri)
             }
         } catch (e: Exception) {
@@ -79,9 +77,9 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         }
     }
 
-    private suspend fun visitUris(uris: Set<URI>, parents: Set<URI> = setOf()) {
+    private suspend fun visitUris(uris: Set<URI>, parents: Set<URI>) {
         uris.asSequence()
-                .filterNot { parents.contains(it) }
+                .filterNot(parents::contains)
                 .map { GlobalScope.async(requestContext) { visitUri(it, parents) } }
                 .toList()
                 .awaitAll()
@@ -93,9 +91,11 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             val links = getLinks(document) + getImageLinks(document)
 
             links.mapNotNull { it.toUri() }
-                    .filterNot { it == uri }
+                    .filterNot(uri::equals)
                     .filter(this::isHostEligible)
                     .toSet()
+        }.also {
+            if (it.isNotEmpty()) println("↺ $uri")
         }
     }
 
@@ -110,7 +110,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private fun getAttributeValues(document: Document, cssQuery: String, attributeKey: String): Sequence<String> {
         return document.select(cssQuery).asSequence()
                 .mapNotNull { it.attr(attributeKey) }
-                .filterNot { it.isEmpty() }
+                .filterNot(String::isEmpty)
     }
 
     private fun isHostEligible(uri: URI): Boolean {
@@ -126,13 +126,11 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private suspend fun download(uri: URI) {
         val fileName = FilenameUtils.getName(uri.path)
 
-        val deferred = processedDownloads.computeIfAbsent(fileName) {
+        processedDownloads.computeIfAbsent(fileName) {
             val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
 
             GlobalScope.async(downloadContext) { spongeService.download(uri, filePath) }
-        }
-
-        deferred.await()
+        }.await()
     }
 
     private fun String.toUri(): URI? {
