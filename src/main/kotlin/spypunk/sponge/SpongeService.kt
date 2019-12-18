@@ -49,7 +49,7 @@ class SpongeService {
 
             println("↓ $path [${path.humanSize()}]")
         } catch (e: Exception) {
-            System.err.println("⚠ Error encountered while downloading $uri: ${e.message}")
+            System.err.println("⚠ Error encountered while downloading $uri: ${e.javaClass.name} - ${e.message}")
         }
     }
 
