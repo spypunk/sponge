@@ -49,26 +49,32 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         if (failedUris.contains(uri)) return
 
         try {
-            val uriMetadata = uriMetadatas.computeIfAbsent(uri) {
-                val response = spongeService.request(uri)
-                val mimeType = ContentType.parse(response.contentType()).mimeType
-
-                when {
-                    canDownload(mimeType, uri) -> UriMetadata(canDownload = true)
-                    htmlMimeTypes.contains(mimeType) -> UriMetadata(children = getChildren(uri, response))
-                    else -> defaultUriMetadata
-                }
-            }
+            val uriMetadata = getUriMetadata(uri)
 
             if (uriMetadata.canDownload) {
                 download(uri)
             } else if (parents.size < spongeInput.maxDepth) {
+                println("↺ $uri")
+
                 visitUris(uriMetadata.children, parents + uri)
             }
         } catch (e: Exception) {
             System.err.println("⚠ Processing failed for $uri: ${e.message}")
 
             failedUris.add(uri)
+        }
+    }
+
+    private fun getUriMetadata(uri: URI): UriMetadata {
+        return uriMetadatas.computeIfAbsent(uri) {
+            val response = spongeService.request(uri)
+            val mimeType = ContentType.parse(response.contentType()).mimeType
+
+            when {
+                canDownload(mimeType, uri) -> UriMetadata(canDownload = true)
+                htmlMimeTypes.contains(mimeType) -> UriMetadata(children = getChildren(uri, response))
+                else -> defaultUriMetadata
+            }
         }
     }
 
@@ -82,8 +88,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private fun getChildren(uri: URI, response: Connection.Response): Set<URI> {
         return urisChildren.computeIfAbsent(uri) {
-            println("↺ $uri")
-
             val document = Jsoup.parse(response.body(), response.url().toExternalForm())
             val links = getLinks(document) + getImageLinks(document)
 
@@ -121,8 +125,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private suspend fun download(uri: URI) {
         val fileName = FilenameUtils.getName(uri.path)
         val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
-
-        println("⇩ $uri")
 
         withContext(downloadContext) { spongeService.download(uri, filePath) }
     }
