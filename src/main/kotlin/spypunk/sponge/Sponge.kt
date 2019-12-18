@@ -8,12 +8,12 @@
 
 package spypunk.sponge
 
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
@@ -38,6 +38,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private val urisChildren = ConcurrentHashMap<URI, Set<URI>>()
     private val failedUris = CopyOnWriteArraySet<URI>()
     private val uriMetadatas = ConcurrentHashMap<URI, UriMetadata>()
+    private val processedDownloads = ConcurrentHashMap<String, Deferred<Unit>>()
 
     fun execute() {
         Files.createDirectories(spongeInput.outputDirectory)
@@ -59,7 +60,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 visitUris(uriMetadata.children, parents + uri)
             }
         } catch (e: Exception) {
-            System.err.println("⚠ Processing failed for $uri: ${e.message}")
+            System.err.println("⚠ Processing failed for $uri: ${e.javaClass.name} - ${e.message}")
 
             failedUris.add(uri)
         }
@@ -124,9 +125,14 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private suspend fun download(uri: URI) {
         val fileName = FilenameUtils.getName(uri.path)
-        val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
 
-        withContext(downloadContext) { spongeService.download(uri, filePath) }
+        val deferred = processedDownloads.computeIfAbsent(fileName) {
+            val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
+
+            GlobalScope.async(downloadContext) { spongeService.download(uri, filePath) }
+        }
+
+        deferred.await()
     }
 
     private fun String.toUri(): URI? {
