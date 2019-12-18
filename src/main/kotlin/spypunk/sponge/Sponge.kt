@@ -34,7 +34,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
-    private val urisChildren = ConcurrentHashMap<URI, Set<URI>>()
     private val failedUris = CopyOnWriteArraySet<URI>()
     private val uriMetadatas = ConcurrentHashMap<URI, UriMetadata>()
     private val processedDownloads = ConcurrentHashMap<String, Deferred<Unit>>()
@@ -85,17 +84,16 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun getChildren(uri: URI, response: Connection.Response): Set<URI> {
-        return urisChildren.computeIfAbsent(uri) {
-            val document = Jsoup.parse(response.body(), response.url().toExternalForm())
-            val links = getLinks(document) + getImageLinks(document)
+        val document = Jsoup.parse(response.body(), response.url().toExternalForm())
+        val links = getLinks(document) + getImageLinks(document)
 
-            links.mapNotNull { it.toUri() }
-                    .filterNot(uri::equals)
-                    .filter(this::isHostEligible)
-                    .toSet()
-        }.also {
-            if (it.isNotEmpty()) println("↺ $uri")
-        }
+        return links.mapNotNull { it.toUri() }
+                .filterNot(uri::equals)
+                .filter(this::isHostEligible)
+                .toSet()
+                .also {
+                    if (it.isNotEmpty()) println("↺ $uri")
+                }
     }
 
     private fun getLinks(document: Document): Sequence<String> {
