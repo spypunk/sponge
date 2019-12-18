@@ -34,20 +34,20 @@ Options:
          -R 5 \
          -s
 ...
-﹫ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Morning_at_the_Creek_ID_1201
-⬇ Download scheduled: https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Ending_at_the_Trainstation_ID_1994.mp3
-﹫ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Ending_at_the_Trainstation_ID_1994
-⬇ Download scheduled: https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Dream_your_Dreams_ID_1195.mp3
-﹫ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Dream_your_Dreams_ID_1195
-﹫ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Do_not_forget_me_ID_1028
-⬇ Download scheduled: https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Do_not_forget_me_ID_1028.mp3
-⬇ Download scheduled: https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Arround_the_Cliffs_ID_1202.mp3
-﹫ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Arround_the_Cliffs_ID_1202
-⬇ Download scheduled: https://files.freemusicarchive.org/storage-freemusicarchive-org/music/KBOO/rose_city/Live_at_KBOO_for_Blues_Junction_08132016/rose_city_-_01_-_Rose_City_Kings-Aug_2016-LIVE.mp3
-﹫ https://freemusicarchive.org/music/Rose_City_Kings/Live_at_KBOO_for_Blues_Junction_08132016/Rose_City_Kings-Aug_2016-LIVE
+↺ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Morning_at_the_Creek_ID_1201
+⇩ Download scheduled: https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Ending_at_the_Trainstation_ID_1994.mp3
+↺ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Ending_at_the_Trainstation_ID_1994
+⇩ Download scheduled: https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Dream_your_Dreams_ID_1195.mp3
+↺ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Dream_your_Dreams_ID_1195
+↺ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Do_not_forget_me_ID_1028
+⇩ Download scheduled: https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Do_not_forget_me_ID_1028.mp3
+⇩ Download scheduled: https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Arround_the_Cliffs_ID_1202.mp3
+↺ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Arround_the_Cliffs_ID_1202
+⇩ Download scheduled: https://files.freemusicarchive.org/storage-freemusicarchive-org/music/KBOO/rose_city/Live_at_KBOO_for_Blues_Junction_08132016/rose_city_-_01_-_Rose_City_Kings-Aug_2016-LIVE.mp3
+↺ https://freemusicarchive.org/music/Rose_City_Kings/Live_at_KBOO_for_Blues_Junction_08132016/Rose_City_Kings-Aug_2016-LIVE
 ⬇ Download completed: /home/spypunk/output/Checkie_Brown_-_09_-_Mary_Roose_CB_36.mp3 [8 MB]
-﹫ https://freemusicarchive.org/music/Rose_City_Kings/
-﹫ https://freemusicarchive.org/music/Punk_Rock_Opera/Punk_Rock_Opera_Vol_II/Punk_Rock_Opera_-_Punk_Rock_Opera_Vol_II_Album_-_14_1945
+↺ https://freemusicarchive.org/music/Rose_City_Kings/
+↺ https://freemusicarchive.org/music/Punk_Rock_Opera/Punk_Rock_Opera_Vol_II/Punk_Rock_Opera_-_Punk_Rock_Opera_Vol_II_Album_-_14_1945
 ...
 ~~~
 ~~~
@@ -59,21 +59,21 @@ Options:
          -R 5 \
          -D 5
 ...
-﹫ https://gutenberg.org/ebooks/60920
-﹫ https://gutenberg.org/ebooks/60919
-﹫ https://gutenberg.org/ebooks/
-﹫ https://gutenberg.org/wiki/Main_Page
-﹫ https://gutenberg.org/wiki/Gutenberg:Project_Gutenberg_Needs_Your_Donation
-﹫ https://gutenberg.org/terms_of_use/
-⬇ Download scheduled: https://gutenberg.org/ebooks/60942.txt.utf-8
+↺ https://gutenberg.org/ebooks/60920
+↺ https://gutenberg.org/ebooks/60919
+↺ https://gutenberg.org/ebooks/
+↺ https://gutenberg.org/wiki/Main_Page
+↺ https://gutenberg.org/wiki/Gutenberg:Project_Gutenberg_Needs_Your_Donation
+↺ https://gutenberg.org/terms_of_use/
+⇩ Download scheduled: https://gutenberg.org/ebooks/60942.txt.utf-8
 ⬇ Download completed: /home/spypunk/output/60942.txt.utf-8 [302 KB]
-⬇ Download scheduled: https://gutenberg.org/files/60943/60943-0.txt
+⇩ Download scheduled: https://gutenberg.org/files/60943/60943-0.txt
 ⬇ Download completed: /home/spypunk/output/60943-0.txt [505 KB]
-⬇ Download scheduled: https://gutenberg.org/files/60941/60941-0.txt
+⇩ Download scheduled: https://gutenberg.org/files/60941/60941-0.txt
 ⬇ Download completed: /home/spypunk/output/60941-0.txt [248 KB]
-⬇ Download scheduled: https://gutenberg.org/files/60938/60938-0.txt
+⇩ Download scheduled: https://gutenberg.org/files/60938/60938-0.txt
 ⬇ Download completed: /home/spypunk/output/60938-0.txt [696 KB]
-⬇ Download scheduled: https://gutenberg.org/files/60937/60937-0.txt
+⇩ Download scheduled: https://gutenberg.org/files/60937/60937-0.txt
 ⬇ Download completed: /home/spypunk/output/60937-0.txt [608 KB]
 ...
 ~~~
@@ -86,18 +86,18 @@ Options:
          -D 5 \
          -s
 ...
-﹫ https://pexels.com/public-domain-images/
-⬇ Download scheduled: https://images.pexels.com/photos/948331/pexels-photo-948331.jpeg?auto=compress&crop=focalpoint&cs=tinysrgb&fit=crop&h=350.0&sharp=40&w=1400
-⬇ Download scheduled: https://images.pexels.com/photos/2868847/pexels-photo-2868847.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500
-⬇ Download scheduled: https://pexels.com/assets/_svg/avatar_default-ab90ed807baa930476cb5abc4b547f7190f19fb418dc3581e686d5d418a611a1.svg
-⬇ Download scheduled: https://images.pexels.com/users/avatars/1490165/daniel-mingook-kim-308.jpeg?w=60&h=60&fit=crop&crop=faces
-⬇ Download scheduled: https://images.pexels.com/photos/3234167/pexels-photo-3234167.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500
+↺ https://pexels.com/public-domain-images/
+⇩ Download scheduled: https://images.pexels.com/photos/948331/pexels-photo-948331.jpeg?auto=compress&crop=focalpoint&cs=tinysrgb&fit=crop&h=350.0&sharp=40&w=1400
+⇩ Download scheduled: https://images.pexels.com/photos/2868847/pexels-photo-2868847.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500
+⇩ Download scheduled: https://pexels.com/assets/_svg/avatar_default-ab90ed807baa930476cb5abc4b547f7190f19fb418dc3581e686d5d418a611a1.svg
+⇩ Download scheduled: https://images.pexels.com/users/avatars/1490165/daniel-mingook-kim-308.jpeg?w=60&h=60&fit=crop&crop=faces
+⇩ Download scheduled: https://images.pexels.com/photos/3234167/pexels-photo-3234167.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500
 ⬇ Download completed: /home/spypunk/output/pexels-photo-2868847.jpeg [17 KB]
 ⬇ Download completed: /home/spypunk/output/pexels-photo-948331.jpeg [74 KB]
-⬇ Download scheduled: https://pexels.com/assets/favorite-f721c3d387889d5c3a9e0943c1836840a2954b9bebab846ca963877afee48f21.svg
-⬇ Download scheduled: https://images.pexels.com/photos/3351676/pexels-photo-3351676.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500
-⬇ Download scheduled: https://pexels.com/assets/star-1bf7ee8c305832829a0a1e0b5c5d901e34e6732cd67c90715cd9b554a785877b.svg
-⬇ Download scheduled: https://images.pexels.com/users/avatars/1051433/denis-perekhrest-261.jpeg?w=60&h=60&fit=crop&crop=faces
+⇩ Download scheduled: https://pexels.com/assets/favorite-f721c3d387889d5c3a9e0943c1836840a2954b9bebab846ca963877afee48f21.svg
+⇩ Download scheduled: https://images.pexels.com/photos/3351676/pexels-photo-3351676.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500
+⇩ Download scheduled: https://pexels.com/assets/star-1bf7ee8c305832829a0a1e0b5c5d901e34e6732cd67c90715cd9b554a785877b.svg
+⇩ Download scheduled: https://images.pexels.com/users/avatars/1051433/denis-perekhrest-261.jpeg?w=60&h=60&fit=crop&crop=faces
 ⬇ Download completed: /home/spypunk/output/pexels-photo-3234167.jpeg [72 KB]
 ⬇ Download completed: /home/spypunk/output/daniel-mingook-kim-308.jpeg [5 KB]
 ...

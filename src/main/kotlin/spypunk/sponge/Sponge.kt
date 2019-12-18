@@ -14,6 +14,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
@@ -21,6 +22,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.net.URI
 import java.nio.file.Files
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 
@@ -72,7 +74,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private fun getChildren(uri: URI, response: Connection.Response): Set<URI> {
         return urisChildren.computeIfAbsent(uri) {
-            println("﹫ $uri")
+            println("↺ $uri")
 
             val document = Jsoup.parse(response.body(), response.url().toExternalForm())
             val links = getLinks(document) + getImageLinks(document)
@@ -111,9 +113,13 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         val fileName = FilenameUtils.getName(uri.path)
         val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
 
-        println("⬇ Download scheduled: $uri")
+        println("⇩ Download scheduled: $uri")
 
-        withContext(downloadContext) { spongeService.download(uri, filePath) }
+        withContext(downloadContext) {
+            spongeService.download(uri, filePath)
+
+            println("↓ Download completed: $filePath [${filePath.humanSize()}]")
+        }
     }
 
     private fun String.toUri(): URI? {
@@ -123,4 +129,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             null
         }
     }
+
+    private fun Path.humanSize() = FileUtils.byteCountToDisplaySize(Files.size(this))
 }
