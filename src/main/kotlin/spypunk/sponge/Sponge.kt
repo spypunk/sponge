@@ -45,7 +45,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         runBlocking { visitUri() }
     }
 
-    private suspend fun visitUri(uri: URI = spongeInput.uri, depth: Int = 0) {
+    private suspend fun visitUri(uri: URI = spongeInput.uri, parents: Set<URI> = setOf()) {
         if (failedUris.contains(uri)) return
 
         try {
@@ -62,8 +62,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
             if (uriMetadata.canDownload) {
                 download(uri)
-            } else if (depth < spongeInput.maxDepth) {
-                visitChildren(uriMetadata.children, depth)
+            } else if (parents.size < spongeInput.maxDepth) {
+                visitUris(uriMetadata.children, parents + uri)
             }
         } catch (e: Exception) {
             System.err.println("⚠ Processing failed for $uri: ${e.message}")
@@ -72,9 +72,11 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         }
     }
 
-    private suspend fun visitChildren(children: Set<URI>, depth: Int) {
-        children
-                .map { GlobalScope.async(requestContext) { visitUri(it, depth + 1) } }
+    private suspend fun visitUris(uris: Set<URI>, parents: Set<URI> = setOf()) {
+        uris.asSequence()
+                .filterNot { parents.contains(it) }
+                .map { GlobalScope.async(requestContext) { visitUri(it, parents) } }
+                .toList()
                 .awaitAll()
     }
 
@@ -86,6 +88,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             val links = getLinks(document) + getImageLinks(document)
 
             links.mapNotNull { it.toUri() }
+                    .filterNot { it == uri }
                     .filter(this::isHostEligible)
                     .toSet()
         }
