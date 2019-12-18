@@ -16,6 +16,7 @@ import java.io.IOException
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
 
@@ -45,7 +46,7 @@ class SpongeService {
     fun download(uri: URI, path: Path) {
         try {
             request(uri, 0).bodyStream()
-                    .use { FileUtils.copyToFile(it, path.toFile()) }
+                    .use { Files.copy(it, path, StandardCopyOption.REPLACE_EXISTING) }
 
             println("↓ $path [${path.humanSize()}]")
         } catch (e: Exception) {

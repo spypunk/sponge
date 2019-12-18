@@ -25,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
-
     private class UriMetadata(val canDownload: Boolean = false, val children: Set<URI> = setOf())
 
     private companion object {
@@ -66,12 +65,12 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private fun getUriMetadata(uri: URI): UriMetadata {
         return uriMetadatas.computeIfAbsent(uri) {
-            val response = spongeService.request(uri)
+            val response = spongeService.request(it)
             val mimeType = ContentType.parse(response.contentType()).mimeType
 
             when {
-                canDownload(mimeType, uri) -> UriMetadata(canDownload = true)
-                htmlMimeTypes.contains(mimeType) -> UriMetadata(children = getChildren(uri, response))
+                canDownload(it, mimeType) -> UriMetadata(canDownload = true)
+                htmlMimeTypes.contains(mimeType) -> UriMetadata(children = getChildren(it, response))
                 else -> defaultUriMetadata
             }
         }
@@ -118,16 +117,13 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 || (spongeInput.includeSubdomains && uri.host.endsWith(spongeInput.uri.host))
     }
 
-    private fun canDownload(mimeType: String, uri: URI): Boolean {
-        return spongeInput.mimeTypes.contains(mimeType)
-                || spongeInput.fileExtensions.contains(FilenameUtils.getExtension(uri.path))
+    private fun canDownload(uri: URI, mimeType: String): Boolean {
+        return spongeInput.fileExtensions.contains(FilenameUtils.getExtension(uri.path)) || spongeInput.mimeTypes.contains(mimeType)
     }
 
     private suspend fun download(uri: URI) {
-        val fileName = FilenameUtils.getName(uri.path)
-
-        processedDownloads.computeIfAbsent(fileName) {
-            val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
+        processedDownloads.computeIfAbsent(FilenameUtils.getName(uri.path)) {
+            val filePath = spongeInput.outputDirectory.resolve(it).toAbsolutePath()
 
             GlobalScope.async(downloadContext) { spongeService.download(uri, filePath) }
         }.await()
