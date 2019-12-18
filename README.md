@@ -34,20 +34,23 @@ Options:
          -R 5 \
          -s
 ...
-↺ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Morning_at_the_Creek_ID_1201
-⇩ https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Ending_at_the_Trainstation_ID_1994.mp3
-↺ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Ending_at_the_Trainstation_ID_1994
-⇩ https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Dream_your_Dreams_ID_1195.mp3
-↺ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Dream_your_Dreams_ID_1195
-↺ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Do_not_forget_me_ID_1028
-⇩ https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Do_not_forget_me_ID_1028.mp3
-⇩ https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Arround_the_Cliffs_ID_1202.mp3
-↺ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Arround_the_Cliffs_ID_1202
-⇩ https://files.freemusicarchive.org/storage-freemusicarchive-org/music/KBOO/rose_city/Live_at_KBOO_for_Blues_Junction_08132016/rose_city_-_01_-_Rose_City_Kings-Aug_2016-LIVE.mp3
-↺ https://freemusicarchive.org/music/Rose_City_Kings/Live_at_KBOO_for_Blues_Junction_08132016/Rose_City_Kings-Aug_2016-LIVE
-⬇ /home/spypunk/output/Checkie_Brown_-_09_-_Mary_Roose_CB_36.mp3 [8 MB]
-↺ https://freemusicarchive.org/music/Rose_City_Kings/
-↺ https://freemusicarchive.org/music/Punk_Rock_Opera/Punk_Rock_Opera_Vol_II/Punk_Rock_Opera_-_Punk_Rock_Opera_Vol_II_Album_-_14_1945
+↺ https://freemusicarchive.org/genre/Blues?sort=track_date_published&d=1&page=6
+↺ https://freemusicarchive.org/genre/Blues?sort=track_date_published&d=1&page=109
+↺ https://freemusicarchive.org/genre/Blues?sort=track_date_published&d=1&page=7
+↓ /home/spypunk/output/You_get_the_Blues_ID_1201.mp3 [10 MB]
+↺ https://freemusicarchive.org/Privacy_Policy
+↺ https://freemusicarchive.org/Terms_of_Use
+↓ /home/spypunk/output/Tropic_Island_-_Clearmix_ID_1172.mp3 [8 MB]
+↺ https://freemusicarchive.org/music/Rose_City_Kings/Live_at_KBOO_for_Blues_Junction_08132016/
+↓ /home/spypunk/output/Lobo_Loco_-_03_-_Spencer_-_Bluegrass_ID_1230.mp3 [9 MB]
+↺ https://freemusicarchive.org/member/Alpha_Hydrae/Chill_and_ambiant_songs_from_Monplaisir__cies_projects_under_Creative_Commons_0_and_Public_Domain_li
+↓ /home/spypunk/output/Traveling_Horse_ID_1207.mp3 [6 MB]
+↺ https://freemusicarchive.org/music/Monplaisir/Heat_of_the_Summer/Monplaisir_-_Monplaisir_-_Heat_of_the_Summer_-_11_Estampe_Galactus_Barbare_Epaul_Giraffe_Ennui
+↓ /home/spypunk/output/Sometimes_it_Rains_ID_1206.mp3 [11 MB]
+↺ https://freemusicarchive.org/music/Monplaisir/Surtout_ne_pas_se_perdre_2011-2016/Monplaisir_-_Surtout_ne_pas_se_perdre_2011-2016_-_01_Everything_is_true
+↓ /home/spypunk/output/Seniorita_Bonita_ID_1194.mp3 [7 MB]
+↺ https://freemusicarchive.org/music/
+↺ https://freemusicarchive.org/music/Monplaisir/
 ...
 ~~~
 ~~~
@@ -59,47 +62,48 @@ Options:
          -R 5 \
          -D 5
 ...
-↺ https://gutenberg.org/ebooks/60920
-↺ https://gutenberg.org/ebooks/60919
-↺ https://gutenberg.org/ebooks/
-↺ https://gutenberg.org/wiki/Main_Page
-↺ https://gutenberg.org/wiki/Gutenberg:Project_Gutenberg_Needs_Your_Donation
-↺ https://gutenberg.org/terms_of_use/
-⇩ https://gutenberg.org/ebooks/60942.txt.utf-8
-⬇ /home/spypunk/output/60942.txt.utf-8 [302 KB]
-⇩ https://gutenberg.org/files/60943/60943-0.txt
-⬇ /home/spypunk/output/60943-0.txt [505 KB]
-⇩ https://gutenberg.org/files/60941/60941-0.txt
-⬇ /home/spypunk/output/60941-0.txt [248 KB]
-⇩ https://gutenberg.org/files/60938/60938-0.txt
-⬇ /home/spypunk/output/60938-0.txt [696 KB]
-⇩ https://gutenberg.org/files/60937/60937-0.txt
-⬇ /home/spypunk/output/60937-0.txt [608 KB]
+↺ https://gutenberg.org/ebooks/author/285
+↺ https://gutenberg.org/ebooks/60948/also/
+↺ https://gutenberg.org/ebooks/send/megaupload/60948.html
+↓ /home/spypunk/output/60954-8.txt [236 KB]
+↺ https://gutenberg.org/files/60948/60948-h/60948-h.htm
+↺ https://gutenberg.org/files/60948/
+↺ https://gutenberg.org/ebooks/author/51202
+↺ https://gutenberg.org/ebooks/60945/also/
+↺ https://gutenberg.org/browse/languages/it
+↺ https://gutenberg.org/ebooks/send/megaupload/60945.html
+↓ /home/spypunk/output/60948.txt.utf-8 [352 KB]
+↺ https://gutenberg.org/files/60945/
+↺ https://gutenberg.org/ebooks/author/46334
+↺ https://gutenberg.org/ebooks/60947/also/
+↺ https://gutenberg.org/ebooks/send/megaupload/60947.html
 ...
 ~~~
 ~~~
 ./sponge -u https://www.pexels.com/public-domain-images/ \
          -o output \
          -e jpeg \
-         -e svg \
+         -d 3 \
          -R 5 \
          -D 5 \
          -s
 ...
-↺ https://pexels.com/public-domain-images/
-⇩ https://images.pexels.com/photos/948331/pexels-photo-948331.jpeg?auto=compress&crop=focalpoint&cs=tinysrgb&fit=crop&h=350.0&sharp=40&w=1400
-⇩ https://images.pexels.com/photos/2868847/pexels-photo-2868847.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500
-⇩ https://pexels.com/assets/_svg/avatar_default-ab90ed807baa930476cb5abc4b547f7190f19fb418dc3581e686d5d418a611a1.svg
-⇩ https://images.pexels.com/users/avatars/1490165/daniel-mingook-kim-308.jpeg?w=60&h=60&fit=crop&crop=faces
-⇩ https://images.pexels.com/photos/3234167/pexels-photo-3234167.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500
-⬇ /home/spypunk/output/pexels-photo-2868847.jpeg [17 KB]
-⬇ /home/spypunk/output/pexels-photo-948331.jpeg [74 KB]
-⇩ https://pexels.com/assets/favorite-f721c3d387889d5c3a9e0943c1836840a2954b9bebab846ca963877afee48f21.svg
-⇩ https://images.pexels.com/photos/3351676/pexels-photo-3351676.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500
-⇩ https://pexels.com/assets/star-1bf7ee8c305832829a0a1e0b5c5d901e34e6732cd67c90715cd9b554a785877b.svg
-⇩ https://images.pexels.com/users/avatars/1051433/denis-perekhrest-261.jpeg?w=60&h=60&fit=crop&crop=faces
-⬇ /home/spypunk/output/pexels-photo-3234167.jpeg [72 KB]
-⬇ /home/spypunk/output/daniel-mingook-kim-308.jpeg [5 KB]
+↺ https://pexels.com/el-gr/search/%25CE%25B4%25CF%258D%25CF%2583%25CE%25B7%2520%25CF%2584%25CE%25BF%25CF%2585%2520%25CE%25B7%25CE%25BB%25CE%25AF%25CE%25BF%25CF%2585/
+↺ https://pexels.com/nb-no/sok/solnedgang/
+↺ https://pexels.com/ro-ro/cauta/apus/
+↓ /home/spypunk/output/pexels-photo-1237119.jpeg [1 KB]
+↓ /home/spypunk/output/pexels-photo-457882.jpeg [1 KB]
+↓ /home/spypunk/output/pexels-photo-355465.jpeg [1 KB]
+↓ /home/spypunk/output/pexels-photo-66997.jpeg [10 KB]
+↓ /home/spypunk/output/pexels-photo-912110.jpeg [1 KB]
+↓ /home/spypunk/output/pexels-photo-414171.jpeg [1 KB]
+↓ /home/spypunk/output/pexels-photo-551578.jpeg [23 KB]
+↺ https://pexels.com/ru-ru/search/%25D0%25B7%25D0%25B0%25D0%25BA%25D0%25B0%25D1%2582/
+↺ https://pexels.com/tr-tr/arama/g%25C3%25BCn%2520bat%25C4%25B1m%25C4%25B1/
+↓ /home/spypunk/output/pexels-photo-561463.jpeg [20 KB]
+↓ /home/spypunk/output/nastasia-789.jpeg [5 KB]
+↺ https://pexels.com/sk-sk/vyhladat/z%25C3%25A1pad%2520slnka/
+↓ /home/spypunk/output/skitterphoto-189.jpeg [5 KB]
 ...
 ~~~
 ## What about license?
