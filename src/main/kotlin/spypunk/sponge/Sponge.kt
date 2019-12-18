@@ -56,9 +56,9 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 visitUris(uriMetadata.children, parents + uri)
             }
         } catch (e: Exception) {
-            System.err.println("⚠ Processing failed for $uri: ${e.javaClass.name} - ${e.message}")
-
             failedUris.add(uri)
+
+            System.err.println("⚠ Processing failed for $uri: ${e.javaClass.name} - ${e.message}")
         }
     }
 
@@ -91,9 +91,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 .filterNot(uri::equals)
                 .filter(this::isHostEligible)
                 .toSet()
-                .also {
-                    if (it.isNotEmpty()) println("↺ $uri")
-                }
+                .also { if (it.isNotEmpty()) println("↺ $uri") }
     }
 
     private fun getLinks(document: Document): Sequence<String> {
