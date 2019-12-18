@@ -113,12 +113,12 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         val fileName = FilenameUtils.getName(uri.path)
         val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
 
-        println("⇩ Download scheduled: $uri")
+        println("⇩ $uri")
 
         withContext(downloadContext) {
             spongeService.download(uri, filePath)
 
-            println("↓ Download completed: $filePath [${filePath.humanSize()}]")
+            println("↓ $filePath [${filePath.humanSize()}]")
         }
     }
 
