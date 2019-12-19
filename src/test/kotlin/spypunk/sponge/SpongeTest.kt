@@ -53,6 +53,16 @@ class SpongeTest {
     }
 
     @Test
+    fun testUnsupportedDocument() {
+        givenDocument(spongeInput.uri, "", ContentType.IMAGE_TIFF)
+
+        executeSponge(spongeInput)
+
+        verify(exactly = 1) { spongeService.request(spongeInput.uri) }
+        verify(exactly = 0) { spongeService.download(any(), any()) }
+    }
+
+    @Test
     fun testDocumentWithLink() {
         val fileUri = URI("${spongeInput.uri}/$fileName")
 
@@ -231,10 +241,10 @@ class SpongeTest {
         verify(exactly = 1) { spongeService.download(fileUri, spongeInput.outputDirectory.resolve(fileName)) }
     }
 
-    private fun givenDocument(uri: URI, htmlContent: String) {
+    private fun givenDocument(uri: URI, htmlContent: String, contentType: ContentType = ContentType.TEXT_HTML) {
         val response = mockk<Connection.Response>()
 
-        every { response.contentType() } returns ContentType.TEXT_HTML.mimeType
+        every { response.contentType() } returns contentType.mimeType
         every { response.body() } returns htmlContent
         every { response.url() } returns uri.toURL()
 
