@@ -34,10 +34,10 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
-    private val visitedUris = HashSet<URI>()
+    private val visitedUris = CopyOnWriteArraySet<URI>()
     private val failedUris = CopyOnWriteArraySet<URI>()
     private val uriMetadatas = ConcurrentHashMap<URI, UriMetadata>()
-    private val processedDownloads = HashSet<String>()
+    private val processedDownloads = CopyOnWriteArraySet<String>()
 
     fun execute() {
         Files.createDirectories(spongeInput.outputDirectory)
@@ -64,11 +64,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun getUriMetadata(uri: URI): UriMetadata {
-        synchronized(visitedUris) {
-            if (visitedUris.contains(uri)) return uriMetadatas.getValue(uri)
-
-            visitedUris.add(uri)
-        }
+        if (!visitedUris.add(uri)) return uriMetadatas.getValue(uri)
 
         val response = spongeService.request(uri)
         val mimeType = ContentType.parse(response.contentType()).mimeType
@@ -128,11 +124,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private suspend fun download(uri: URI) {
         val fileName = FilenameUtils.getName(uri.path)
 
-        synchronized(processedDownloads) {
-            if (processedDownloads.contains(fileName)) return
-
-            processedDownloads.add(fileName)
-        }
+        if (!processedDownloads.add(fileName)) return
 
         val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
 
