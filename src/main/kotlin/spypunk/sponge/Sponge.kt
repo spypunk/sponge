@@ -29,12 +29,11 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private companion object {
         private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
-        private val defaultUriMetadata = UriMetadata()
+        private val emptyUriMetadata = UriMetadata()
     }
 
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
-    private val failedUris = CopyOnWriteArraySet<URI>()
     private val uriMetadatas = ConcurrentHashMap<URI, UriMetadata>()
     private val processedDownloads = CopyOnWriteArraySet<String>()
 
@@ -45,8 +44,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private suspend fun visitUri(uri: URI = spongeInput.uri, parents: Set<URI> = setOf()) {
-        if (failedUris.contains(uri)) return
-
         try {
             val uriMetadata = getUriMetadata(uri)
 
@@ -56,7 +53,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 visitUris(uriMetadata.children, parents + uri)
             }
         } catch (e: Exception) {
-            failedUris.add(uri)
+            uriMetadatas[uri] = emptyUriMetadata
 
             System.err.println("⚠ Processing failed for $uri: ${e.javaClass.name} - ${e.message}")
         }
@@ -71,7 +68,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         return when {
             canDownload(uri, mimeType) -> UriMetadata(canDownload = true)
             htmlMimeTypes.contains(mimeType) -> UriMetadata(children = getChildren(uri, response))
-            else -> defaultUriMetadata
+            else -> emptyUriMetadata
         }.also {
             uriMetadatas[uri] = it
         }
