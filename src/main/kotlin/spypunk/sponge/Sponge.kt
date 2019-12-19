@@ -8,12 +8,12 @@
 
 package spypunk.sponge
 
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
@@ -21,7 +21,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.net.URI
 import java.nio.file.Files
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
@@ -34,9 +33,10 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
+    private val visitedUris = HashSet<URI>()
     private val failedUris = CopyOnWriteArraySet<URI>()
-    private val uriMetadatas = ConcurrentHashMap<URI, UriMetadata>()
-    private val processedDownloads = ConcurrentHashMap<String, Deferred<Unit>>()
+    private val uriMetadatas = HashMap<URI, UriMetadata>()
+    private val processedDownloads = HashSet<String>()
 
     fun execute() {
         Files.createDirectories(spongeInput.outputDirectory)
@@ -63,13 +63,19 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun getUriMetadata(uri: URI): UriMetadata {
-        return uriMetadatas.computeIfAbsent(uri) {
-            val response = spongeService.request(it)
-            val mimeType = ContentType.parse(response.contentType()).mimeType
+        synchronized(visitedUris) {
+            if (visitedUris.contains(uri)) return uriMetadatas.getValue(uri)
 
+            visitedUris.add(uri)
+        }
+
+        val response = spongeService.request(uri)
+        val mimeType = ContentType.parse(response.contentType()).mimeType
+
+        return uriMetadatas.getOrPut(uri) {
             when {
-                canDownload(it, mimeType) -> UriMetadata(canDownload = true)
-                htmlMimeTypes.contains(mimeType) -> UriMetadata(children = getChildren(it, response))
+                canDownload(uri, mimeType) -> UriMetadata(canDownload = true)
+                htmlMimeTypes.contains(mimeType) -> UriMetadata(children = getChildren(uri, response))
                 else -> defaultUriMetadata
             }
         }
@@ -119,11 +125,17 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private suspend fun download(uri: URI) {
-        processedDownloads.computeIfAbsent(FilenameUtils.getName(uri.path)) {
-            val filePath = spongeInput.outputDirectory.resolve(it).toAbsolutePath()
+        val fileName = FilenameUtils.getName(uri.path)
 
-            GlobalScope.async(downloadContext) { spongeService.download(uri, filePath) }
-        }.await()
+        synchronized(processedDownloads) {
+            if (processedDownloads.contains(fileName)) return
+
+            processedDownloads.add(fileName)
+        }
+
+        val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
+
+        withContext(downloadContext) { spongeService.download(uri, filePath) }
     }
 
     private fun String.toUri(): URI? {

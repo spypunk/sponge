@@ -41,8 +41,7 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
             .convert { it.toNormalizedUri() }
             .required()
 
-    private val outputDirectory by option("-o", "--output",
-            help = "Output directory where files are downloaded")
+    private val outputDirectory by option("-o", "--output", help = "Output directory where files are downloaded")
             .convert { Paths.get(it) }
             .required()
 
