@@ -34,7 +34,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
-    private val visitedUris = CopyOnWriteArraySet<URI>()
     private val failedUris = CopyOnWriteArraySet<URI>()
     private val uriMetadatas = ConcurrentHashMap<URI, UriMetadata>()
     private val processedDownloads = CopyOnWriteArraySet<String>()
@@ -64,7 +63,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun getUriMetadata(uri: URI): UriMetadata {
-        if (!visitedUris.add(uri)) return uriMetadatas.getValue(uri)
+        if (uriMetadatas.contains(uri)) return uriMetadatas.getValue(uri)
 
         val response = spongeService.request(uri)
         val mimeType = ContentType.parse(response.contentType()).mimeType
