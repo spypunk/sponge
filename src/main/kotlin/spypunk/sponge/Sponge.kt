@@ -21,6 +21,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.net.URI
 import java.nio.file.Files
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
@@ -35,7 +36,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
     private val visitedUris = HashSet<URI>()
     private val failedUris = CopyOnWriteArraySet<URI>()
-    private val uriMetadatas = HashMap<URI, UriMetadata>()
+    private val uriMetadatas = ConcurrentHashMap<URI, UriMetadata>()
     private val processedDownloads = HashSet<String>()
 
     fun execute() {
@@ -72,12 +73,12 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         val response = spongeService.request(uri)
         val mimeType = ContentType.parse(response.contentType()).mimeType
 
-        return uriMetadatas.getOrPut(uri) {
-            when {
-                canDownload(uri, mimeType) -> UriMetadata(canDownload = true)
-                htmlMimeTypes.contains(mimeType) -> UriMetadata(children = getChildren(uri, response))
-                else -> defaultUriMetadata
-            }
+        return when {
+            canDownload(uri, mimeType) -> UriMetadata(canDownload = true)
+            htmlMimeTypes.contains(mimeType) -> UriMetadata(children = getChildren(uri, response))
+            else -> defaultUriMetadata
+        }.also {
+            uriMetadatas[uri] = it
         }
     }
 
