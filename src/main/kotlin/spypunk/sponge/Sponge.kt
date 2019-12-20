@@ -104,13 +104,13 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun isHostEligible(uri: URI): Boolean {
-        return uri.host == spongeInput.uri.host
-                || (spongeInput.includeSubdomains && uri.host.endsWith(spongeInput.uri.host))
+        return uri.host == spongeInput.uri.host ||
+                spongeInput.includeSubdomains && uri.host.endsWith(spongeInput.uri.host)
     }
 
     private fun canDownload(uri: URI, mimeType: String): Boolean {
-        return spongeInput.fileExtensions.contains(FilenameUtils.getExtension(uri.path))
-                || spongeInput.mimeTypes.contains(mimeType)
+        return spongeInput.fileExtensions.contains(FilenameUtils.getExtension(uri.path)) ||
+                spongeInput.mimeTypes.contains(mimeType)
     }
 
     private suspend fun download(uri: URI) {

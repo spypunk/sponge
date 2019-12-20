@@ -37,7 +37,6 @@ class SpongeTest {
     private val spongeInputWithSubdomains = spongeInput.copy(includeSubdomains = true)
     private val spongeInputWithDepthTwo = spongeInput.copy(maxDepth = 2)
 
-
     @BeforeEach
     fun beforeEach() {
         FileUtils.deleteDirectory(outputDirectory.toFile())
