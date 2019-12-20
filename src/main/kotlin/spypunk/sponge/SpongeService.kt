@@ -45,6 +45,8 @@ class SpongeService {
 
     fun download(uri: URI, path: Path) {
         try {
+            Files.createDirectories(path)
+
             request(uri, 0).bodyStream()
                     .use { Files.copy(it, path, StandardCopyOption.REPLACE_EXISTING) }
 

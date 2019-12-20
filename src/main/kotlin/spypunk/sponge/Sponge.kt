@@ -20,7 +20,7 @@ import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.net.URI
-import java.nio.file.Files
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 
@@ -35,13 +35,9 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
     private val uriMetadatas = ConcurrentHashMap<URI, UriMetadata>()
-    private val processedDownloads = CopyOnWriteArraySet<String>()
+    private val processedDownloads = CopyOnWriteArraySet<Path>()
 
-    fun execute() {
-        Files.createDirectories(spongeInput.outputDirectory)
-
-        runBlocking { visitUri() }
-    }
+    fun execute() = runBlocking { visitUri() }
 
     private suspend fun visitUri(uri: URI = spongeInput.uri, parents: Set<URI> = setOf()) {
         try {
@@ -118,13 +114,15 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private suspend fun download(uri: URI) {
-        val fileName = FilenameUtils.getName(uri.path)
+        val path = spongeInput.outputDirectory
+                .resolve(uri.host)
+                .resolve(FilenameUtils.getPath(uri.path))
+                .resolve(FilenameUtils.getName(uri.path))
+                .toAbsolutePath()
 
-        if (!processedDownloads.add(fileName)) return
+        if (!processedDownloads.add(path)) return
 
-        val filePath = spongeInput.outputDirectory.resolve(fileName).toAbsolutePath()
-
-        withContext(downloadContext) { spongeService.download(uri, filePath) }
+        withContext(downloadContext) { spongeService.download(uri, path) }
     }
 
     private fun String.toUri(): URI? {

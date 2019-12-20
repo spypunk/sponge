@@ -12,6 +12,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import org.junit.jupiter.api.BeforeEach
@@ -27,7 +28,7 @@ class SpongeTest {
     private val imageFileName = "test.png"
 
     private val spongeInput = SpongeInput(
-            URI("https://test.com"),
+            "https://test.com".toNormalizedUri(),
             outputDirectory,
             setOf(ContentType.TEXT_PLAIN.mimeType),
             setOf("png")
@@ -83,7 +84,7 @@ class SpongeTest {
 
         verify(exactly = 1) { spongeService.request(spongeInput.uri) }
         verify(exactly = 1) { spongeService.request(fileUri) }
-        verify(exactly = 1) { spongeService.download(fileUri, spongeInput.outputDirectory.resolve(fileName)) }
+        verify(exactly = 1) { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
     }
 
     @Test
@@ -110,9 +111,9 @@ class SpongeTest {
 
         verify(exactly = 1) { spongeService.request(spongeInput.uri) }
         verify(exactly = 1) { spongeService.request(fileUri) }
-        verify(exactly = 1) { spongeService.download(fileUri, spongeInput.outputDirectory.resolve(fileName)) }
+        verify(exactly = 1) { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
         verify(exactly = 1) { spongeService.request(imageFileUri) }
-        verify(exactly = 1) { spongeService.download(imageFileUri, spongeInput.outputDirectory.resolve(imageFileName)) }
+        verify(exactly = 1) { spongeService.download(imageFileUri, getOutputFilePath(imageFileUri)) }
     }
 
     @Test
@@ -136,7 +137,7 @@ class SpongeTest {
 
         verify(exactly = 1) { spongeService.request(spongeInput.uri) }
         verify(exactly = 0) { spongeService.request(fileUri) }
-        verify(exactly = 0) { spongeService.download(fileUri, spongeInput.outputDirectory.resolve(fileName)) }
+        verify(exactly = 0) { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
     }
 
     @Test
@@ -162,7 +163,7 @@ class SpongeTest {
         verify(exactly = 1) { spongeService.request(fileUri) }
 
         verify(exactly = 1) {
-            spongeService.download(fileUri, spongeInputWithSubdomains.outputDirectory.resolve(fileName))
+            spongeService.download(fileUri, getOutputFilePath(fileUri))
         }
     }
 
@@ -202,7 +203,7 @@ class SpongeTest {
         verify(exactly = 1) { spongeService.request(fileUri) }
 
         verify(exactly = 1) {
-            spongeService.download(fileUri, spongeInputWithDepthTwo.outputDirectory.resolve(fileName))
+            spongeService.download(fileUri, getOutputFilePath(fileUri))
         }
     }
 
@@ -234,11 +235,18 @@ class SpongeTest {
         verify(exactly = 1) { spongeService.request(failingFileUri) }
 
         verify(exactly = 0) {
-            spongeService.download(failingFileUri, spongeInput.outputDirectory.resolve(failingFileName))
+            spongeService.download(failingFileUri, getOutputFilePath(failingFileUri))
         }
 
         verify(exactly = 1) { spongeService.request(fileUri) }
-        verify(exactly = 1) { spongeService.download(fileUri, spongeInput.outputDirectory.resolve(fileName)) }
+        verify(exactly = 1) { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
+    }
+
+    private fun getOutputFilePath(uri: URI): Path {
+        return spongeInput.outputDirectory
+                .resolve(uri.host)
+                .resolve(FilenameUtils.getPath(uri.path))
+                .resolve(FilenameUtils.getName(uri.path))
     }
 
     private fun givenDocument(uri: URI, htmlContent: String, contentType: ContentType = ContentType.TEXT_HTML) {
