@@ -34,6 +34,7 @@
                 <include>AUTHORS</include>
                 <include>COPYING</include>
                 <include>README.md</include>
+                <include>CODE_OF_CONDUCT.md</include>
             </includes>
         </fileSet>
     </fileSets>
