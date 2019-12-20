@@ -27,25 +27,25 @@ fun String.toNormalizedUri(): URI {
     if (url.host.isNullOrEmpty()) error("Hostname cannot be empty")
 
     return URIBuilder()
-            .apply {
-                scheme = url.protocol
-                port = url.port
-                userInfo = url.userInfo
+        .apply {
+            scheme = url.protocol
+            port = url.port
+            userInfo = url.userInfo
 
-                host = if (url.host.startsWith(WWW_PREFIX)) {
-                    url.host.substring(WWW_PREFIX.length)
-                } else {
-                    url.host
-                }
-
-                if (!url.query.isNullOrEmpty()) {
-                    setCustomQuery(url.query)
-                }
-
-                if (!url.path.isNullOrEmpty()) {
-                    pathSegments = URLEncodedUtils.parsePathSegments(url.path).map(urlPathSegmentEscaper::escape)
-                }
+            host = if (url.host.startsWith(WWW_PREFIX)) {
+                url.host.substring(WWW_PREFIX.length)
+            } else {
+                url.host
             }
-            .build()
-            .normalize()
+
+            if (!url.query.isNullOrEmpty()) {
+                setCustomQuery(url.query)
+            }
+
+            if (!url.path.isNullOrEmpty()) {
+                pathSegments = URLEncodedUtils.parsePathSegments(url.path).map(urlPathSegmentEscaper::escape)
+            }
+        }
+        .build()
+        .normalize()
 }

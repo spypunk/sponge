@@ -22,23 +22,23 @@ import kotlin.reflect.full.isSuperclassOf
 
 class SpongeService {
     private companion object {
-        private const val REQUEST_TIMEOUT = 30000
+        private const val REQUEST_TIMEOUT = 30_000
         private const val ENCODING = "gzip, deflate"
         private const val REFERRER = "https://www.google.com"
         private const val USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
-                "Chrome/78.0.3904.97 Safari/537.36"
+            "Chrome/78.0.3904.97 Safari/537.36"
     }
 
     fun request(uri: URI, timeout: Int = REQUEST_TIMEOUT): Connection.Response {
         val connection = Jsoup.connect(uri.toString())
-                .timeout(timeout)
-                .header(HttpHeaders.ACCEPT_ENCODING, ENCODING)
-                .referrer(REFERRER)
-                .userAgent(USER_AGENT)
-                .maxBodySize(0)
-                .ignoreHttpErrors(true)
-                .ignoreContentType(true)
-                .followRedirects(true)
+            .timeout(timeout)
+            .header(HttpHeaders.ACCEPT_ENCODING, ENCODING)
+            .referrer(REFERRER)
+            .userAgent(USER_AGENT)
+            .maxBodySize(0)
+            .ignoreHttpErrors(true)
+            .ignoreContentType(true)
+            .followRedirects(true)
 
         return retry(IOException::class) { connection.execute() }
     }
@@ -48,7 +48,7 @@ class SpongeService {
             Files.createDirectories(path)
 
             request(uri, 0).bodyStream()
-                    .use { Files.copy(it, path, StandardCopyOption.REPLACE_EXISTING) }
+                .use { Files.copy(it, path, StandardCopyOption.REPLACE_EXISTING) }
 
             println("↓ $path [${path.humanSize()}]")
         } catch (e: Exception) {
@@ -59,7 +59,7 @@ class SpongeService {
     private inline fun <T> retry(clazz: KClass<out Exception>, retryCount: Int = 3, block: () -> T): T {
         var exception: Exception? = null
 
-        for (i in 0..retryCount) {
+        for (ignored in 0..retryCount) {
             try {
                 return block.invoke()
             } catch (e: Exception) {

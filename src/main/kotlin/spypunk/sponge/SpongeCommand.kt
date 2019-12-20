@@ -34,45 +34,45 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
         private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
 
         private val version = ConfigurationProperties
-                .fromResource("sponge.properties")[Key("version", stringType)]
+            .fromResource("sponge.properties")[Key("version", stringType)]
     }
 
     private val uri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
-            .convert { it.toNormalizedUri() }
-            .required()
+        .convert { it.toNormalizedUri() }
+        .required()
 
     private val outputDirectory by option("-o", "--output", help = "Output directory where files are downloaded")
-            .convert { Paths.get(it) }
-            .required()
+        .convert { Paths.get(it) }
+        .required()
 
     private val mimeTypes by option("-t", "--mime-type", help = "Mime types to download (example: text/plain)")
-            .multiple()
-            .validate {
-                it.forEach { mimeType ->
-                    require(mimeTypePattern.matcher(mimeType).matches()) { "$mimeType is not a valid mime type" }
-                }
+        .multiple()
+        .validate {
+            it.forEach { mimeType ->
+                require(mimeTypePattern.matcher(mimeType).matches()) { "$mimeType is not a valid mime type" }
             }
+        }
 
     private val fileExtensions by option("-e", "--file-extension", help = "Extensions to download (example: png)")
-            .multiple()
+        .multiple()
 
     private val depth by option("-d", "--depth", help = "Search depth")
-            .int()
-            .restrictTo(1)
-            .default(1)
+        .int()
+        .restrictTo(1)
+        .default(1)
 
     private val includeSubdomains by option("-s", "--include-subdomains", help = "Include subdomains")
-            .flag()
+        .flag()
 
     private val concurrentRequests by option("-R", "--concurrent-requests", help = "Concurrent requests")
-            .int()
-            .restrictTo(1)
-            .default(1)
+        .int()
+        .restrictTo(1)
+        .default(1)
 
     private val concurrentDownloads by option("-D", "--concurrent-downloads", help = "Concurrent downloads")
-            .int()
-            .restrictTo(1)
-            .default(1)
+        .int()
+        .restrictTo(1)
+        .default(1)
 
     init {
         versionOption(names = setOf("-v", "--version"), version = version) { it }
@@ -90,14 +90,14 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
         try {
             val spongeService = SpongeService()
             val spongeInput = SpongeInput(
-                    uri,
-                    outputDirectory,
-                    mimeTypes.toSet(),
-                    fileExtensions.toSet(),
-                    depth,
-                    includeSubdomains,
-                    concurrentRequests,
-                    concurrentDownloads)
+                uri,
+                outputDirectory,
+                mimeTypes.toSet(),
+                fileExtensions.toSet(),
+                depth,
+                includeSubdomains,
+                concurrentRequests,
+                concurrentDownloads)
 
             Sponge(spongeService, spongeInput).execute()
         } catch (t: Throwable) {

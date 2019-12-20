@@ -28,10 +28,10 @@ class SpongeTest {
     private val imageFileName = "test.png"
 
     private val spongeInput = SpongeInput(
-            "https://test.com".toNormalizedUri(),
-            outputDirectory,
-            setOf(ContentType.TEXT_PLAIN.mimeType),
-            setOf("png")
+        "https://test.com".toNormalizedUri(),
+        outputDirectory,
+        setOf(ContentType.TEXT_PLAIN.mimeType),
+        setOf("png")
     )
 
     private val spongeInputWithSubdomains = spongeInput.copy(includeSubdomains = true)
@@ -67,8 +67,8 @@ class SpongeTest {
         val fileUri = URI("${spongeInput.uri}/$fileName")
 
         givenDocument(
-                spongeInput.uri,
-                """
+            spongeInput.uri,
+            """
                     <html>
                         <body>
                             <a href="$fileUri" />
@@ -92,8 +92,8 @@ class SpongeTest {
         val imageFileUri = URI("${spongeInput.uri}/$imageFileName")
 
         givenDocument(
-                spongeInput.uri,
-                """
+            spongeInput.uri,
+            """
                     <html>
                         <body>
                             <a href="$fileUri" />
@@ -120,8 +120,8 @@ class SpongeTest {
         val fileUri = URI("https://www.test.test.com/$fileName")
 
         givenDocument(
-                spongeInput.uri,
-                """
+            spongeInput.uri,
+            """
                     <html>
                         <body>
                             <a href="$fileUri" />
@@ -144,8 +144,8 @@ class SpongeTest {
         val fileUri = URI("https://test.test.com/$fileName")
 
         givenDocument(
-                spongeInputWithSubdomains.uri,
-                """
+            spongeInputWithSubdomains.uri,
+            """
                     <html>
                         <body>
                             <a href="$fileUri" />
@@ -172,8 +172,8 @@ class SpongeTest {
         val fileUri = URI("${spongeInputWithDepthTwo.uri}/$fileName")
 
         givenDocument(
-                spongeInputWithDepthTwo.uri,
-                """
+            spongeInputWithDepthTwo.uri,
+            """
                     <html>
                         <body>
                             <a href="$childDocumentUri" />
@@ -183,8 +183,8 @@ class SpongeTest {
         )
 
         givenDocument(
-                childDocumentUri,
-                """
+            childDocumentUri,
+            """
                     <html>
                         <body>
                             <a href="$fileUri" />
@@ -213,8 +213,8 @@ class SpongeTest {
         val failingFileUri = URI("${spongeInput.uri}/$failingFileName")
 
         givenDocument(
-                spongeInput.uri,
-                """
+            spongeInput.uri,
+            """
                     <html>
                         <body>
                             <a href="$failingFileUri" />
@@ -243,9 +243,9 @@ class SpongeTest {
 
     private fun getOutputFilePath(uri: URI): Path {
         return spongeInput.outputDirectory
-                .resolve(uri.host)
-                .resolve(FilenameUtils.getPath(uri.path))
-                .resolve(FilenameUtils.getName(uri.path))
+            .resolve(uri.host)
+            .resolve(FilenameUtils.getPath(uri.path))
+            .resolve(FilenameUtils.getName(uri.path))
     }
 
     private fun givenDocument(uri: URI, htmlContent: String, contentType: ContentType = ContentType.TEXT_HTML) {
@@ -266,7 +266,7 @@ class SpongeTest {
     }
 
     private fun givenUriFailsConnection(uri: URI) {
-        every { spongeService.request(uri) } throws IOException()
+        every { spongeService.request(uri) } throws IOException("Error!")
     }
 
     private fun executeSponge(spongeInput: SpongeInput) {

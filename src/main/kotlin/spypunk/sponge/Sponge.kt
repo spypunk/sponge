@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
-    private class UriMetadata(val canDownload: Boolean = false, val children: Set<URI> = setOf())
+    private data class UriMetadata(val canDownload: Boolean = false, val children: Set<URI> = setOf())
 
     private companion object {
         private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
@@ -72,10 +72,10 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private suspend fun visitUris(uris: Set<URI>, parents: Set<URI>) {
         uris.asSequence()
-                .filterNot(parents::contains)
-                .map { GlobalScope.async(requestContext) { visitUri(it, parents) } }
-                .toList()
-                .awaitAll()
+            .filterNot(parents::contains)
+            .map { GlobalScope.async(requestContext) { visitUri(it, parents) } }
+            .toList()
+            .awaitAll()
     }
 
     private fun getChildren(uri: URI, response: Connection.Response): Set<URI> {
@@ -83,42 +83,38 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         val links = getLinks(document) + getImageLinks(document)
 
         return links.mapNotNull { it.toUri() }
-                .filterNot(uri::equals)
-                .filter(this::isHostEligible)
-                .toSet()
-                .also { if (it.isNotEmpty()) println("↺ $uri") }
+            .filterNot(uri::equals)
+            .filter(this::isHostEligible)
+            .toSet()
+            .also { if (it.isNotEmpty()) println("↺ $uri") }
     }
 
-    private fun getLinks(document: Document): Sequence<String> {
-        return getAttributeValues(document, "a[href]", "abs:href")
-    }
+    private fun getLinks(document: Document) = getAttributeValues(document, "a[href]", "abs:href")
 
-    private fun getImageLinks(document: Document): Sequence<String> {
-        return getAttributeValues(document, "img[src]", "abs:src")
-    }
+    private fun getImageLinks(document: Document) = getAttributeValues(document, "img[src]", "abs:src")
 
     private fun getAttributeValues(document: Document, cssQuery: String, attributeKey: String): Sequence<String> {
         return document.select(cssQuery).asSequence()
-                .mapNotNull { it.attr(attributeKey) }
-                .filterNot(String::isEmpty)
+            .mapNotNull { it.attr(attributeKey) }
+            .filterNot(String::isEmpty)
     }
 
     private fun isHostEligible(uri: URI): Boolean {
         return uri.host == spongeInput.uri.host ||
-                spongeInput.includeSubdomains && uri.host.endsWith(spongeInput.uri.host)
+            spongeInput.includeSubdomains && uri.host.endsWith(spongeInput.uri.host)
     }
 
     private fun canDownload(uri: URI, mimeType: String): Boolean {
         return spongeInput.fileExtensions.contains(FilenameUtils.getExtension(uri.path)) ||
-                spongeInput.mimeTypes.contains(mimeType)
+            spongeInput.mimeTypes.contains(mimeType)
     }
 
     private suspend fun download(uri: URI) {
         val path = spongeInput.outputDirectory
-                .resolve(uri.host)
-                .resolve(FilenameUtils.getPath(uri.path))
-                .resolve(FilenameUtils.getName(uri.path))
-                .toAbsolutePath()
+            .resolve(uri.host)
+            .resolve(FilenameUtils.getPath(uri.path))
+            .resolve(FilenameUtils.getName(uri.path))
+            .toAbsolutePath()
 
         if (!processedDownloads.add(path)) return
 
@@ -128,7 +124,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private fun String.toUri(): URI? {
         return try {
             toNormalizedUri()
-        } catch (e: Exception) {
+        } catch (ignored: Exception) {
             null
         }
     }

@@ -27,20 +27,20 @@ class SpongeServiceTest {
     private val spongeService = SpongeService()
     private val filePath = Paths.get("test.txt")
     private val fileContent = "test"
-    private val port = 12345
+    private val port = 12_345
 
     private val server = startClientAndServer(port)
-            .also {
-                it.`when`(
-                        request()
-                                .withPath("/${filePath.fileName}")
+        .also {
+            it.`when`(
+                request()
+                    .withPath("/${filePath.fileName}")
+            )
+                .respond(
+                    response()
+                        .withStatusCode(200)
+                        .withBody(fileContent)
                 )
-                        .respond(
-                                response()
-                                        .withStatusCode(200)
-                                        .withBody(fileContent)
-                        )
-            }
+        }
 
     @BeforeAll
     fun before() {
