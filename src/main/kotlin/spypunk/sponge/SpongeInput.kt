@@ -11,6 +11,8 @@ package spypunk.sponge
 import java.net.URI
 import java.nio.file.Path
 
-data class SpongeInput(val uri: URI, val outputDirectory: Path, val mimeTypes: Set<String>,
-                       val fileExtensions: Set<String>, val maxDepth: Int = 1, val includeSubdomains: Boolean = false,
-                       val concurrentRequests: Int = 1, val concurrentDownloads: Int = 1)
+data class SpongeInput(
+        val uri: URI, val outputDirectory: Path, val mimeTypes: Set<String>,
+        val fileExtensions: Set<String>, val maxDepth: Int = 1, val includeSubdomains: Boolean = false,
+        val concurrentRequests: Int = 1, val concurrentDownloads: Int = 1
+)
