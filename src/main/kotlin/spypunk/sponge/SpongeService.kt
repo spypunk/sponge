@@ -13,7 +13,6 @@ import org.apache.http.HttpHeaders
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.IOException
-import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -29,8 +28,8 @@ class SpongeService {
             "Chrome/78.0.3904.97 Safari/537.36"
     }
 
-    fun request(uri: URI, timeout: Int = REQUEST_TIMEOUT): Connection.Response {
-        val connection = Jsoup.connect(uri.toString())
+    fun request(uri: String, timeout: Int = REQUEST_TIMEOUT): Connection.Response {
+        val connection = Jsoup.connect(uri)
             .timeout(timeout)
             .header(HttpHeaders.ACCEPT_ENCODING, ENCODING)
             .referrer(REFERRER)
@@ -43,7 +42,7 @@ class SpongeService {
         return retry(IOException::class) { connection.execute() }
     }
 
-    fun download(uri: URI, path: Path) {
+    fun download(uri: String, path: Path) {
         try {
             Files.createDirectories(path)
 
