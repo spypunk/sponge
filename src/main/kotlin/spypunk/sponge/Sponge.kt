@@ -56,17 +56,15 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun getUriMetadata(uri: URI): UriMetadata {
-        if (uriMetadatas.contains(uri)) return uriMetadatas.getValue(uri)
+        return uriMetadatas.computeIfAbsent(uri) {
+            val response = spongeService.request(uri)
+            val mimeType = ContentType.parse(response.contentType()).mimeType
 
-        val response = spongeService.request(uri)
-        val mimeType = ContentType.parse(response.contentType()).mimeType
-
-        return when {
-            canDownload(uri, mimeType) -> UriMetadata(canDownload = true)
-            htmlMimeTypes.contains(mimeType) -> UriMetadata(children = getChildren(uri, response))
-            else -> emptyUriMetadata
-        }.also {
-            uriMetadatas[uri] = it
+            when {
+                canDownload(uri, mimeType) -> UriMetadata(canDownload = true)
+                htmlMimeTypes.contains(mimeType) -> UriMetadata(children = getChildren(uri, response))
+                else -> emptyUriMetadata
+            }
         }
     }
 
