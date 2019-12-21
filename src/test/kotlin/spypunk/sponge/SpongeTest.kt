@@ -19,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.IOException
 import java.net.URI
-import java.net.URL
 import java.nio.file.Path
 
 class SpongeTest {
@@ -27,10 +26,9 @@ class SpongeTest {
     private val outputDirectory = Path.of("output").toAbsolutePath()
     private val fileName = "test.txt"
     private val imageFileName = "test.png"
-    private val inputUri = "https://test.com"
 
     private val spongeInput = SpongeInput(
-        inputUri.toNormalizedUri(),
+        "https://test.com".toNormalizedUri(),
         outputDirectory,
         setOf(ContentType.TEXT_PLAIN.mimeType),
         setOf("png")
@@ -46,30 +44,30 @@ class SpongeTest {
 
     @Test
     fun testEmptyDocument() {
-        givenDocument(inputUri, "<html></html>")
+        givenDocument(spongeInput.uri, "<html></html>")
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(inputUri) }
+        verify(exactly = 1) { spongeService.request(spongeInput.uri) }
         verify(exactly = 0) { spongeService.download(any(), any()) }
     }
 
     @Test
     fun testUnsupportedDocument() {
-        givenDocument(inputUri, "", ContentType.IMAGE_TIFF)
+        givenDocument(spongeInput.uri, "", ContentType.IMAGE_TIFF)
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(inputUri) }
+        verify(exactly = 1) { spongeService.request(spongeInput.uri) }
         verify(exactly = 0) { spongeService.download(any(), any()) }
     }
 
     @Test
     fun testDocumentWithLink() {
-        val fileUri = "${inputUri}/$fileName"
+        val fileUri = URI("${spongeInput.uri}/$fileName")
 
         givenDocument(
-            inputUri,
+            spongeInput.uri,
             """
                     <html>
                         <body>
@@ -83,18 +81,18 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(inputUri) }
+        verify(exactly = 1) { spongeService.request(spongeInput.uri) }
         verify(exactly = 1) { spongeService.request(fileUri) }
         verify(exactly = 1) { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
     }
 
     @Test
     fun testDocumentWithLinkAndImage() {
-        val fileUri = "${inputUri}/$fileName"
-        val imageFileUri = "${inputUri}/$imageFileName"
+        val fileUri = URI("${spongeInput.uri}/$fileName")
+        val imageFileUri = URI("${spongeInput.uri}/$imageFileName")
 
         givenDocument(
-            inputUri,
+            spongeInput.uri,
             """
                     <html>
                         <body>
@@ -110,7 +108,7 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(inputUri) }
+        verify(exactly = 1) { spongeService.request(spongeInput.uri) }
         verify(exactly = 1) { spongeService.request(fileUri) }
         verify(exactly = 1) { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
         verify(exactly = 1) { spongeService.request(imageFileUri) }
@@ -119,10 +117,10 @@ class SpongeTest {
 
     @Test
     fun testDocumentWithLinkAndSubdomainDisabled() {
-        val fileUri = "https://www.test.test.com/$fileName"
+        val fileUri = URI("https://www.test.test.com/$fileName")
 
         givenDocument(
-            inputUri,
+            spongeInput.uri,
             """
                     <html>
                         <body>
@@ -136,17 +134,17 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(inputUri) }
+        verify(exactly = 1) { spongeService.request(spongeInput.uri) }
         verify(exactly = 0) { spongeService.request(fileUri) }
         verify(exactly = 0) { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
     }
 
     @Test
     fun testDocumentWithLinkAndSubdomainEnabled() {
-        val fileUri = "https://test.test.com/$fileName"
+        val fileUri = URI("https://test.test.com/$fileName")
 
         givenDocument(
-            spongeInputWithSubdomains.uri.toString(),
+            spongeInputWithSubdomains.uri,
             """
                     <html>
                         <body>
@@ -160,7 +158,7 @@ class SpongeTest {
 
         executeSponge(spongeInputWithSubdomains)
 
-        verify(exactly = 1) { spongeService.request(spongeInputWithSubdomains.uri.toString()) }
+        verify(exactly = 1) { spongeService.request(spongeInputWithSubdomains.uri) }
         verify(exactly = 1) { spongeService.request(fileUri) }
 
         verify(exactly = 1) {
@@ -170,11 +168,11 @@ class SpongeTest {
 
     @Test
     fun testDocumentWithChildDocumentAndLink() {
-        val childDocumentUri = "https://test.com/test"
-        val fileUri = "${spongeInputWithDepthTwo.uri}/$fileName"
+        val childDocumentUri = URI("https://test.com/test")
+        val fileUri = URI("${spongeInputWithDepthTwo.uri}/$fileName")
 
         givenDocument(
-            spongeInputWithDepthTwo.uri.toString(),
+            spongeInputWithDepthTwo.uri,
             """
                     <html>
                         <body>
@@ -199,7 +197,7 @@ class SpongeTest {
 
         executeSponge(spongeInputWithDepthTwo)
 
-        verify(exactly = 1) { spongeService.request(spongeInputWithDepthTwo.uri.toString()) }
+        verify(exactly = 1) { spongeService.request(spongeInputWithDepthTwo.uri) }
         verify(exactly = 1) { spongeService.request(childDocumentUri) }
         verify(exactly = 1) { spongeService.request(fileUri) }
 
@@ -210,12 +208,12 @@ class SpongeTest {
 
     @Test
     fun testDocumentWithLinkAndFailedConnection() {
-        val fileUri = "${inputUri}/$fileName"
+        val fileUri = URI("${spongeInput.uri}/$fileName")
         val failingFileName = "test2.txt"
-        val failingFileUri = "${inputUri}/$failingFileName"
+        val failingFileUri = URI("${spongeInput.uri}/$failingFileName")
 
         givenDocument(
-            inputUri,
+            spongeInput.uri,
             """
                     <html>
                         <body>
@@ -232,7 +230,7 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(inputUri) }
+        verify(exactly = 1) { spongeService.request(spongeInput.uri) }
         verify(exactly = 1) { spongeService.request(failingFileUri) }
 
         verify(exactly = 0) {
@@ -243,33 +241,31 @@ class SpongeTest {
         verify(exactly = 1) { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
     }
 
-    private fun getOutputFilePath(uri: String): Path {
-        return URI(uri).let {
-            spongeInput.outputDirectory
-                .resolve(it.host)
-                .resolve(FilenameUtils.getPath(it.path))
-                .resolve(FilenameUtils.getName(it.path))
-        }
+    private fun getOutputFilePath(uri: URI): Path {
+        return spongeInput.outputDirectory
+            .resolve(uri.host)
+            .resolve(FilenameUtils.getPath(uri.path))
+            .resolve(FilenameUtils.getName(uri.path))
     }
 
-    private fun givenDocument(uri: String, htmlContent: String, contentType: ContentType = ContentType.TEXT_HTML) {
+    private fun givenDocument(uri: URI, htmlContent: String, contentType: ContentType = ContentType.TEXT_HTML) {
         val response = mockk<Connection.Response>()
 
         every { response.contentType() } returns contentType.mimeType
         every { response.body() } returns htmlContent
-        every { response.url() } returns URL(uri)
+        every { response.url() } returns uri.toURL()
 
         every { spongeService.request(uri) } returns response
     }
 
-    private fun givenFile(uri: String, mimeType: String = ContentType.TEXT_PLAIN.mimeType) {
+    private fun givenFile(uri: URI, mimeType: String = ContentType.TEXT_PLAIN.mimeType) {
         val response = mockk<Connection.Response>()
 
         every { response.contentType() } returns mimeType
         every { spongeService.request(uri) } returns response
     }
 
-    private fun givenUriFailsConnection(uri: String) {
+    private fun givenUriFailsConnection(uri: URI) {
         every { spongeService.request(uri) } throws IOException("Error!")
     }
 

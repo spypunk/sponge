@@ -18,6 +18,7 @@ import org.mockserver.integration.ClientAndServer.startClientAndServer
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
 import spypunk.sponge.SpongeService
+import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 
@@ -48,7 +49,7 @@ class SpongeServiceTest {
 
     @Test
     fun testDownload() {
-        spongeService.download("http://localhost:$port/${filePath.fileName}", filePath)
+        spongeService.download(URI("http://localhost:$port/${filePath.fileName}"), filePath)
 
         Assertions.assertEquals(fileContent, FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8))
     }
