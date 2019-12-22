@@ -41,16 +41,12 @@ class SpongeService {
     }
 
     fun download(spongeUri: SpongeUri, path: Path) {
-        try {
-            Files.createDirectories(path)
+        Files.createDirectories(path)
 
-            request(spongeUri, 0).bodyStream()
-                .use { Files.copy(it, path, StandardCopyOption.REPLACE_EXISTING) }
+        request(spongeUri, 0).bodyStream()
+            .use { Files.copy(it, path, StandardCopyOption.REPLACE_EXISTING) }
 
-            println("↓ $path [${path.humanSize()}]")
-        } catch (e: Exception) {
-            System.err.println("⚠ Error encountered while downloading $spongeUri: ${e.javaClass.name} - ${e.message}")
-        }
+        println("↓ $path [${path.humanSize()}]")
     }
 
     private inline fun <T> retry(clazz: KClass<out Exception>, retryCount: Int = 3, block: () -> T): T {

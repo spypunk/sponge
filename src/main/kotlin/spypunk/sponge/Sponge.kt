@@ -15,6 +15,7 @@ import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.io.FilenameUtils
+import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import org.jsoup.Jsoup
@@ -36,17 +37,23 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     fun execute() = runBlocking { visitSpongeUri(spongeInput.spongeUri) }
 
     private suspend fun visitSpongeUri(spongeUri: SpongeUri, parents: Set<SpongeUri> = setOf()) {
-        val spongeUriMetadata = spongeUriMetadatas.computeIfAbsent(spongeUri, this::getSpongeUriMetadata)
+        try {
+            val spongeUriMetadata = getSpongeUriMetadata(spongeUri)
 
-        if (spongeUriMetadata.downloadPath != null) {
-            download(spongeUri, spongeUriMetadata.downloadPath)
-        } else if (parents.size < spongeInput.maxDepth) {
-            visitSpongeUris(spongeUriMetadata.children, parents + spongeUri)
+            if (spongeUriMetadata.downloadPath != null) {
+                download(spongeUri, spongeUriMetadata.downloadPath)
+            } else if (parents.size < spongeInput.maxDepth) {
+                visitSpongeUris(spongeUriMetadata.children, parents + spongeUri)
+            }
+        } catch (e: Exception) {
+            spongeUriMetadatas[spongeUri] = ignoredSpongeUriMetadata
+
+            System.err.println("⚠ Processing failed for $spongeUri: ${e.rootMessage()}")
         }
     }
 
     private fun getSpongeUriMetadata(spongeUri: SpongeUri): SpongeUriMetadata {
-        return try {
+        return spongeUriMetadatas.computeIfAbsent(spongeUri) {
             val response = spongeService.request(spongeUri)
             val mimeType = ContentType.parse(response.contentType()).mimeType
 
@@ -55,10 +62,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 mimeType.isHtmlMimeType() -> SpongeUriMetadata(children = getChildren(spongeUri, response))
                 else -> ignoredSpongeUriMetadata
             }
-        } catch (e: Exception) {
-            System.err.println("⚠ Processing failed for $spongeUri: ${e.javaClass.name} - ${e.message}")
-
-            ignoredSpongeUriMetadata
         }
     }
 
@@ -132,3 +135,5 @@ private fun String.toSpongeUriOrNull(): SpongeUri? {
         null
     }
 }
+
+fun Throwable.rootMessage(): String = ExceptionUtils.getRootCauseMessage(this)

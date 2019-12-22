@@ -98,7 +98,8 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
 
             Sponge(spongeService, spongeInput).execute()
         } catch (t: Throwable) {
-            System.err.println("Unexpected error encountered: ${t.message}")
+            System.err.println("Unexpected error encountered: : ${t.rootMessage()}")
+
             exitProcess(1)
         }
     }
