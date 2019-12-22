@@ -8,11 +8,10 @@
 
 package spypunk.sponge
 
-import java.net.URI
 import java.nio.file.Path
 
 data class SpongeInput(
-    val uri: URI,
+    val spongeUri: SpongeUri,
     val outputDirectory: Path,
     val mimeTypes: Set<String>,
     val fileExtensions: Set<String>,

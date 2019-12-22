@@ -29,16 +29,13 @@ import java.nio.file.Paths
 import java.util.regex.Pattern
 import kotlin.system.exitProcess
 
+private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
+private val version = ConfigurationProperties
+    .fromResource("sponge.properties")[Key("version", stringType)]
+
 class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true) {
-    private companion object {
-        private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
-
-        private val version = ConfigurationProperties
-            .fromResource("sponge.properties")[Key("version", stringType)]
-    }
-
-    private val uri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
-        .convert { it.toNormalizedUri() }
+    private val spongeUri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
+        .convert { it.toSpongeUri() }
         .required()
 
     private val outputDirectory by option("-o", "--output", help = "Output directory where files are downloaded")
@@ -90,7 +87,7 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
         try {
             val spongeService = SpongeService()
             val spongeInput = SpongeInput(
-                uri,
+                spongeUri,
                 outputDirectory,
                 mimeTypes.toSet(),
                 fileExtensions.toSet(),

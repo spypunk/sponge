@@ -13,24 +13,21 @@ import org.apache.http.HttpHeaders
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.IOException
-import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
 
-class SpongeService {
-    private companion object {
-        private const val REQUEST_TIMEOUT = 30_000
-        private const val ENCODING = "gzip, deflate"
-        private const val REFERRER = "https://www.google.com"
-        private const val USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
-            "Chrome/78.0.3904.97 Safari/537.36"
-    }
+private const val REQUEST_TIMEOUT = 30_000
+private const val ENCODING = "gzip, deflate"
+private const val REFERRER = "https://www.google.com"
+private const val USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
+    "Chrome/78.0.3904.97 Safari/537.36"
 
-    fun request(uri: URI, timeout: Int = REQUEST_TIMEOUT): Connection.Response {
-        val connection = Jsoup.connect(uri.toString())
+class SpongeService {
+    fun request(spongeUri: SpongeUri, timeout: Int = REQUEST_TIMEOUT): Connection.Response {
+        val connection = Jsoup.connect(spongeUri.toString())
             .timeout(timeout)
             .header(HttpHeaders.ACCEPT_ENCODING, ENCODING)
             .referrer(REFERRER)
@@ -43,16 +40,16 @@ class SpongeService {
         return retry(IOException::class) { connection.execute() }
     }
 
-    fun download(uri: URI, path: Path) {
+    fun download(spongeUri: SpongeUri, path: Path) {
         try {
             Files.createDirectories(path)
 
-            request(uri, 0).bodyStream()
+            request(spongeUri, 0).bodyStream()
                 .use { Files.copy(it, path, StandardCopyOption.REPLACE_EXISTING) }
 
             println("↓ $path [${path.humanSize()}]")
         } catch (e: Exception) {
-            System.err.println("⚠ Error encountered while downloading $uri: ${e.javaClass.name} - ${e.message}")
+            System.err.println("⚠ Error encountered while downloading $spongeUri: ${e.javaClass.name} - ${e.message}")
         }
     }
 
