@@ -66,6 +66,6 @@ class SpongeService {
 
         throw exception!!
     }
-
-    private fun Path.humanSize() = FileUtils.byteCountToDisplaySize(Files.size(this))
 }
+
+private fun Path.humanSize() = FileUtils.byteCountToDisplaySize(Files.size(this))
