@@ -249,8 +249,11 @@ class SpongeTest {
             .resolve(FilenameUtils.getName(uri.path))
     }
 
-    private fun givenDocument(spongeUri: SpongeUri, htmlContent: String,
-                              contentType: ContentType = ContentType.TEXT_HTML) {
+    private fun givenDocument(
+        spongeUri: SpongeUri,
+        htmlContent: String,
+        contentType: ContentType = ContentType.TEXT_HTML
+    ) {
         val response = mockk<Connection.Response>()
 
         every { response.contentType() } returns contentType.mimeType
