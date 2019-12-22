@@ -21,7 +21,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArraySet
 
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
 private val ignoredSpongeUriMetadata = SpongeUriMetadata()
@@ -32,7 +31,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
     private val spongeUriMetadatas = ConcurrentHashMap<SpongeUri, SpongeUriMetadata>()
-    private val processedDownloads = CopyOnWriteArraySet<Path>()
     private val rootHost = spongeInput.spongeUri.toUri().host
 
     fun execute() = runBlocking { visitSpongeUri(spongeInput.spongeUri) }
@@ -119,7 +117,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private suspend fun download(spongeUri: SpongeUri, path: Path) {
-        if (!processedDownloads.add(path)) return
+        spongeUriMetadatas[spongeUri] = ignoredSpongeUriMetadata
 
         withContext(downloadContext) { spongeService.download(spongeUri, path) }
     }
