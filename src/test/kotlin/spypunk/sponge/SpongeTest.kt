@@ -206,6 +206,48 @@ class SpongeTest {
     }
 
     @Test
+    fun testDocumentWithIgnoredChildDocument() {
+        val childDocumentUri = "https://test2.com".toSpongeUri()
+
+        givenDocument(
+            spongeInput.spongeUri,
+            """
+                    <html>
+                        <body>
+                            <a href="$childDocumentUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        executeSponge(spongeInput)
+
+        verify(exactly = 1) { spongeService.request(spongeInput.spongeUri) }
+        verify(exactly = 0) { spongeService.request(childDocumentUri) }
+    }
+
+    @Test
+    fun testDocumentWithInvalidChildUri() {
+        val childUri = "http://"
+
+        givenDocument(
+            spongeInput.spongeUri,
+            """
+                    <html>
+                        <body>
+                            <a href="$childUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        executeSponge(spongeInput)
+
+        verify(exactly = 1) { spongeService.request(spongeInput.spongeUri) }
+        verify(exactly = 1) { spongeService.request(any()) }
+    }
+
+    @Test
     fun testDocumentWithLinkAndFailedConnection() {
         val fileUri = "${spongeInput.spongeUri}/$fileName".toSpongeUri()
         val failingFileName = "test2.txt"
