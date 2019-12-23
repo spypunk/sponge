@@ -34,16 +34,16 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private val spongeUriMetadatas = ConcurrentHashMap<SpongeUri, SpongeUriMetadata>()
     private val rootHost = spongeInput.spongeUri.toUri().host
 
-    fun execute() = runBlocking { visitSpongeUri(spongeInput.spongeUri) }
+    fun execute() = runBlocking { visit(spongeInput.spongeUri) }
 
-    private suspend fun visitSpongeUri(spongeUri: SpongeUri, parents: Set<SpongeUri> = setOf()) {
+    private suspend fun visit(spongeUri: SpongeUri, parents: Set<SpongeUri> = setOf()) {
         try {
             val spongeUriMetadata = getSpongeUriMetadata(spongeUri)
 
             if (spongeUriMetadata.downloadPath != null) {
                 download(spongeUri, spongeUriMetadata.downloadPath)
             } else if (parents.size < spongeInput.maxDepth) {
-                visitSpongeUris(spongeUriMetadata.children, parents + spongeUri)
+                visit(spongeUriMetadata.children, parents + spongeUri)
             }
         } catch (e: Exception) {
             spongeUriMetadatas[spongeUri] = ignoredSpongeUriMetadata
@@ -75,10 +75,10 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             .toAbsolutePath()
     }
 
-    private suspend fun visitSpongeUris(spongeUris: Set<SpongeUri>, parents: Set<SpongeUri>) {
+    private suspend fun visit(spongeUris: Set<SpongeUri>, parents: Set<SpongeUri>) {
         spongeUris.asSequence()
             .filterNot(parents::contains)
-            .map { GlobalScope.async(requestContext) { visitSpongeUri(it, parents) } }
+            .map { GlobalScope.async(requestContext) { visit(it, parents) } }
             .toList()
             .awaitAll()
     }
@@ -103,7 +103,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private fun getAttributeValues(document: Document, cssQuery: String, attributeKey: String): Sequence<String> {
         return document.select(cssQuery).asSequence()
             .mapNotNull { it.attr(attributeKey) }
-            .filterNot(String::isEmpty)
+            .filterNot(String::isNullOrEmpty)
     }
 
     private fun isVisitable(spongeUri: SpongeUri): Boolean {
