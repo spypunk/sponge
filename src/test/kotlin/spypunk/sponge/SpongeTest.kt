@@ -206,6 +206,86 @@ class SpongeTest {
     }
 
     @Test
+    fun testDocumentWithChildDocumentAndDuplicateLink() {
+        val childDocumentUri = "https://test.com/test".toSpongeUri()
+        val fileUri = "${spongeInputWithDepthTwo.spongeUri}/$fileName".toSpongeUri()
+
+        givenDocument(
+            spongeInputWithDepthTwo.spongeUri,
+            """
+                    <html>
+                        <body>
+                            <a href="$fileUri" />
+                            <a href="$childDocumentUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        givenDocument(
+            childDocumentUri,
+            """
+                    <html>
+                        <body>
+                            <a href="$fileUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        givenFile(fileUri)
+
+        executeSponge(spongeInputWithDepthTwo)
+
+        verify(exactly = 1) { spongeService.request(spongeInputWithDepthTwo.spongeUri) }
+        verify(exactly = 1) { spongeService.request(childDocumentUri) }
+        verify(exactly = 1) { spongeService.request(fileUri) }
+
+        verify(exactly = 1) {
+            spongeService.download(fileUri, getOutputFilePath(fileUri))
+        }
+    }
+
+    @Test
+    fun testDocumentWithTooDeepChildDocumentAndLink() {
+        val childDocumentUri = "https://test.com/test".toSpongeUri()
+        val fileUri = "${spongeInput.spongeUri}/$fileName".toSpongeUri()
+
+        givenDocument(
+            spongeInput.spongeUri,
+            """
+                    <html>
+                        <body>
+                            <a href="$childDocumentUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        givenDocument(
+            childDocumentUri,
+            """
+                    <html>
+                        <body>
+                        </body>
+                    </html>
+                """
+        )
+
+        givenFile(fileUri)
+
+        executeSponge(spongeInput)
+
+        verify(exactly = 1) { spongeService.request(spongeInput.spongeUri) }
+        verify(exactly = 1) { spongeService.request(childDocumentUri) }
+        verify(exactly = 0) { spongeService.request(fileUri) }
+
+        verify(exactly = 0) {
+            spongeService.download(fileUri, getOutputFilePath(fileUri))
+        }
+    }
+
+    @Test
     fun testDocumentWithIgnoredChildDocument() {
         val childDocumentUri = "https://test2.com".toSpongeUri()
 

@@ -22,16 +22,18 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArraySet
 
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
 private val ignoredSpongeUriMetadata = SpongeUriMetadata()
 
-private data class SpongeUriMetadata(val downloadPath: Path? = null, val children: Set<SpongeUri> = setOf())
+private data class SpongeUriMetadata(val downloadable: Boolean = false, val children: Set<SpongeUri> = setOf())
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
     private val spongeUriMetadatas = ConcurrentHashMap<SpongeUri, SpongeUriMetadata>()
+    private val processedDownloads = CopyOnWriteArraySet<SpongeUri>()
     private val rootHost = spongeInput.spongeUri.toUri().host
 
     fun execute() = runBlocking { visit(spongeInput.spongeUri) }
@@ -40,8 +42,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         try {
             val spongeUriMetadata = getSpongeUriMetadata(spongeUri)
 
-            if (spongeUriMetadata.downloadPath != null) {
-                download(spongeUri, spongeUriMetadata.downloadPath)
+            if (spongeUriMetadata.downloadable) {
+                download(spongeUri)
             } else if (parents.size < spongeInput.maxDepth) {
                 visit(spongeUriMetadata.children, parents + spongeUri)
             }
@@ -58,21 +60,11 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             val mimeType = ContentType.parse(response.contentType()).mimeType
 
             when {
-                isDownloadable(spongeUri, mimeType) -> SpongeUriMetadata(downloadPath = getDownloadPath(spongeUri))
+                isDownloadable(spongeUri, mimeType) -> SpongeUriMetadata(downloadable = true)
                 mimeType.isHtmlMimeType() -> SpongeUriMetadata(children = getChildren(spongeUri, response))
                 else -> ignoredSpongeUriMetadata
             }
         }
-    }
-
-    private fun getDownloadPath(spongeUri: SpongeUri): Path {
-        val uri = spongeUri.toUri()
-
-        return spongeInput.outputDirectory
-            .resolve(uri.host)
-            .resolve(FilenameUtils.getPath(uri.path))
-            .resolve(FilenameUtils.getName(uri.path))
-            .toAbsolutePath()
     }
 
     private suspend fun visit(spongeUris: Set<SpongeUri>, parents: Set<SpongeUri>) {
@@ -119,10 +111,22 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         return spongeInput.fileExtensions.contains(extension) || spongeInput.mimeTypes.contains(mimeType)
     }
 
-    private suspend fun download(spongeUri: SpongeUri, path: Path) {
-        spongeUriMetadatas[spongeUri] = ignoredSpongeUriMetadata
+    private suspend fun download(spongeUri: SpongeUri) {
+        if (!processedDownloads.add(spongeUri)) return
+
+        val path = getDownloadPath(spongeUri)
 
         withContext(downloadContext) { spongeService.download(spongeUri, path) }
+    }
+
+    private fun getDownloadPath(spongeUri: SpongeUri): Path {
+        val uri = spongeUri.toUri()
+
+        return spongeInput.outputDirectory
+            .resolve(uri.host)
+            .resolve(FilenameUtils.getPath(uri.path))
+            .resolve(FilenameUtils.getName(uri.path))
+            .toAbsolutePath()
     }
 }
 

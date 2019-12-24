@@ -45,7 +45,10 @@ class SpongeUri private constructor(private val uri: String) {
                     }
 
                     if (!url.path.isNullOrEmpty()) {
-                        pathSegments = URLEncodedUtils.parsePathSegments(url.path).map(urlPathSegmentEscaper::escape)
+                        pathSegments = URLEncodedUtils.parsePathSegments(url.path).asSequence()
+                            .map(urlPathSegmentEscaper::escape)
+                            .filterNot { it.isNullOrEmpty() }
+                            .toList()
                     }
                 }
                 .build()
