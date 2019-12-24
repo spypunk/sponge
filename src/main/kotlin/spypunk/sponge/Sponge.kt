@@ -25,14 +25,11 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
-private val ignoredSpongeUriMetadata = SpongeUriMetadata()
-
-private data class SpongeUriMetadata(val downloadable: Boolean = false, val children: Set<SpongeUri> = setOf())
 
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
-    private val spongeUriMetadatas = ConcurrentHashMap<SpongeUri, SpongeUriMetadata>()
+    private val spongeUriMetadatas = ConcurrentHashMap<SpongeUri, SpongeUriResponse>()
     private val processedDownloads = CopyOnWriteArraySet<SpongeUri>()
     private val rootHost = spongeInput.spongeUri.toUri().host
 
@@ -40,30 +37,43 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private suspend fun visit(spongeUri: SpongeUri, parents: Set<SpongeUri> = setOf()) {
         try {
-            val spongeUriMetadata = getSpongeUriMetadata(spongeUri)
+            val spongeUriResponse = getSpongeUriResponse(spongeUri)
 
-            if (spongeUriMetadata.downloadable) {
-                download(spongeUri)
-            } else if (parents.size < spongeInput.maxDepth) {
-                visit(spongeUriMetadata.children, parents + spongeUri)
+            when {
+                spongeUriResponse == IgnoreSpongeUriResponse -> return
+                spongeUriResponse == DownloadSpongeUriResponse -> download(spongeUri)
+                parents.size < spongeInput.maxDepth -> visit(spongeUriResponse.children, parents + spongeUri)
             }
         } catch (e: Exception) {
-            spongeUriMetadatas[spongeUri] = ignoredSpongeUriMetadata
+            spongeUriMetadatas[spongeUri] = IgnoreSpongeUriResponse
 
             System.err.println("⚠ Processing failed for $spongeUri: ${e.rootMessage()}")
         }
     }
 
-    private fun getSpongeUriMetadata(spongeUri: SpongeUri): SpongeUriMetadata {
+    private fun getSpongeUriResponse(spongeUri: SpongeUri): SpongeUriResponse {
         return spongeUriMetadatas.computeIfAbsent(spongeUri) {
             val response = spongeService.request(spongeUri)
             val mimeType = ContentType.parse(response.contentType()).mimeType
 
-            when {
-                isDownloadable(spongeUri, mimeType) -> SpongeUriMetadata(downloadable = true)
-                mimeType.isHtmlMimeType() -> SpongeUriMetadata(children = getChildren(spongeUri, response))
-                else -> ignoredSpongeUriMetadata
+            getSpongeUriResponse(spongeUri, mimeType, response)
+        }
+    }
+
+    private fun getSpongeUriResponse(spongeUri: SpongeUri, mimeType: String, response: Connection.Response)
+        : SpongeUriResponse {
+        return when {
+            isDownloadable(spongeUri, mimeType) -> DownloadSpongeUriResponse
+            mimeType.isHtmlMimeType() -> {
+                val children = getChildren(spongeUri, response)
+
+                if (children.isEmpty()) {
+                    IgnoreSpongeUriResponse
+                } else {
+                    VisitSpongeUriResponse(children)
+                }
             }
+            else -> IgnoreSpongeUriResponse
         }
     }
 
