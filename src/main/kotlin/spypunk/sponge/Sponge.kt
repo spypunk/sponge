@@ -60,8 +60,11 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         }
     }
 
-    private fun getSpongeUriResponse(spongeUri: SpongeUri, mimeType: String,
-                                     response: Connection.Response): SpongeUriResponse {
+    private fun getSpongeUriResponse(
+        spongeUri: SpongeUri,
+        mimeType: String,
+        response: Connection.Response
+    ): SpongeUriResponse {
         return when {
             isDownloadable(spongeUri, mimeType) -> DownloadSpongeUriResponse
             mimeType.isHtmlMimeType() -> {
