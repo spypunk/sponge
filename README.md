@@ -34,45 +34,40 @@ Options:
          -R 5 \
          -s
 ...
-↺ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Dream_your_Dreams_ID_1195
-↺ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Do_not_forget_me_ID_1028
 ↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Not_my_Brain/Lobo_Loco_-_01_-_Brain_ID_1270.mp3 [8 MB]
-↺ https://freemusicarchive.org/music/Lobo_Loco/My_Yearnings/Arround_the_Cliffs_ID_1202
-↺ https://freemusicarchive.org/music/Rose_City_Kings/Live_at_KBOO_for_Blues_Junction_08132016/Rose_City_Kings-Aug_2016-LIVE
-↺ https://freemusicarchive.org/music/Punk_Rock_Opera/Punk_Rock_Opera_Vol_II/Punk_Rock_Opera_-_Punk_Rock_Opera_Vol_II_Album_-_14_1945
-↺ https://freemusicarchive.org/music/Rose_City_Kings/
 ↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Not_my_Brain/Lobo_Loco_-_02_-_Brain_-_Instrumental_Retro_ID_1271.mp3 [8 MB]
-↺ https://freemusicarchive.org/music/Rose_City_Kings/Live_at_KBOO_for_Blues_Junction_08132016/
-↺ https://freemusicarchive.org/music/Punk_Rock_Opera/
-↺ https://freemusicarchive.org/music/Punk_Rock_Opera/Punk_Rock_Opera_Vol_II/
 ↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Salad_Mixed/Lobo_Loco_-_12_-_Madness_is_Everywhere_ID_1228.mp3 [9 MB]
-↺ https://freemusicarchive.org/genre/Blues?sort=track_date_published&d=1&page=2
-↺ https://freemusicarchive.org/genre/Blues?sort=track_date_published&d=1&page=3
-↺ https://freemusicarchive.org/genre/Blues?sort=track_date_published&d=1&page=4
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Salad_Mixed/Lobo_Loco_-_01_-_Allright_in_Lousiana_ID_1234.mp3 [8 MB]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Salad_Mixed/Lobo_Loco_-_04_-_Peaceful_Morning_ID_1229.mp3 [9 MB]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Salad_Mixed/Lobo_Loco_-_03_-_Spencer_-_Bluegrass_ID_1230.mp3 [9 MB]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/You_get_the_Blues_ID_1201.mp3 [10 MB]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Traveling_Horse_ID_1207.mp3 [6 MB]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Tropic_Island_-_Clearmix_ID_1172.mp3 [8 MB]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Seniorita_Bonita_ID_1194.mp3 [7 MB]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Remember_Love_ID_1166.mp3 [9 MB]
 ...
 ~~~
 ~~~
 ./sponge -u https://www.gutenberg.org/ebooks/search/?sort_order=release_date \
          -o output \
-         -t application/pdf \
          -t text/plain \
          -d 2 \
          -R 5 \
          -D 5
 ...
-↺ https://gutenberg.org/terms_of_use/
-↺ https://gutenberg.org/
-↺ https://gutenberg.org/ebooks/
-↓ /home/spypunk/output/gutenberg.org/ebooks/60982.txt.utf-8 [40 KB]
-↺ https://gutenberg.org/ebooks/author/1660
-↺ https://gutenberg.org/ebooks/60980/also/
-↺ https://gutenberg.org/wiki/Gutenberg:Help_on_Bibliographic_Record_Page
-↺ https://gutenberg.org/ebooks/send/megaupload/60980.html
-↺ https://gutenberg.org/files/60980/60980-h/60980-h.htm
-↺ https://gutenberg.org/files/60980/
-↺ https://gutenberg.org/wiki/Main_Page
-↺ https://gutenberg.org/wiki/Gutenberg:Project_Gutenberg_Needs_Your_Donation
-↓ /home/spypunk/output/gutenberg.org/files/60980/60980-0.txt [25 KB]
+↓ /home/spypunk/output/gutenberg.org/files/61012/61012-0.txt [149 KB]
+↓ /home/spypunk/output/gutenberg.org/ebooks/61011.txt.utf-8 [192 KB]
+↓ /home/spypunk/output/gutenberg.org/ebooks/61013.txt.utf-8 [44 KB]
+↓ /home/spypunk/output/gutenberg.org/files/61010/61010-0.txt [302 KB]
+↓ /home/spypunk/output/gutenberg.org/ebooks/61009.txt.utf-8 [36 KB]
+↓ /home/spypunk/output/gutenberg.org/ebooks/61008.txt.utf-8 [471 KB]
+↓ /home/spypunk/output/gutenberg.org/ebooks/61007.txt.utf-8 [38 KB]
+↓ /home/spypunk/output/gutenberg.org/ebooks/61006.txt.utf-8 [47 KB]
+↓ /home/spypunk/output/gutenberg.org/files/61004/61004-0.txt [250 KB]
+↓ /home/spypunk/output/gutenberg.org/files/61003/61003-0.txt [337 KB]
+↓ /home/spypunk/output/gutenberg.org/ebooks/61002.txt.utf-8 [74 KB]
+↓ /home/spypunk/output/gutenberg.org/ebooks/60999.txt.utf-8 [25 KB]
+↓ /home/spypunk/output/gutenberg.org/files/60998/60998-0.txt [124 KB]
 ...
 ~~~
 ~~~
@@ -84,21 +79,25 @@ Options:
          -D 5 \
          -s
 ...
-↺ https://pexels.com/ro-ro/public-domain-images/
-↺ https://pexels.com/nb-no/public-domain-images/
-↺ https://pexels.com/ru-ru/public-domain-images/
-↺ https://pexels.com/sk-sk/public-domain-images/
-↺ https://pexels.com/tr-tr/public-domain-images/
-↺ https://pexels.com/privacy-policy/
-↓ /home/spypunk/output/images.pexels.com/photos/2868847/pexels-photo-2868847.jpeg [17 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/948331/pexels-photo-948331.jpeg [74 KB]
-↓ /home/spypunk/output/images.pexels.com/users/avatars/1490165/daniel-mingook-kim-308.jpeg [5 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/3351676/pexels-photo-3351676.jpeg [55 KB]
-↓ /home/spypunk/output/images.pexels.com/users/avatars/671805/su-su-721.jpeg [4 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/2318555/pexels-photo-2318555.jpeg [56 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/3234167/pexels-photo-3234167.jpeg [72 KB]
-↓ /home/spypunk/output/images.pexels.com/users/avatars/1409183/firaaz-hisyari-267.jpeg [5 KB]
-↓ /home/spypunk/output/images.pexels.com/users/avatars/1452844/marcelo-issa-612.jpeg [4 KB]
+↓ /home/spypunk/output/images.pexels.com/photos/3393375/pexels-photo-3393375.jpeg [37 KB]
+↓ /home/spypunk/output/images.pexels.com/users/avatars/1791804/-621.jpeg [5 KB]
+↓ /home/spypunk/output/images.pexels.com/photos/3397935/pexels-photo-3397935.jpeg [69 KB]
+↓ /home/spypunk/output/images.pexels.com/photos/1927314/pexels-photo-1927314.jpeg [62 KB]
+↓ /home/spypunk/output/images.pexels.com/photos/245535/pexels-photo-245535.jpeg [51 KB]
+↓ /home/spypunk/output/images.pexels.com/users/avatars/1737150/eternal-happiness-197.jpeg [4 KB]
+↓ /home/spypunk/output/images.pexels.com/photos/3326363/pexels-photo-3326363.jpeg [22 KB]
+↓ /home/spypunk/output/images.pexels.com/users/avatars/1787606/zack-melhus-241.jpeg [5 KB]
+↓ /home/spypunk/output/images.pexels.com/photos/3363341/pexels-photo-3363341.jpeg [63 KB]
+↓ /home/spypunk/output/images.pexels.com/users/avatars/193704/print-proper-419.jpeg [4 KB]
+↓ /home/spypunk/output/images.pexels.com/users/avatars/220024/daria-shevtsova-592.jpeg [5 KB]
+↓ /home/spypunk/output/images.pexels.com/photos/3326103/pexels-photo-3326103.jpeg [26 KB]
+↓ /home/spypunk/output/images.pexels.com/photos/2085376/pexels-photo-2085376.jpeg [51 KB]
+↓ /home/spypunk/output/images.pexels.com/photos/3377538/pexels-photo-3377538.jpeg [20 KB]
+↓ /home/spypunk/output/images.pexels.com/users/avatars/372053/matt-hardy-504.jpeg [5 KB]
+↓ /home/spypunk/output/images.pexels.com/photos/2822949/pexels-photo-2822949.jpeg [10 KB]
+↓ /home/spypunk/output/images.pexels.com/photos/1953451/pexels-photo-1953451.jpeg [40 KB]
+↓ /home/spypunk/output/images.pexels.com/users/avatars/1112138/emre-kuzu-719.jpeg [1 KB]
+↓ /home/spypunk/output/images.pexels.com/users/avatars/927188/milena-santos-885.jpeg [4 KB]
 ...
 ~~~
 ## What about license?
