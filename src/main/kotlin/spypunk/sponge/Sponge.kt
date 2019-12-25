@@ -53,20 +53,22 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private fun getSpongeUriResponse(spongeUri: SpongeUri): SpongeUriResponse {
         return spongeUriResponses.computeIfAbsent(spongeUri) {
-            val response = spongeService.request(spongeUri)
-            val mimeType = ContentType.parse(response.contentType()).mimeType
+            if (isDownloadableByExtension(spongeUri)) {
+                DownloadSpongeUriResponse
+            } else {
+                val response = spongeService.request(spongeUri)
+                val mimeType = ContentType.parse(response.contentType()).mimeType
 
-            getSpongeUriResponse(spongeUri, mimeType, response)
+                getSpongeUriResponse(spongeUri, mimeType, response)
+            }
         }
     }
 
     private fun getSpongeUriResponse(
-        spongeUri: SpongeUri,
-        mimeType: String,
-        response: Connection.Response
+        spongeUri: SpongeUri, mimeType: String, response: Connection.Response
     ): SpongeUriResponse {
         return when {
-            isDownloadable(spongeUri, mimeType) -> DownloadSpongeUriResponse
+            spongeInput.mimeTypes.contains(mimeType) -> DownloadSpongeUriResponse
             mimeType.isHtmlMimeType() -> {
                 val children = getChildren(spongeUri, response)
 
@@ -115,10 +117,10 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             spongeInput.includeSubdomains && host.endsWith(rootHost)
     }
 
-    private fun isDownloadable(spongeUri: SpongeUri, mimeType: String): Boolean {
+    private fun isDownloadableByExtension(spongeUri: SpongeUri): Boolean {
         val extension = FilenameUtils.getExtension(spongeUri.toUri().path)
 
-        return spongeInput.fileExtensions.contains(extension) || spongeInput.mimeTypes.contains(mimeType)
+        return spongeInput.fileExtensions.contains(extension)
     }
 
     private suspend fun download(spongeUri: SpongeUri) {

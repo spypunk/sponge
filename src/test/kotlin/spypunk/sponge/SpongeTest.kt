@@ -110,7 +110,7 @@ class SpongeTest {
         verify(exactly = 1) { spongeService.request(spongeInput.spongeUri) }
         verify(exactly = 1) { spongeService.request(fileUri) }
         verify(exactly = 1) { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
-        verify(exactly = 1) { spongeService.request(imageFileUri) }
+        verify(exactly = 0) { spongeService.request(imageFileUri) }
         verify(exactly = 1) { spongeService.download(imageFileUri, getOutputFilePath(imageFileUri)) }
     }
 

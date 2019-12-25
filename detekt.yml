@@ -3,17 +3,17 @@ build:
 
 config:
   validation: true
+  # when writing own rules with new properties, exclude the property path e.g.: "my_rule_set,.*>.*>[my_property]"
+  excludes: ""
 
 processors:
   active: true
 
 console-reports:
-  active: true
-  exclude:
-    - 'FileBasedFindingsReport'
+  active: true'
 
 comments:
-  active: true
+  active: false
 
 complexity:
   active: true
@@ -419,6 +419,9 @@ style:
     active: true
     imports: ''
     forbiddenPatterns: ""
+  ForbiddenPublicDataClass:
+    active: true
+    ignorePackages: '*.internal,*.internal.*'
   ForbiddenVoid:
     active: true
     ignoreOverridden: false
