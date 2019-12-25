@@ -267,6 +267,7 @@ class SpongeTest {
             """
                     <html>
                         <body>
+                            <a href="$fileUri" />
                         </body>
                     </html>
                 """

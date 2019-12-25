@@ -29,7 +29,7 @@ private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.AP
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
-    private val spongeUriMetadatas = ConcurrentHashMap<SpongeUri, SpongeUriResponse>()
+    private val spongeUriResponses = ConcurrentHashMap<SpongeUri, SpongeUriResponse>()
     private val processedDownloads = CopyOnWriteArraySet<String>()
     private val rootHost = spongeInput.spongeUri.toUri().host
 
@@ -45,14 +45,14 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 parents.size < spongeInput.maxDepth -> visit(spongeUriResponse.children, parents + spongeUri)
             }
         } catch (e: Exception) {
-            spongeUriMetadatas[spongeUri] = IgnoreSpongeUriResponse
+            spongeUriResponses[spongeUri] = IgnoreSpongeUriResponse
 
             System.err.println("⚠ Processing failed for $spongeUri: ${e.rootMessage()}")
         }
     }
 
     private fun getSpongeUriResponse(spongeUri: SpongeUri): SpongeUriResponse {
-        return spongeUriMetadatas.computeIfAbsent(spongeUri) {
+        return spongeUriResponses.computeIfAbsent(spongeUri) {
             val response = spongeService.request(spongeUri)
             val mimeType = ContentType.parse(response.contentType()).mimeType
 
@@ -81,32 +81,31 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private suspend fun visit(spongeUris: Set<SpongeUri>, parents: Set<SpongeUri>) {
-        spongeUris.asSequence()
-            .filterNot(parents::contains)
+        spongeUris.filterNot(parents::contains)
             .map { GlobalScope.async(requestContext) { visit(it, parents) } }
-            .toList()
             .awaitAll()
     }
 
-    private fun getChildren(spongeUri: SpongeUri, response: Connection.Response): Set<SpongeUri> {
+    private fun getChildren(parent: SpongeUri, response: Connection.Response): Set<SpongeUri> {
         val document = Jsoup.parse(response.body(), response.url().toExternalForm())
-        val links = getLinks(document) + getImageLinks(document)
 
-        return links.distinct()
-            .mapNotNull(String::toSpongeUriOrNull)
-            .filterNot(spongeUri::equals)
-            .filter(this::isVisitable)
-            .toSet()
+        return getHrefChildren(document, parent) + getImgChildren(document, parent)
     }
 
-    private fun getLinks(document: Document) = getAttributeValues(document, "a[href]", "abs:href")
+    private fun getHrefChildren(document: Document, parent: SpongeUri) =
+        getChildren(document, parent, "a[href]", "abs:href")
 
-    private fun getImageLinks(document: Document) = getAttributeValues(document, "img[src]", "abs:src")
+    private fun getImgChildren(document: Document, parent: SpongeUri) =
+        getChildren(document, parent, "img[src]", "abs:src")
 
-    private fun getAttributeValues(document: Document, cssQuery: String, attributeKey: String): Sequence<String> {
-        return document.select(cssQuery).asSequence()
-            .mapNotNull { it.attr(attributeKey) }
-            .filterNot(String::isNullOrEmpty)
+    private fun getChildren(
+        document: Document, parent: SpongeUri,
+        cssQuery: String, attributeKey: String
+    ): Set<SpongeUri> {
+        return document.select(cssQuery)
+            .mapNotNull { it.attr(attributeKey)?.toSpongeUriOrNull() }
+            .filter { it != parent && isVisitable(it) }
+            .toSet()
     }
 
     private fun isVisitable(spongeUri: SpongeUri): Boolean {
