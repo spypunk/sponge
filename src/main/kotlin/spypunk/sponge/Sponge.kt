@@ -37,17 +37,23 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private suspend fun visit(spongeUri: SpongeUri, parents: Set<SpongeUri> = setOf()) {
         try {
-            val spongeUriResponse = getSpongeUriResponse(spongeUri)
-
-            when {
-                spongeUriResponse == IgnoreSpongeUriResponse -> return
-                spongeUriResponse == DownloadSpongeUriResponse -> download(spongeUri)
-                parents.size < spongeInput.maxDepth -> visit(spongeUriResponse.children, parents + spongeUri)
-            }
+            getSpongeUriResponse(spongeUri).also { processResponse(it, spongeUri, parents) }
         } catch (e: Exception) {
             spongeUriResponses[spongeUri] = IgnoreSpongeUriResponse
 
             System.err.println("⚠ Processing failed for $spongeUri: ${e.rootMessage()}")
+        }
+    }
+
+    private suspend fun processResponse(
+        spongeUriResponse: SpongeUriResponse,
+        spongeUri: SpongeUri,
+        parents: Set<SpongeUri>
+    ) {
+        when {
+            spongeUriResponse == IgnoreSpongeUriResponse -> return
+            spongeUriResponse == DownloadSpongeUriResponse -> download(spongeUri)
+            parents.size < spongeInput.maxDepth -> visit(spongeUriResponse.children, parents + spongeUri)
         }
     }
 
@@ -91,9 +97,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun getChildren(parent: SpongeUri, response: Connection.Response): Set<SpongeUri> {
-        val document = Jsoup.parse(response.body(), response.url().toExternalForm())
-
-        return getHrefChildren(document, parent) + getImgChildren(document, parent)
+        return Jsoup.parse(response.body(), response.url().toExternalForm())
+            .let { getHrefChildren(it, parent) + getImgChildren(it, parent) }
     }
 
     private fun getHrefChildren(document: Document, parent: SpongeUri) =
@@ -115,34 +120,35 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun isVisitable(spongeUri: SpongeUri): Boolean {
-        val host = spongeUri.toUri().host
-
-        return host == rootHost ||
-            spongeInput.includeSubdomains && host.endsWith(rootHost)
+        return spongeUri.toUri().host
+            .let {
+                it == rootHost ||
+                    spongeInput.includeSubdomains && it.endsWith(rootHost)
+            }
     }
 
     private fun isDownloadableByExtension(spongeUri: SpongeUri): Boolean {
-        val extension = FilenameUtils.getExtension(spongeUri.toUri().path)
-
-        return spongeInput.fileExtensions.contains(extension)
+        return FilenameUtils.getExtension(spongeUri.toUri().path)
+            .let { spongeInput.fileExtensions.contains(it) }
     }
 
     private suspend fun download(spongeUri: SpongeUri) {
-        val path = getDownloadPath(spongeUri)
-
-        if (!processedDownloads.add(path.toString())) return
-
-        withContext(downloadContext) { spongeService.download(spongeUri, path) }
+        getDownloadPath(spongeUri).let {
+            if (processedDownloads.add(it.toString())) {
+                withContext(downloadContext) { spongeService.download(spongeUri, it) }
+            }
+        }
     }
 
     private fun getDownloadPath(spongeUri: SpongeUri): Path {
-        val uri = spongeUri.toUri()
-
-        return spongeInput.outputDirectory
-            .resolve(uri.host)
-            .resolve(FilenameUtils.getPath(uri.path))
-            .resolve(FilenameUtils.getName(uri.path))
-            .toAbsolutePath()
+        return spongeUri.toUri()
+            .let {
+                spongeInput.outputDirectory
+                    .resolve(it.host)
+                    .resolve(FilenameUtils.getPath(it.path))
+                    .resolve(FilenameUtils.getName(it.path))
+                    .toAbsolutePath()
+            }
     }
 }
 

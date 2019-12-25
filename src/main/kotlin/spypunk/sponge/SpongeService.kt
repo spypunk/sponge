@@ -27,7 +27,7 @@ private const val USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.
 
 class SpongeService {
     fun request(spongeUri: SpongeUri, timeout: Int = REQUEST_TIMEOUT): Connection.Response {
-        val connection = Jsoup.connect(spongeUri.toString())
+        return Jsoup.connect(spongeUri.toString())
             .timeout(timeout)
             .header(HttpHeaders.ACCEPT_ENCODING, ENCODING)
             .referrer(REFERRER)
@@ -36,8 +36,7 @@ class SpongeService {
             .ignoreHttpErrors(true)
             .ignoreContentType(true)
             .followRedirects(true)
-
-        return retry(IOException::class) { connection.execute() }
+            .let { retry(IOException::class) { it.execute() } }
     }
 
     fun download(spongeUri: SpongeUri, path: Path) {

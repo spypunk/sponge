@@ -28,7 +28,7 @@ class SpongeUri private constructor(private val uri: String) {
             if (!supportedSchemes.contains(url.protocol)) error("Unsupported scheme: ${url.protocol}")
             if (url.host.isNullOrEmpty()) error("Hostname cannot be empty")
 
-            val normalizedUri = URIBuilder()
+            return URIBuilder()
                 .apply {
                     scheme = url.protocol
                     port = url.port
@@ -51,8 +51,7 @@ class SpongeUri private constructor(private val uri: String) {
                 }
                 .build()
                 .normalize()
-
-            return SpongeUri(normalizedUri.toString())
+                .let { SpongeUri(it.toString()) }
         }
     }
 
