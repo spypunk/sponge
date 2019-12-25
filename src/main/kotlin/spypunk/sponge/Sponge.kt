@@ -37,7 +37,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private suspend fun visit(spongeUri: SpongeUri, parents: Set<SpongeUri> = setOf()) {
         try {
-            getSpongeUriResponse(spongeUri).also { processResponse(it, spongeUri, parents) }
+            request(spongeUri).also { processResponse(it, spongeUri, parents) }
         } catch (e: Exception) {
             spongeUriResponses[spongeUri] = IgnoreSpongeUriResponse
 
@@ -45,19 +45,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         }
     }
 
-    private suspend fun processResponse(
-        spongeUriResponse: SpongeUriResponse,
-        spongeUri: SpongeUri,
-        parents: Set<SpongeUri>
-    ) {
-        when {
-            spongeUriResponse == IgnoreSpongeUriResponse -> return
-            spongeUriResponse == DownloadSpongeUriResponse -> download(spongeUri)
-            parents.size < spongeInput.maxDepth -> visit(spongeUriResponse.children, parents + spongeUri)
-        }
-    }
-
-    private fun getSpongeUriResponse(spongeUri: SpongeUri): SpongeUriResponse {
+    private fun request(spongeUri: SpongeUri): SpongeUriResponse {
         return spongeUriResponses.computeIfAbsent(spongeUri) {
             if (isDownloadableByExtension(spongeUri)) {
                 DownloadSpongeUriResponse
@@ -65,12 +53,12 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 val response = spongeService.request(spongeUri)
                 val mimeType = ContentType.parse(response.contentType()).mimeType
 
-                getSpongeUriResponse(spongeUri, mimeType, response)
+                request(spongeUri, mimeType, response)
             }
         }
     }
 
-    private fun getSpongeUriResponse(
+    private fun request(
         spongeUri: SpongeUri,
         mimeType: String,
         response: Connection.Response
@@ -87,6 +75,26 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 }
             }
             else -> IgnoreSpongeUriResponse
+        }
+    }
+
+    private suspend fun processResponse(
+        spongeUriResponse: SpongeUriResponse,
+        spongeUri: SpongeUri,
+        parents: Set<SpongeUri>
+    ) {
+        when {
+            spongeUriResponse == IgnoreSpongeUriResponse -> return
+            spongeUriResponse == DownloadSpongeUriResponse -> download(spongeUri)
+            parents.size < spongeInput.maxDepth -> visit(spongeUriResponse.children, parents + spongeUri)
+        }
+    }
+
+    private suspend fun download(spongeUri: SpongeUri) {
+        getDownloadPath(spongeUri).let {
+            if (processedDownloads.add(it.toString())) {
+                withContext(downloadContext) { spongeService.download(spongeUri, it) }
+            }
         }
     }
 
@@ -130,14 +138,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private fun isDownloadableByExtension(spongeUri: SpongeUri): Boolean {
         return FilenameUtils.getExtension(spongeUri.toUri().path)
             .let { spongeInput.fileExtensions.contains(it) }
-    }
-
-    private suspend fun download(spongeUri: SpongeUri) {
-        getDownloadPath(spongeUri).let {
-            if (processedDownloads.add(it.toString())) {
-                withContext(downloadContext) { spongeService.download(spongeUri, it) }
-            }
-        }
     }
 
     private fun getDownloadPath(spongeUri: SpongeUri): Path {
