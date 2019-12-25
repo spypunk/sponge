@@ -30,7 +30,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
     private val spongeUriMetadatas = ConcurrentHashMap<SpongeUri, SpongeUriResponse>()
-    private val processedDownloads = CopyOnWriteArraySet<SpongeUri>()
+    private val processedDownloads = CopyOnWriteArraySet<String>()
     private val rootHost = spongeInput.spongeUri.toUri().host
 
     fun execute() = runBlocking { visit(spongeInput.spongeUri) }
@@ -89,8 +89,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun getChildren(spongeUri: SpongeUri, response: Connection.Response): Set<SpongeUri> {
-        println("↺ $spongeUri")
-
         val document = Jsoup.parse(response.body(), response.url().toExternalForm())
         val links = getLinks(document) + getImageLinks(document)
 
@@ -125,9 +123,9 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private suspend fun download(spongeUri: SpongeUri) {
-        if (!processedDownloads.add(spongeUri)) return
-
         val path = getDownloadPath(spongeUri)
+
+        if (!processedDownloads.add(path.toString())) return
 
         withContext(downloadContext) { spongeService.download(spongeUri, path) }
     }
