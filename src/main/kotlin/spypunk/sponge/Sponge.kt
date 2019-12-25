@@ -65,7 +65,9 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private fun getSpongeUriResponse(
-        spongeUri: SpongeUri, mimeType: String, response: Connection.Response
+        spongeUri: SpongeUri,
+        mimeType: String,
+        response: Connection.Response
     ): SpongeUriResponse {
         return when {
             spongeInput.mimeTypes.contains(mimeType) -> DownloadSpongeUriResponse
@@ -101,8 +103,10 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         getChildren(document, parent, "img[src]", "abs:src")
 
     private fun getChildren(
-        document: Document, parent: SpongeUri,
-        cssQuery: String, attributeKey: String
+        document: Document,
+        parent: SpongeUri,
+        cssQuery: String,
+        attributeKey: String
     ): Set<SpongeUri> {
         return document.select(cssQuery)
             .mapNotNull { it.attr(attributeKey)?.toSpongeUriOrNull() }
