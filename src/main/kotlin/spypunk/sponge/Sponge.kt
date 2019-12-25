@@ -37,7 +37,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private suspend fun visit(spongeUri: SpongeUri, parents: Set<SpongeUri> = setOf()) {
         try {
-            request(spongeUri).also { processResponse(it, spongeUri, parents) }
+            processResponse(request(spongeUri), spongeUri, parents)
         } catch (e: Exception) {
             spongeUriResponses[spongeUri] = IgnoreSpongeUriResponse
 
