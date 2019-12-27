@@ -20,12 +20,13 @@ import org.mockserver.model.HttpResponse.response
 import spypunk.sponge.SpongeService
 import spypunk.sponge.toSpongeUri
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
 import java.nio.file.Paths
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SpongeServiceTest {
     private val spongeService = SpongeService()
-    private val filePath = Paths.get("test.txt")
+    private val filePath = Paths.get("test.txt").toAbsolutePath()
     private val fileContent = "test"
     private val port = 12_345
 
@@ -44,7 +45,7 @@ class SpongeServiceTest {
 
     @BeforeAll
     fun before() {
-        FileUtils.deleteQuietly(filePath.toFile())
+        Files.deleteIfExists(filePath)
     }
 
     @Test

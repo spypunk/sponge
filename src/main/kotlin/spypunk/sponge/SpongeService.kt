@@ -40,7 +40,7 @@ class SpongeService {
     }
 
     fun download(spongeUri: SpongeUri, path: Path) {
-        Files.createDirectories(path)
+        Files.createDirectories(path.parent)
 
         request(spongeUri, 0).bodyStream()
             .use { Files.copy(it, path, StandardCopyOption.REPLACE_EXISTING) }
