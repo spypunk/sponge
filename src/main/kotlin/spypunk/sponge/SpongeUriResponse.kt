@@ -9,15 +9,11 @@
 package spypunk.sponge
 
 interface SpongeUriResponse {
-    val children: Set<SpongeUri>
-}
-
-abstract class EmptySpongeUriResponse : SpongeUriResponse {
-    override val children
+    val children
         get() = setOf<SpongeUri>()
 }
 
-object DownloadSpongeUriResponse : EmptySpongeUriResponse()
-object IgnoreSpongeUriResponse : EmptySpongeUriResponse()
+object DownloadSpongeUriResponse : SpongeUriResponse
+object IgnoreSpongeUriResponse : SpongeUriResponse
 
 class VisitSpongeUriResponse(override val children: Set<SpongeUri>) : SpongeUriResponse

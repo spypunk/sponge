@@ -11,13 +11,13 @@ package spypunk.sponge
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.IOException
+import java.nio.file.Files
 import java.nio.file.Path
 
 class SpongeTest {
@@ -38,7 +38,7 @@ class SpongeTest {
 
     @BeforeEach
     fun beforeEach() {
-        FileUtils.deleteDirectory(outputDirectory.toFile())
+        Files.deleteIfExists(outputDirectory)
     }
 
     @Test
