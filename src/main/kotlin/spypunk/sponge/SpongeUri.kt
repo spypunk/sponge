@@ -8,20 +8,16 @@
 
 package spypunk.sponge
 
-import com.google.common.escape.Escaper
-import com.google.common.net.UrlEscapers
 import org.apache.http.client.utils.URIBuilder
-import org.apache.http.client.utils.URLEncodedUtils
 import java.net.URI
 import java.net.URL
 
-private const val WWW_PREFIX = "www."
-
-private val supportedSchemes = setOf("http", "https")
-private val urlPathSegmentEscaper: Escaper = UrlEscapers.urlPathSegmentEscaper()
-
 class SpongeUri private constructor(private val uri: String) {
     companion object {
+        private const val WWW_PREFIX = "www."
+
+        private val supportedSchemes = setOf("http", "https")
+
         operator fun invoke(uri: String): SpongeUri {
             val url = URL(uri)
 
@@ -33,25 +29,19 @@ class SpongeUri private constructor(private val uri: String) {
                     scheme = url.protocol
                     port = url.port
                     userInfo = url.userInfo
+                    path = url.path
+
+                    setCustomQuery(url.query)
 
                     host = if (url.host.startsWith(WWW_PREFIX)) {
                         url.host.substring(WWW_PREFIX.length)
                     } else {
                         url.host
                     }
-
-                    if (!url.query.isNullOrEmpty()) {
-                        setCustomQuery(url.query)
-                    }
-
-                    if (!url.path.isNullOrEmpty()) {
-                        pathSegments = URLEncodedUtils.parsePathSegments(url.path)
-                            .map(urlPathSegmentEscaper::escape)
-                    }
                 }
                 .build()
                 .normalize()
-                .let { SpongeUri(it.toString()) }
+                .let { SpongeUri(it.toASCIIString()) }
         }
     }
 
