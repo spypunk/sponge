@@ -6,7 +6,7 @@
  * as published by Sam Hocevar. See the COPYING file for more details.
  */
 
-package spypunk.sponge.service
+package spypunk.sponge
 
 import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.AfterAll
@@ -17,8 +17,6 @@ import org.junit.jupiter.api.TestInstance
 import org.mockserver.integration.ClientAndServer.startClientAndServer
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
-import spypunk.sponge.SpongeService
-import spypunk.sponge.toSpongeUri
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths

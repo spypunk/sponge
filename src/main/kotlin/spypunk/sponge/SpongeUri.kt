@@ -21,9 +21,6 @@ class SpongeUri private constructor(private val uri: String) {
         operator fun invoke(uri: String): SpongeUri {
             val url = URL(uri)
 
-            if (!supportedSchemes.contains(url.protocol)) error("Unsupported scheme: ${url.protocol}")
-            if (url.host.isNullOrEmpty()) error("Hostname cannot be empty")
-
             return URIBuilder()
                 .apply {
                     scheme = url.protocol
@@ -41,7 +38,12 @@ class SpongeUri private constructor(private val uri: String) {
                 }
                 .build()
                 .normalize()
-                .let { SpongeUri(it.toASCIIString()) }
+                .let {
+                    if (!supportedSchemes.contains(it.scheme)) error("Unsupported scheme: ${it.scheme}")
+                    if (it.host.isNullOrEmpty()) error("Hostname cannot be empty")
+
+                    SpongeUri(it.toASCIIString())
+                }
         }
     }
 
