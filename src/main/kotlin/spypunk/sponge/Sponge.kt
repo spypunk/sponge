@@ -71,8 +71,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 if (children.isEmpty()) {
                     IgnoreSpongeUriResponse
                 } else {
-                    println("↺ $spongeUri")
-
                     VisitSpongeUriResponse(children)
                 }
             }
