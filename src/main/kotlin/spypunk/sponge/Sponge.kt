@@ -54,17 +54,18 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private suspend fun visit(spongeUri: SpongeUri) {
         if (isDownloadableByExtension(spongeUri)) {
             download(spongeUri)
-        } else {
-            val response = spongeService.request(spongeUri)
-            val mimeType = ContentType.parse(response.contentType()).mimeType
+            return
+        }
 
-            if (spongeInput.mimeTypes.contains(mimeType)) {
-                download(spongeUri)
-            } else if (mimeType.isHtmlMimeType()) {
-                val children = getChildren(spongeUri, response)
+        val response = spongeService.request(spongeUri)
+        val mimeType = ContentType.parse(response.contentType()).mimeType
 
-                if (children.isNotEmpty()) spongeUrisChildren[spongeUri] = children
-            }
+        if (spongeInput.mimeTypes.contains(mimeType)) {
+            download(spongeUri)
+        } else if (mimeType.isHtmlMimeType()) {
+            val children = getChildren(spongeUri, response)
+
+            if (children.isNotEmpty()) spongeUrisChildren[spongeUri] = children
         }
     }
 
