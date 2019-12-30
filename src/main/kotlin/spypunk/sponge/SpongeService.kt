@@ -55,9 +55,7 @@ class SpongeService {
             try {
                 return block.invoke()
             } catch (e: Exception) {
-                if (!clazz.isSuperclassOf(e::class)) {
-                    throw e
-                }
+                if (!clazz.isSuperclassOf(e::class)) throw e
 
                 exception = e
             }

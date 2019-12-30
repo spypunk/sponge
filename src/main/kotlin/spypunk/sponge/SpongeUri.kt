@@ -17,13 +17,7 @@ class SpongeUri private constructor(private val uri: String) {
 
     override fun toString() = uri
 
-    override fun equals(other: Any?): Boolean {
-        return if (other is SpongeUri) {
-            uri == other.uri
-        } else {
-            false
-        }
-    }
+    override fun equals(other: Any?) = other is SpongeUri && uri == other.uri
 
     override fun hashCode() = uri.hashCode()
 
