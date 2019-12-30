@@ -21,4 +21,13 @@ class SpongeUriTest {
             Assertions.assertEquals("Unsupported scheme: ftp", e.message)
         }
     }
+
+    @Test
+    fun testEmptyHost() {
+        try {
+            SpongeUri("http:///www.test.com")
+        } catch (e: IllegalStateException) {
+            Assertions.assertEquals("Hostname cannot be empty", e.message)
+        }
+    }
 }
