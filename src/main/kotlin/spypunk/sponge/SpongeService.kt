@@ -23,7 +23,7 @@ private const val REQUEST_TIMEOUT = 30_000
 private const val ENCODING = "gzip, deflate"
 private const val REFERRER = "https://www.google.com"
 private const val USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
-    "Chrome/78.0.3904.97 Safari/537.36"
+    "Chrome/79.0.3945.88 Safari/537.36"
 
 class SpongeService {
     fun request(spongeUri: SpongeUri, timeout: Int = REQUEST_TIMEOUT): Connection.Response {

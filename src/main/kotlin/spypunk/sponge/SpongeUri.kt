@@ -33,25 +33,26 @@ class SpongeUri private constructor(private val uri: String) {
         private val supportedSchemes = setOf("http", "https")
 
         operator fun invoke(uri: String): SpongeUri {
-            val url = URL(uri)
+            return URL(uri)
+                .let {
+                    URIBuilder()
+                        .apply {
+                            scheme = it.protocol
+                            port = it.port
+                            userInfo = it.userInfo
+                            path = it.path
 
-            return URIBuilder()
-                .apply {
-                    scheme = url.protocol
-                    port = url.port
-                    userInfo = url.userInfo
-                    path = url.path
+                            setCustomQuery(it.query)
 
-                    setCustomQuery(url.query)
-
-                    host = if (url.host.startsWith(WWW_PREFIX)) {
-                        url.host.substring(WWW_PREFIX.length)
-                    } else {
-                        url.host
-                    }
+                            host = if (it.host.startsWith(WWW_PREFIX)) {
+                                it.host.substring(WWW_PREFIX.length)
+                            } else {
+                                it.host
+                            }
+                        }
+                        .build()
+                        .normalize()
                 }
-                .build()
-                .normalize()
                 .let {
                     if (!supportedSchemes.contains(it.scheme)) error("Unsupported scheme: ${it.scheme}")
                     if (it.host.isNullOrEmpty()) error("Hostname cannot be empty")
