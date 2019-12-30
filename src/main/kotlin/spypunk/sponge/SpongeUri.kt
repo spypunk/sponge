@@ -13,6 +13,20 @@ import java.net.URI
 import java.net.URL
 
 class SpongeUri private constructor(private val uri: String) {
+    fun toUri() = URI(uri)
+
+    override fun toString() = uri
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is SpongeUri) {
+            uri == other.uri
+        } else {
+            false
+        }
+    }
+
+    override fun hashCode() = uri.hashCode()
+
     companion object {
         private const val WWW_PREFIX = "www."
 
@@ -46,20 +60,6 @@ class SpongeUri private constructor(private val uri: String) {
                 }
         }
     }
-
-    override fun toString() = uri
-
-    override fun equals(other: Any?): Boolean {
-        return if (other is SpongeUri) {
-            uri == other.uri
-        } else {
-            false
-        }
-    }
-
-    override fun hashCode() = uri.hashCode()
-
-    fun toUri() = URI(uri)
 }
 
 fun String.toSpongeUri() = SpongeUri(this)
