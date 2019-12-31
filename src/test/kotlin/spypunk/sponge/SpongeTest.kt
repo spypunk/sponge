@@ -47,7 +47,7 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(spongeInput.spongeUri) }
+        verify { spongeService.request(spongeInput.spongeUri) }
         verify(exactly = 0) { spongeService.download(any(), any()) }
     }
 
@@ -57,7 +57,7 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(spongeInput.spongeUri) }
+        verify { spongeService.request(spongeInput.spongeUri) }
         verify(exactly = 0) { spongeService.download(any(), any()) }
     }
 
@@ -80,9 +80,9 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(spongeInput.spongeUri) }
-        verify(exactly = 1) { spongeService.request(fileUri) }
-        verify(exactly = 1) { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
+        verify { spongeService.request(spongeInput.spongeUri) }
+        verify { spongeService.request(fileUri) }
+        verify { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
     }
 
     @Test
@@ -107,11 +107,11 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(spongeInput.spongeUri) }
-        verify(exactly = 1) { spongeService.request(fileUri) }
-        verify(exactly = 1) { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
+        verify { spongeService.request(spongeInput.spongeUri) }
+        verify { spongeService.request(fileUri) }
+        verify { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
         verify(exactly = 0) { spongeService.request(imageFileUri) }
-        verify(exactly = 1) { spongeService.download(imageFileUri, getOutputFilePath(imageFileUri)) }
+        verify { spongeService.download(imageFileUri, getOutputFilePath(imageFileUri)) }
     }
 
     @Test
@@ -133,7 +133,7 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(spongeInput.spongeUri) }
+        verify { spongeService.request(spongeInput.spongeUri) }
         verify(exactly = 0) { spongeService.request(fileUri) }
         verify(exactly = 0) { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
     }
@@ -157,12 +157,35 @@ class SpongeTest {
 
         executeSponge(spongeInputWithSubdomains)
 
-        verify(exactly = 1) { spongeService.request(spongeInputWithSubdomains.spongeUri) }
-        verify(exactly = 1) { spongeService.request(fileUri) }
+        verify { spongeService.request(spongeInputWithSubdomains.spongeUri) }
+        verify { spongeService.request(fileUri) }
 
-        verify(exactly = 1) {
+        verify {
             spongeService.download(fileUri, getOutputFilePath(fileUri))
         }
+    }
+
+    @Test
+    fun testDocumentWithIgnoredLinkAndSubdomainEnabled() {
+        val fileUri = "https://test.test2.com/$fileName".toSpongeUri()
+
+        givenDocument(
+            spongeInputWithSubdomains.spongeUri,
+            """
+                    <html>
+                        <body>
+                            <a href="$fileUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        givenFile(fileUri)
+
+        executeSponge(spongeInputWithSubdomains)
+
+        verify { spongeService.request(spongeInputWithSubdomains.spongeUri) }
+        verify(exactly = 0) { spongeService.request(fileUri) }
     }
 
     @Test
@@ -196,11 +219,11 @@ class SpongeTest {
 
         executeSponge(spongeInputWithDepthTwo)
 
-        verify(exactly = 1) { spongeService.request(spongeInputWithDepthTwo.spongeUri) }
-        verify(exactly = 1) { spongeService.request(childDocumentUri) }
-        verify(exactly = 1) { spongeService.request(fileUri) }
+        verify { spongeService.request(spongeInputWithDepthTwo.spongeUri) }
+        verify { spongeService.request(childDocumentUri) }
+        verify { spongeService.request(fileUri) }
 
-        verify(exactly = 1) {
+        verify {
             spongeService.download(fileUri, getOutputFilePath(fileUri))
         }
     }
@@ -237,13 +260,63 @@ class SpongeTest {
 
         executeSponge(spongeInputWithDepthTwo)
 
-        verify(exactly = 1) { spongeService.request(spongeInputWithDepthTwo.spongeUri) }
-        verify(exactly = 1) { spongeService.request(childDocumentUri) }
-        verify(exactly = 1) { spongeService.request(fileUri) }
+        verify { spongeService.request(spongeInputWithDepthTwo.spongeUri) }
+        verify { spongeService.request(childDocumentUri) }
+        verify { spongeService.request(fileUri) }
 
-        verify(exactly = 1) {
+        verify {
             spongeService.download(fileUri, getOutputFilePath(fileUri))
         }
+    }
+
+    @Test
+    fun testDocumentWithChildDocumentEqualsToOneParent() {
+        val childDocumentUri = "https://test.com/test".toSpongeUri()
+
+        givenDocument(
+            spongeInputWithDepthTwo.spongeUri,
+            """
+                    <html>
+                        <body>
+                            <a href="$childDocumentUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        givenDocument(
+            childDocumentUri,
+            """
+                    <html>
+                        <body>
+                           <a href="${spongeInputWithDepthTwo.spongeUri}" />
+                        </body>
+                    </html>
+                """
+        )
+
+        executeSponge(spongeInputWithDepthTwo)
+
+        verify { spongeService.request(spongeInputWithDepthTwo.spongeUri) }
+        verify { spongeService.request(childDocumentUri) }
+    }
+
+    @Test
+    fun testDocumentWithChildDocumentEqualsToDirectParent() {
+        givenDocument(
+            spongeInput.spongeUri,
+            """
+                    <html>
+                        <body>
+                            <a href="${spongeInput.spongeUri}" />
+                        </body>
+                    </html>
+                """
+        )
+
+        executeSponge(spongeInput)
+
+        verify { spongeService.request(spongeInput.spongeUri) }
     }
 
     @Test
@@ -277,8 +350,8 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(spongeInput.spongeUri) }
-        verify(exactly = 1) { spongeService.request(childDocumentUri) }
+        verify { spongeService.request(spongeInput.spongeUri) }
+        verify { spongeService.request(childDocumentUri) }
         verify(exactly = 0) { spongeService.request(fileUri) }
 
         verify(exactly = 0) {
@@ -303,7 +376,7 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(spongeInput.spongeUri) }
+        verify { spongeService.request(spongeInput.spongeUri) }
         verify(exactly = 0) { spongeService.request(childDocumentUri) }
     }
 
@@ -324,8 +397,8 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(spongeInput.spongeUri) }
-        verify(exactly = 1) { spongeService.request(any()) }
+        verify { spongeService.request(spongeInput.spongeUri) }
+        verify { spongeService.request(any()) }
     }
 
     @Test
@@ -352,15 +425,15 @@ class SpongeTest {
 
         executeSponge(spongeInput)
 
-        verify(exactly = 1) { spongeService.request(spongeInput.spongeUri) }
-        verify(exactly = 1) { spongeService.request(failingFileUri) }
+        verify { spongeService.request(spongeInput.spongeUri) }
+        verify { spongeService.request(failingFileUri) }
 
         verify(exactly = 0) {
             spongeService.download(failingFileUri, getOutputFilePath(failingFileUri))
         }
 
-        verify(exactly = 1) { spongeService.request(fileUri) }
-        verify(exactly = 1) { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
+        verify { spongeService.request(fileUri) }
+        verify { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
     }
 
     private fun getOutputFilePath(spongeUri: SpongeUri): Path {

@@ -98,21 +98,23 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     ): Set<SpongeUri> {
         return document.select(cssQuery)
             .mapNotNull { it.attr(attributeKey)?.toSpongeUriOrNull() }
-            .filter { it != parent && isVisitable(it) }
+            .filter { isVisitable(it, parent) }
             .toSet()
     }
 
-    private fun isVisitable(spongeUri: SpongeUri): Boolean {
-        return spongeUri.toUri().host
-            .let {
-                it == rootHost ||
-                    spongeInput.includeSubdomains && it.endsWith(rootHost)
-            }
+    private fun isVisitable(spongeUri: SpongeUri, parent: SpongeUri): Boolean {
+        return spongeUri != parent && spongeUri.toUri().host
+            .let(this::isHostVisitable)
+    }
+
+    private fun isHostVisitable(host: String): Boolean {
+        return host == rootHost ||
+            spongeInput.includeSubdomains && host.endsWith(rootHost)
     }
 
     private fun isDownloadableByExtension(spongeUri: SpongeUri): Boolean {
         return FilenameUtils.getExtension(spongeUri.toUri().path)
-            .let { spongeInput.fileExtensions.contains(it) }
+            .let(spongeInput.fileExtensions::contains)
     }
 
     private fun getDownloadPath(spongeUri: SpongeUri): Path {
