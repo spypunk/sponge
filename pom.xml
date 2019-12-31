@@ -210,7 +210,7 @@
                                 </rule>
                             </rules>
                             <excludes>
-                                <exclude>**/SpongeCommand.class,**/MainKt.class</exclude>
+                                <exclude>**/SpongeCommand.class,**/SpongeCommandKt.class,**/MainKt.class</exclude>
                             </excludes>
                         </configuration>
                     </execution>
