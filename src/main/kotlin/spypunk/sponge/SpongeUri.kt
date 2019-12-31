@@ -13,6 +13,9 @@ import java.net.URI
 import java.net.URL
 
 class SpongeUri private constructor(private val uri: String) {
+
+    var children = setOf<SpongeUri>()
+
     fun toUri() = URI(uri)
 
     override fun toString() = uri

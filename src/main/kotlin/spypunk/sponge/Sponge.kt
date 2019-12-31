@@ -21,7 +21,6 @@ import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.nio.file.Path
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
@@ -30,7 +29,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
     private val spongeUris = CopyOnWriteArraySet<SpongeUri>()
-    private val spongeUrisChildren = ConcurrentHashMap<SpongeUri, Set<SpongeUri>>()
     private val rootHost = spongeInput.spongeUri.toUri().host
 
     fun execute() = runBlocking {
@@ -43,8 +41,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
                 visit(spongeUri)
             }
 
-            if (parents.size < spongeInput.maxDepth && spongeUrisChildren.containsKey(spongeUri)) {
-                visit(spongeUrisChildren.getValue(spongeUri), parents + spongeUri)
+            if (parents.size < spongeInput.maxDepth && spongeUri.children.isNotEmpty()) {
+                visit(spongeUri.children, parents + spongeUri)
             }
         } catch (e: Exception) {
             System.err.println("⚠ Processing failed for $spongeUri: ${e.rootMessage()}")
@@ -63,9 +61,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         if (spongeInput.mimeTypes.contains(mimeType)) {
             download(spongeUri)
         } else if (mimeType.isHtmlMimeType()) {
-            val children = getChildren(spongeUri, response)
-
-            if (children.isNotEmpty()) spongeUrisChildren[spongeUri] = children
+            spongeUri.children = getChildren(spongeUri, response)
         }
     }
 
