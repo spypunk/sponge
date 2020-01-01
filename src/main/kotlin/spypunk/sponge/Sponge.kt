@@ -20,6 +20,7 @@ import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
 import java.nio.file.Path
 import java.util.concurrent.CopyOnWriteArraySet
 
@@ -93,15 +94,13 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
         attributeKey: String
     ): Set<SpongeUri> {
         return document.select(cssQuery)
-            .mapNotNull { it.attr(attributeKey)?.toSpongeUriOrNull() }
+            .mapNotNull { it.toSpongeUri(attributeKey) }
             .filter { isVisitable(it, parent) }
             .toSet()
     }
 
-    private fun isVisitable(spongeUri: SpongeUri, parent: SpongeUri): Boolean {
-        return spongeUri != parent && spongeUri.toUri().host
-            .let(this::isHostVisitable)
-    }
+    private fun isVisitable(spongeUri: SpongeUri, parent: SpongeUri) =
+        spongeUri != parent && isHostVisitable(spongeUri.toUri().host)
 
     private fun isHostVisitable(host: String): Boolean {
         return host == rootHost ||
@@ -127,9 +126,9 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
 private fun String.isHtmlMimeType() = htmlMimeTypes.contains(this)
 
-private fun String.toSpongeUriOrNull(): SpongeUri? {
+private fun Element.toSpongeUri(attributeKey: String): SpongeUri? {
     return try {
-        toSpongeUri()
+        attr(attributeKey)?.toSpongeUri()
     } catch (ignored: Exception) {
         null
     }

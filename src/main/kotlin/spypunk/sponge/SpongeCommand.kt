@@ -85,7 +85,6 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
         }
 
         try {
-            val spongeService = SpongeService()
             val spongeInput = SpongeInput(
                 spongeUri,
                 outputDirectory,
@@ -96,7 +95,7 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
                 concurrentRequests,
                 concurrentDownloads)
 
-            Sponge(spongeService, spongeInput).execute()
+            Sponge(SpongeService(), spongeInput).execute()
         } catch (t: Throwable) {
             System.err.println("Unexpected error encountered: : ${t.rootMessage()}")
 
