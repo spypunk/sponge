@@ -1,5 +1,5 @@
 /**
- * Copyright © 2019 spypunk <spypunk@gmail.com>
+ * Copyright © 2019-2020 spypunk <spypunk@gmail.com>
  *
  * This work is free. You can redistribute it and/or modify it under the
  * terms of the Do What The Fuck You Want To Public License, Version 2,

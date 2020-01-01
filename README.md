@@ -105,6 +105,6 @@ This project is licensed under the WTFPL (Do What The Fuck You Want To Public Li
 
 [![WTFPL](http://www.wtfpl.net/wp-content/uploads/2012/12/logo-160x116.png)](http://www.wtfpl.net/)
 
-Copyright © 2019 spypunk [spypunk@gmail.com](mailto:spypunk@gmail.com)
+Copyright © 2019-2020 spypunk [spypunk@gmail.com](mailto:spypunk@gmail.com)
 
 This work is free. You can redistribute it and/or modify it under the terms of the Do What The Fuck You Want To Public License, Version 2, as published by Sam Hocevar. See the COPYING file for more details.
