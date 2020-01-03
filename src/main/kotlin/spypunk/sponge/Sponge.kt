@@ -38,6 +38,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
 
     private suspend fun visit(spongeUri: SpongeUri, parents: Set<SpongeUri>) {
         try {
+            if (spongeUris.size == spongeInput.maxVisitedUris) return
+
             if (spongeUris.add(spongeUri)) {
                 visit(spongeUri)
             }

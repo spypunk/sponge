@@ -436,6 +436,37 @@ class SpongeTest {
         verify { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
     }
 
+    @Test
+    fun testDocumentWithLimitedVisitedLinks() {
+        val input = spongeInput.copy(maxVisitedUris = 2)
+        val fileUri = "${input.spongeUri}/$fileName".toSpongeUri()
+        val otherFileUri = "${input.spongeUri}/test2.txt".toSpongeUri()
+
+        givenDocument(
+            input.spongeUri,
+            """
+                    <html>
+                        <body>
+                            <a href="$fileUri" />
+                            <a href="$otherFileUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        givenFile(fileUri)
+        givenFile(otherFileUri)
+
+        executeSponge(input)
+
+        verify { spongeService.request(input.spongeUri) }
+        verify { spongeService.request(fileUri) }
+        verify { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
+
+        verify(exactly = 0) { spongeService.request(otherFileUri) }
+        verify(exactly = 0) { spongeService.download(otherFileUri, getOutputFilePath(otherFileUri)) }
+    }
+
     private fun getOutputFilePath(spongeUri: SpongeUri): Path {
         val uri = spongeUri.toUri()
 

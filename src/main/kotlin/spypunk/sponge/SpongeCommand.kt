@@ -58,6 +58,11 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
         .restrictTo(1)
         .default(1)
 
+    private val maxVisitedUris by option("-m", "--max-visited-uris", help = "Maximum visited uris")
+        .int()
+        .restrictTo(1)
+        .default(Int.MAX_VALUE)
+
     private val includeSubdomains by option("-s", "--include-subdomains", help = "Include subdomains")
         .flag()
 
@@ -91,6 +96,7 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
                 mimeTypes.toSet(),
                 fileExtensions.toSet(),
                 depth,
+                maxVisitedUris,
                 includeSubdomains,
                 concurrentRequests,
                 concurrentDownloads)
