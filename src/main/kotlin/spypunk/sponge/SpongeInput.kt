@@ -15,8 +15,8 @@ data class SpongeInput(
     val outputDirectory: Path,
     val mimeTypes: Set<String>,
     val fileExtensions: Set<String>,
-    val maxDepth: Int = 1,
-    val maxVisitedUris: Int = Int.MAX_VALUE,
+    val maximumDepth: Int = 1,
+    val maximumUris: Int = Int.MAX_VALUE,
     val includeSubdomains: Boolean = false,
     val concurrentRequests: Int = 1,
     val concurrentDownloads: Int = 1

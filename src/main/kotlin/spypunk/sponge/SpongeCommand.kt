@@ -53,12 +53,12 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
     private val fileExtensions by option("-e", "--file-extension", help = "Extensions to download (example: png)")
         .multiple()
 
-    private val depth by option("-d", "--depth", help = "Search depth")
+    private val maximumDepth by option("-d", "--depth", help = "Search depth")
         .int()
         .restrictTo(1)
         .default(1)
 
-    private val maxVisitedUris by option("-m", "--max-visited-uris", help = "Maximum visited uris")
+    private val maximumUris by option("-m", "--max-uris", help = "Maximum uris to process")
         .int()
         .restrictTo(1)
         .default(Int.MAX_VALUE)
@@ -95,8 +95,8 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
                 outputDirectory,
                 mimeTypes.toSet(),
                 fileExtensions.toSet(),
-                depth,
-                maxVisitedUris,
+                maximumDepth,
+                maximumUris,
                 includeSubdomains,
                 concurrentRequests,
                 concurrentDownloads)

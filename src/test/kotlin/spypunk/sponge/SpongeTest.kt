@@ -34,7 +34,7 @@ class SpongeTest {
     )
 
     private val spongeInputWithSubdomains = spongeInput.copy(includeSubdomains = true)
-    private val spongeInputWithDepthTwo = spongeInput.copy(maxDepth = 2)
+    private val spongeInputWithDepthTwo = spongeInput.copy(maximumDepth = 2)
 
     @BeforeEach
     fun beforeEach() {
@@ -438,7 +438,7 @@ class SpongeTest {
 
     @Test
     fun testDocumentWithLimitedVisitedLinks() {
-        val input = spongeInput.copy(maxVisitedUris = 2)
+        val input = spongeInput.copy(maximumUris = 2)
         val fileUri = "${input.spongeUri}/$fileName".toSpongeUri()
         val otherFileUri = "${input.spongeUri}/test2.txt".toSpongeUri()
 
