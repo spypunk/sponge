@@ -29,6 +29,10 @@ import java.nio.file.Paths
 import java.util.regex.Pattern
 import kotlin.system.exitProcess
 
+private const val DEFAULT_REFERRER = "https://www.google.com"
+private const val DEFAULT_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
+    "Chrome/79.0.3945.88 Safari/537.36"
+
 private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
 private val version = ConfigurationProperties
     .fromResource("sponge.properties")[Key("version", stringType)]
@@ -76,6 +80,12 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
         .restrictTo(1)
         .default(1)
 
+    private val referrer by option("-r", "--referrer", help = "Referrer")
+        .default(DEFAULT_REFERRER)
+
+    private val userAgent by option("-U", "--user-agent", help = "User agent")
+        .default(DEFAULT_USER_AGENT)
+
     init {
         versionOption(names = setOf("-v", "--version"), version = version) { it }
 
@@ -101,7 +111,9 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
                 concurrentRequests,
                 concurrentDownloads)
 
-            Sponge(SpongeService(), spongeInput).execute()
+            val spongeService = SpongeService(referrer, userAgent)
+
+            Sponge(spongeService, spongeInput).execute()
         } catch (t: Throwable) {
             System.err.println("Unexpected error encountered: : ${t.rootMessage()}")
 

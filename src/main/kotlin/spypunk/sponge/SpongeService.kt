@@ -19,19 +19,16 @@ import java.nio.file.StandardCopyOption
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
 
-private const val REQUEST_TIMEOUT = 30_000
+private const val DEFAULT_REQUEST_TIMEOUT = 30_000
 private const val ENCODING = "gzip, deflate"
-private const val REFERRER = "https://www.google.com"
-private const val USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
-    "Chrome/79.0.3945.88 Safari/537.36"
 
-class SpongeService {
-    fun request(spongeUri: SpongeUri, timeout: Int = REQUEST_TIMEOUT): Connection.Response {
+class SpongeService(private val referrer: String, private val userAgent: String) {
+    fun request(spongeUri: SpongeUri, timeout: Int = DEFAULT_REQUEST_TIMEOUT): Connection.Response {
         return Jsoup.connect(spongeUri.toString())
             .timeout(timeout)
             .header(HttpHeaders.ACCEPT_ENCODING, ENCODING)
-            .referrer(REFERRER)
-            .userAgent(USER_AGENT)
+            .referrer(referrer)
+            .userAgent(userAgent)
             .maxBodySize(0)
             .ignoreHttpErrors(true)
             .ignoreContentType(true)

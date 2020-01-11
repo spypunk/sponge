@@ -23,8 +23,13 @@ Options:
   -s, --include-subdomains        Include subdomains
   -R, --concurrent-requests INT   Concurrent requests (default: 1)
   -D, --concurrent-downloads INT  Concurrent downloads (default: 1)
+  -r, --referrer TEXT             Referrer (default: https://www.google.com)
+  -U, --user-agent TEXT           User agent (default: Mozilla/5.0 (X11; Linux
+                                  x86_64) AppleWebKit/537.36 (KHTML, like
+                                  Gecko) Chrome/79.0.3945.88 Safari/537.36)
   -v, --version                   Show the version and exit
   -h, --help                      Show this message and exit
+
 ~~~
 ### Examples
 ~~~
