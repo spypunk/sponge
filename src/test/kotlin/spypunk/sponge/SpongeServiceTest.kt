@@ -18,13 +18,14 @@ import org.mockserver.integration.ClientAndServer.startClientAndServer
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
 import java.nio.charset.StandardCharsets
-import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SpongeServiceTest {
     private val spongeService = SpongeService("https://test.com", "test")
-    private val filePath = Paths.get("test.txt").toAbsolutePath()
+    private val outputDirectory = Path.of("testOutput").toAbsolutePath()
+    private val filePath = Paths.get("$outputDirectory/test.txt").toAbsolutePath()
     private val fileContent = "test"
     private val port = 12_345
 
@@ -43,7 +44,7 @@ class SpongeServiceTest {
 
     @BeforeAll
     fun before() {
-        Files.deleteIfExists(filePath)
+        FileUtils.deleteDirectory(outputDirectory.toFile())
     }
 
     @Test

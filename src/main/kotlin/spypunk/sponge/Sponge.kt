@@ -21,6 +21,7 @@ import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.CopyOnWriteArraySet
 
@@ -69,7 +70,14 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     }
 
     private suspend fun download(spongeUri: SpongeUri) {
-        withContext(downloadContext) { spongeService.download(spongeUri, getDownloadPath(spongeUri)) }
+        val path = getDownloadPath(spongeUri)
+
+        if (Files.exists(path)) {
+            println("∃ $path")
+            return
+        }
+
+        withContext(downloadContext) { spongeService.download(spongeUri, path) }
     }
 
     private suspend fun visit(spongeUris: Set<SpongeUri>, parents: Set<SpongeUri>) {

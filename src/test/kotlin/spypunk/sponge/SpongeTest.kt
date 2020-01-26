@@ -11,18 +11,18 @@ package spypunk.sponge
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Connection
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.IOException
-import java.nio.file.Files
 import java.nio.file.Path
 
 class SpongeTest {
     private val spongeService = mockk<SpongeService>(relaxed = true)
-    private val outputDirectory = Path.of("output").toAbsolutePath()
+    private val outputDirectory = Path.of("testOutput").toAbsolutePath()
     private val fileName = "test.txt"
     private val imageFileName = "test.png"
 
@@ -38,7 +38,7 @@ class SpongeTest {
 
     @BeforeEach
     fun beforeEach() {
-        Files.deleteIfExists(outputDirectory)
+        FileUtils.deleteDirectory(outputDirectory.toFile())
     }
 
     @Test
@@ -83,6 +83,34 @@ class SpongeTest {
         verify { spongeService.request(spongeInput.spongeUri) }
         verify { spongeService.request(fileUri) }
         verify { spongeService.download(fileUri, getOutputFilePath(fileUri)) }
+    }
+
+    @Test
+    fun testDocumentWithLinkAlreadyDownloaded() {
+        val fileUri = "${spongeInput.spongeUri}/$fileName".toSpongeUri()
+
+        givenDocument(
+            spongeInput.spongeUri,
+            """
+                    <html>
+                        <body>
+                            <a href="$fileUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        givenFile(fileUri)
+
+        val filePath = getOutputFilePath(fileUri)
+
+        FileUtils.touch(filePath.toFile())
+
+        executeSponge(spongeInput)
+
+        verify { spongeService.request(spongeInput.spongeUri) }
+        verify { spongeService.request(fileUri) }
+        verify(exactly = 0) { spongeService.download(fileUri, filePath) }
     }
 
     @Test
