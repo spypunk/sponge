@@ -31,7 +31,7 @@ import kotlin.system.exitProcess
 
 private const val DEFAULT_REFERRER = "https://www.google.com"
 private const val DEFAULT_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
-    "Chrome/79.0.3945.88 Safari/537.36"
+    "Chrome/80.0.3987.122 Safari/537.36"
 
 private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
 private val version = ConfigurationProperties
