@@ -21,11 +21,11 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.options.versionOption
 import com.github.ajalt.clikt.parameters.types.int
+import com.github.ajalt.clikt.parameters.types.path
 import com.github.ajalt.clikt.parameters.types.restrictTo
 import com.natpryce.konfig.ConfigurationProperties
 import com.natpryce.konfig.Key
 import com.natpryce.konfig.stringType
-import java.nio.file.Paths
 import java.util.regex.Pattern
 import kotlin.system.exitProcess
 
@@ -43,7 +43,7 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
         .required()
 
     private val outputDirectory by option("-o", "--output", help = "Output directory where files are downloaded")
-        .convert { Paths.get(it) }
+        .path()
         .required()
 
     private val mimeTypes by option("-t", "--mime-type", help = "Mime types to download (example: text/plain)")
