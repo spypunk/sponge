@@ -32,9 +32,9 @@ class SpongeServiceTest {
     private val server = startClientAndServer(port)
         .also {
             it.`when`(
-                request()
-                    .withPath("/${filePath.fileName}")
-            )
+                    request()
+                        .withPath("/${filePath.fileName}")
+                )
                 .respond(
                     response()
                         .withStatusCode(200)
