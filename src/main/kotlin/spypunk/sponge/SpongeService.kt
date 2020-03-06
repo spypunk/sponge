@@ -37,10 +37,11 @@ class SpongeService(private val referrer: String, private val userAgent: String)
     }
 
     fun download(spongeUri: SpongeUri, path: Path) {
-        Files.createDirectories(path.parent)
-
         request(spongeUri, 0).bodyStream()
-            .use { Files.copy(it, path, StandardCopyOption.REPLACE_EXISTING) }
+            .use {
+                Files.createDirectories(path.parent)
+                Files.copy(it, path, StandardCopyOption.REPLACE_EXISTING)
+            }
 
         println("↓ $path [${path.humanSize()}]")
     }
