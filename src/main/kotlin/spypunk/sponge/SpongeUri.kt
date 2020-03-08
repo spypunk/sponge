@@ -11,6 +11,10 @@ package spypunk.sponge
 import java.net.URI
 import java.net.URL
 
+private val supportedSchemes = setOf("http", "https")
+
+fun String.toSpongeUri() = SpongeUri(this)
+
 class SpongeUri private constructor(private val uri: String) {
     var children = setOf<SpongeUri>()
 
@@ -23,20 +27,15 @@ class SpongeUri private constructor(private val uri: String) {
     override fun hashCode() = uri.hashCode()
 
     companion object {
-        private val supportedSchemes = setOf("http", "https")
-
-        operator fun invoke(uri: String): SpongeUri {
-            return URL(uri)
-                .let { URI(it.protocol, it.userInfo, it.host, it.port, it.path, it.query, null) }
+        operator fun invoke(value: String): SpongeUri {
+            val url = URL(value)
+            val uri = URI(url.protocol, url.userInfo, url.host, url.port, url.path, url.query, null)
                 .normalize()
-                .let {
-                    if (!supportedSchemes.contains(it.scheme)) error("Unsupported scheme: ${it.scheme}")
-                    if (it.host.isNullOrEmpty()) error("Hostname cannot be empty")
 
-                    SpongeUri(it.toASCIIString())
-                }
+            if (!supportedSchemes.contains(uri.scheme)) error("Unsupported scheme: ${uri.scheme}")
+            if (uri.host.isNullOrEmpty()) error("Hostname cannot be empty")
+
+            return SpongeUri(uri.toASCIIString())
         }
     }
 }
-
-fun String.toSpongeUri() = SpongeUri(this)

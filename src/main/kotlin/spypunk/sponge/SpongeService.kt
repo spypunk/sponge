@@ -13,14 +13,47 @@ import org.apache.http.HttpHeaders
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.IOException
+import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
+import kotlin.system.measureNanoTime
 
 private const val DEFAULT_REQUEST_TIMEOUT = 30_000
 private const val ENCODING = "gzip, deflate"
+private const val NS_TO_S = 1_000_000_000.0
+private const val KB_TO_B = 1_000.0
+
+private fun copy(inputStream: InputStream, path: Path) {
+    val duration = measureNanoTime {
+        Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING)
+    }
+
+    val size = Files.size(path)
+    val humanSize = FileUtils.byteCountToDisplaySize(size)
+    val speed = NS_TO_S * size / (KB_TO_B * duration)
+    val humanSpeed = "%.2f kB/s".format(speed)
+
+    println("↓ $path [$humanSize] [$humanSpeed]")
+}
+
+private inline fun <T> retry(clazz: KClass<out Exception>, retryCount: Int = 3, block: () -> T): T {
+    var exception: Exception? = null
+
+    for (ignored in 0..retryCount) {
+        try {
+            return block.invoke()
+        } catch (e: Exception) {
+            if (!clazz.isSuperclassOf(e::class)) throw e
+
+            exception = e
+        }
+    }
+
+    throw exception!!
+}
 
 class SpongeService(private val referrer: String, private val userAgent: String) {
     fun request(spongeUri: SpongeUri, timeout: Int = DEFAULT_REQUEST_TIMEOUT): Connection.Response {
@@ -40,27 +73,7 @@ class SpongeService(private val referrer: String, private val userAgent: String)
         request(spongeUri, 0).bodyStream()
             .use {
                 Files.createDirectories(path.parent)
-                Files.copy(it, path, StandardCopyOption.REPLACE_EXISTING)
+                copy(it, path)
             }
-
-        println("↓ $path [${path.humanSize()}]")
-    }
-
-    private inline fun <T> retry(clazz: KClass<out Exception>, retryCount: Int = 3, block: () -> T): T {
-        var exception: Exception? = null
-
-        for (ignored in 0..retryCount) {
-            try {
-                return block.invoke()
-            } catch (e: Exception) {
-                if (!clazz.isSuperclassOf(e::class)) throw e
-
-                exception = e
-            }
-        }
-
-        throw exception!!
     }
 }
-
-private fun Path.humanSize() = FileUtils.byteCountToDisplaySize(Files.size(this))

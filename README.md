@@ -15,21 +15,21 @@ Usage: sponge [OPTIONS]
 
 Options:
   -u, --uri VALUE                 URI (example: https://www.google.com)
-  -o, --output VALUE              Output directory where files are downloaded
+  -o, --output PATH               Output directory where files are downloaded
   -t, --mime-type TEXT            Mime types to download (example: text/plain)
   -e, --file-extension TEXT       Extensions to download (example: png)
   -d, --depth INT                 Search depth (default: 1)
-  -m, --max-uris INT              Maximum uris to process (default: 2147483647)
+  -m, --max-uris INT              Maximum uris to process (default:
+                                  2147483647)
   -s, --include-subdomains        Include subdomains
   -R, --concurrent-requests INT   Concurrent requests (default: 1)
   -D, --concurrent-downloads INT  Concurrent downloads (default: 1)
   -r, --referrer TEXT             Referrer (default: https://www.google.com)
   -U, --user-agent TEXT           User agent (default: Mozilla/5.0 (X11; Linux
                                   x86_64) AppleWebKit/537.36 (KHTML, like
-                                  Gecko) Chrome/79.0.3945.88 Safari/537.36)
+                                  Gecko) Chrome/80.0.3987.122 Safari/537.36)
   -v, --version                   Show the version and exit
   -h, --help                      Show this message and exit
-
 ~~~
 ### Examples
 ~~~
@@ -40,17 +40,18 @@ Options:
          -R 5 \
          -s
 ...
-↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Not_my_Brain/Lobo_Loco_-_01_-_Brain_ID_1270.mp3 [8 MB]
-↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Not_my_Brain/Lobo_Loco_-_02_-_Brain_-_Instrumental_Retro_ID_1271.mp3 [8 MB]
-↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Salad_Mixed/Lobo_Loco_-_12_-_Madness_is_Everywhere_ID_1228.mp3 [9 MB]
-↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Salad_Mixed/Lobo_Loco_-_01_-_Allright_in_Lousiana_ID_1234.mp3 [8 MB]
-↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Salad_Mixed/Lobo_Loco_-_04_-_Peaceful_Morning_ID_1229.mp3 [9 MB]
-↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Salad_Mixed/Lobo_Loco_-_03_-_Spencer_-_Bluegrass_ID_1230.mp3 [9 MB]
-↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/You_get_the_Blues_ID_1201.mp3 [10 MB]
-↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Traveling_Horse_ID_1207.mp3 [6 MB]
-↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Tropic_Island_-_Clearmix_ID_1172.mp3 [8 MB]
-↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Seniorita_Bonita_ID_1194.mp3 [7 MB]
-↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Remember_Love_ID_1166.mp3 [9 MB]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Checkie_Brown/hey/Checkie_Brown_-_09_-_Mary_Roose_CB_36.mp3 [8 MB] [4035.29 kB/s]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Not_my_Brain/Lobo_Loco_-_01_-_Brain_ID_1270.mp3 [8 MB] [4291.79 kB/s]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Not_my_Brain/Lobo_Loco_-_02_-_Brain_-_Instrumental_Retro_ID_1271.mp3 [8 MB] [4209.01 kB/s]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Salad_Mixed/Lobo_Loco_-_12_-_Madness_is_Everywhere_ID_1228.mp3 [9 MB] [4269.37 kB/s]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Salad_Mixed/Lobo_Loco_-_01_-_Allright_in_Lousiana_ID_1234.mp3 [8 MB] [4150.02 kB/s]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Salad_Mixed/Lobo_Loco_-_04_-_Peaceful_Morning_ID_1229.mp3 [9 MB] [3896.10 kB/s]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Lobo_Loco/Salad_Mixed/Lobo_Loco_-_03_-_Spencer_-_Bluegrass_ID_1230.mp3 [9 MB] [4238.55 kB/s]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/You_get_the_Blues_ID_1201.mp3 [10 MB] [4294.82 kB/s]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Tropic_Island_-_Clearmix_ID_1172.mp3 [8 MB] [4311.11 kB/s]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Traveling_Horse_ID_1207.mp3 [6 MB] [4321.62 kB/s]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Sometimes_it_Rains_ID_1206.mp3 [11 MB] [4329.85 kB/s]
+↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Seniorita_Bonita_ID_1194.mp3 [7 MB] [4319.61 kB/s]
 ...
 ~~~
 ~~~
@@ -61,49 +62,44 @@ Options:
          -R 5 \
          -D 5
 ...
-↓ /home/spypunk/output/gutenberg.org/files/61012/61012-0.txt [149 KB]
-↓ /home/spypunk/output/gutenberg.org/ebooks/61011.txt.utf-8 [192 KB]
-↓ /home/spypunk/output/gutenberg.org/ebooks/61013.txt.utf-8 [44 KB]
-↓ /home/spypunk/output/gutenberg.org/files/61010/61010-0.txt [302 KB]
-↓ /home/spypunk/output/gutenberg.org/ebooks/61009.txt.utf-8 [36 KB]
-↓ /home/spypunk/output/gutenberg.org/ebooks/61008.txt.utf-8 [471 KB]
-↓ /home/spypunk/output/gutenberg.org/ebooks/61007.txt.utf-8 [38 KB]
-↓ /home/spypunk/output/gutenberg.org/ebooks/61006.txt.utf-8 [47 KB]
-↓ /home/spypunk/output/gutenberg.org/files/61004/61004-0.txt [250 KB]
-↓ /home/spypunk/output/gutenberg.org/files/61003/61003-0.txt [337 KB]
-↓ /home/spypunk/output/gutenberg.org/ebooks/61002.txt.utf-8 [74 KB]
-↓ /home/spypunk/output/gutenberg.org/ebooks/60999.txt.utf-8 [25 KB]
-↓ /home/spypunk/output/gutenberg.org/files/60998/60998-0.txt [124 KB]
+↓ /home/spypunk/output/www.gutenberg.org/files/61579/61579-0.txt [66 KB] [249.41 kB/s]
+↓ /home/spypunk/output/www.gutenberg.org/ebooks/61578.txt.utf-8 [177 KB] [223.88 kB/s]
+↓ /home/spypunk/output/www.gutenberg.org/ebooks/61576.txt.utf-8 [170 KB] [261.94 kB/s]
+↓ /home/spypunk/output/www.gutenberg.org/files/61574/61574-0.txt [80 KB] [218.19 kB/s]
+↓ /home/spypunk/output/www.gutenberg.org/files/61573/61573-0.txt [256 KB] [163.96 kB/s]
+↓ /home/spypunk/output/www.gutenberg.org/files/61577/61577-0.txt [47 KB] [249.83 kB/s]
+↓ /home/spypunk/output/www.gutenberg.org/files/61575/61575-0.txt [239 KB] [210.76 kB/s]
+↓ /home/spypunk/output/www.gutenberg.org/ebooks/61571.txt.utf-8 [47 KB] [486.18 kB/s]
+↓ /home/spypunk/output/www.gutenberg.org/ebooks/61572.txt.utf-8 [905 KB] [252.70 kB/s]
+↓ /home/spypunk/output/www.gutenberg.org/ebooks/61570.txt.utf-8 [118 KB] [427.63 kB/s]
+↓ /home/spypunk/output/www.gutenberg.org/files/61568/61568-0.txt [175 KB] [188.35 kB/s]
+↓ /home/spypunk/output/www.gutenberg.org/files/61569/61569-0.txt [121 KB] [183.77 kB/s]
 ...
 ~~~
 ~~~
-./sponge -u https://www.pexels.com/public-domain-images/ \
+./sponge -u https://free-images.com/  \
          -o output \
          -e jpeg \
-         -d 3 \
+         -e jpg \
+         -e png \
+         -d 2 \
          -R 5 \
          -D 5 \
          -s
 ...
-↓ /home/spypunk/output/images.pexels.com/photos/3393375/pexels-photo-3393375.jpeg [37 KB]
-↓ /home/spypunk/output/images.pexels.com/users/avatars/1791804/-621.jpeg [5 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/3397935/pexels-photo-3397935.jpeg [69 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/1927314/pexels-photo-1927314.jpeg [62 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/245535/pexels-photo-245535.jpeg [51 KB]
-↓ /home/spypunk/output/images.pexels.com/users/avatars/1737150/eternal-happiness-197.jpeg [4 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/3326363/pexels-photo-3326363.jpeg [22 KB]
-↓ /home/spypunk/output/images.pexels.com/users/avatars/1787606/zack-melhus-241.jpeg [5 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/3363341/pexels-photo-3363341.jpeg [63 KB]
-↓ /home/spypunk/output/images.pexels.com/users/avatars/193704/print-proper-419.jpeg [4 KB]
-↓ /home/spypunk/output/images.pexels.com/users/avatars/220024/daria-shevtsova-592.jpeg [5 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/3326103/pexels-photo-3326103.jpeg [26 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/2085376/pexels-photo-2085376.jpeg [51 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/3377538/pexels-photo-3377538.jpeg [20 KB]
-↓ /home/spypunk/output/images.pexels.com/users/avatars/372053/matt-hardy-504.jpeg [5 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/2822949/pexels-photo-2822949.jpeg [10 KB]
-↓ /home/spypunk/output/images.pexels.com/photos/1953451/pexels-photo-1953451.jpeg [40 KB]
-↓ /home/spypunk/output/images.pexels.com/users/avatars/1112138/emre-kuzu-719.jpeg [1 KB]
-↓ /home/spypunk/output/images.pexels.com/users/avatars/927188/milena-santos-885.jpeg [4 KB]
+↓ /home/spypunk/output/free-images.com/sm/96a3/violets_flowers_violet_background.jpg [8 KB] [76554.05 kB/s]
+↓ /home/spypunk/output/free-images.com/sm/7b79/violet_red_clay_violet.jpg [9 KB] [57321.59 kB/s]
+↓ /home/spypunk/output/free-images.com/sm/dd7c/violet_purple_viola_blue.jpg [21 KB] [15939.76 kB/s]
+↓ /home/spypunk/output/free-images.com/sm/ac2a/violets_flowers_violet_nature.jpg [14 KB] [97087.82 kB/s]
+↓ /home/spypunk/output/free-images.com/sm/c48c/violets_violet_florets_spring.jpg [16 KB] [113878.19 kB/s]
+↓ /home/spypunk/output/free-images.com/sm/dda0/violet_leaf_leaf_green.jpg [18 KB] [105489.70 kB/s]
+↓ /home/spypunk/output/free-images.com/sm/aa8f/violet_wild_violets_spring.jpg [21 KB] [147272.97 kB/s]
+↓ /home/spypunk/output/free-images.com/sm/b3e0/violets_violet_flower_spring_0.jpg [12 KB] [83200.41 kB/s]
+↓ /home/spypunk/output/free-images.com/sm/2c40/violets_violet_flower_spring.jpg [10 KB] [103418.85 kB/s]
+↓ /home/spypunk/output/free-images.com/sm/228d/violet_blossom_bloom_violet.jpg [23 KB] [6465.70 kB/s]
+↓ /home/spypunk/output/free-images.com/sm/67c3/violets_garden_flowers_violet.jpg [18 KB] [20872.61 kB/s]
+↓ /home/spypunk/output/free-images.com/sm/d90f/violet_flowers_garden_plant.jpg [25 KB] [12348.48 kB/s]
+↓ /home/spypunk/output/free-images.com/sm/20df/scented_violets_viola_odorata.jpg [25 KB] [20470.55 kB/s]
 ...
 ~~~
 ## What about license?

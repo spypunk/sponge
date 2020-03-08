@@ -26,6 +26,18 @@ import java.util.concurrent.CopyOnWriteArraySet
 
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
 
+private fun String.isHtmlMimeType() = htmlMimeTypes.contains(this)
+
+private fun Element.toSpongeUri(attributeKey: String): SpongeUri? {
+    return try {
+        attr(attributeKey)?.toSpongeUri()
+    } catch (ignored: Exception) {
+        null
+    }
+}
+
+fun Throwable.rootMessage(): String = ExceptionUtils.getRootCauseMessage(this)
+
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
@@ -131,15 +143,3 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             .toAbsolutePath()
     }
 }
-
-private fun String.isHtmlMimeType() = htmlMimeTypes.contains(this)
-
-private fun Element.toSpongeUri(attributeKey: String): SpongeUri? {
-    return try {
-        attr(attributeKey)?.toSpongeUri()
-    } catch (ignored: Exception) {
-        null
-    }
-}
-
-fun Throwable.rootMessage(): String = ExceptionUtils.getRootCauseMessage(this)
