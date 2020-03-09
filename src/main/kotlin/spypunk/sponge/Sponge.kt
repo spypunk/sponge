@@ -22,7 +22,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.CopyOnWriteArraySet
 
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
 
@@ -41,22 +40,30 @@ fun Throwable.rootMessage(): String = ExceptionUtils.getRootCauseMessage(this)
 class Sponge(private val spongeService: SpongeService, private val spongeInput: SpongeInput) {
     private val requestContext = newFixedThreadPoolContext(spongeInput.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeInput.concurrentDownloads, "download")
-    private val spongeUris = CopyOnWriteArraySet<SpongeUri>()
+    private val spongeUris = HashSet<SpongeUri>()
     private val rootHost = spongeInput.spongeUri.toUri().host
 
     fun execute() = runBlocking {
-        visit(spongeInput.spongeUri, setOf())
+        visit()
     }
 
-    private suspend fun visit(spongeUri: SpongeUri, parents: Set<SpongeUri>) {
+    private suspend fun visit(spongeUri: SpongeUri = spongeInput.spongeUri, parents: Set<SpongeUri> = setOf()) {
         try {
-            if (spongeUris.add(spongeUri)) {
-                if (spongeUris.size > spongeInput.maximumUris) return
+            val firstVisit = synchronized(spongeUris) {
+                if (spongeUris.add(spongeUri)) {
+                    if (spongeUris.size > spongeInput.maximumUris) return
 
+                    true
+                } else {
+                    false
+                }
+            }
+
+            if (firstVisit) {
                 visit(spongeUri)
             }
 
-            if (parents.size < spongeInput.maximumDepth) {
+            if (parents.size < spongeInput.maximumDepth && spongeUri.children.isNotEmpty()) {
                 visit(spongeUri.children, parents + spongeUri)
             }
         } catch (e: Exception) {
@@ -84,7 +91,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
     private suspend fun download(spongeUri: SpongeUri) {
         val path = getDownloadPath(spongeUri)
 
-        if (Files.exists(path)) {
+        if (!spongeInput.overwriteExistingFiles && Files.exists(path)) {
             println("∃ $path")
         } else {
             withContext(downloadContext) { spongeService.download(spongeUri, path) }
@@ -97,8 +104,11 @@ class Sponge(private val spongeService: SpongeService, private val spongeInput: 
             .awaitAll()
     }
 
-    private fun getChildren(document: Document, parent: SpongeUri) =
-        (getHrefChildren(document, parent) + getImgChildren(document, parent)).toSet()
+    private fun getChildren(document: Document, parent: SpongeUri): Set<SpongeUri> {
+        val children = getHrefChildren(document, parent) + getImgChildren(document, parent)
+
+        return children.toSet()
+    }
 
     private fun getHrefChildren(document: Document, parent: SpongeUri) =
         getChildren(document, parent, "a[href]", "abs:href")

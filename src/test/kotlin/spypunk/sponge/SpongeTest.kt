@@ -86,6 +86,34 @@ class SpongeTest {
     }
 
     @Test
+    fun testDocumentWithLinkAlreadyDownloadedWithOverwrite() {
+        val fileUri = "${spongeInput.spongeUri}/$fileName".toSpongeUri()
+
+        givenDocument(
+            spongeInput.spongeUri,
+            """
+                    <html>
+                        <body>
+                            <a href="$fileUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        givenFile(fileUri)
+
+        val filePath = getOutputFilePath(fileUri)
+
+        FileUtils.touch(filePath.toFile())
+
+        executeSponge(spongeInput.copy(overwriteExistingFiles = true))
+
+        verify { spongeService.request(spongeInput.spongeUri) }
+        verify { spongeService.request(fileUri) }
+        verify(exactly = 1) { spongeService.download(fileUri, filePath) }
+    }
+
+    @Test
     fun testDocumentWithLinkAlreadyDownloaded() {
         val fileUri = "${spongeInput.spongeUri}/$fileName".toSpongeUri()
 

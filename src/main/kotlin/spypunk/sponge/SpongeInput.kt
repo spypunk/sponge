@@ -19,5 +19,6 @@ data class SpongeInput(
     val maximumUris: Int = Int.MAX_VALUE,
     val includeSubdomains: Boolean = false,
     val concurrentRequests: Int = 1,
-    val concurrentDownloads: Int = 1
+    val concurrentDownloads: Int = 1,
+    val overwriteExistingFiles: Boolean = false
 )

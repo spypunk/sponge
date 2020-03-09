@@ -86,6 +86,9 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
     private val userAgent by option("-U", "--user-agent", help = "User agent")
         .default(DEFAULT_USER_AGENT)
 
+    private val overwriteExistingFiles by option("-O", "--overwrite", help = "Overwrite existing files")
+        .flag(default = false)
+
     init {
         versionOption(names = setOf("-v", "--version"), version = version) { it }
 
@@ -109,7 +112,8 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
                 maximumUris,
                 includeSubdomains,
                 concurrentRequests,
-                concurrentDownloads)
+                concurrentDownloads,
+                overwriteExistingFiles)
 
             val spongeService = SpongeService(referrer, userAgent)
 

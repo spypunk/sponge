@@ -28,6 +28,7 @@ Options:
   -U, --user-agent TEXT           User agent (default: Mozilla/5.0 (X11; Linux
                                   x86_64) AppleWebKit/537.36 (KHTML, like
                                   Gecko) Chrome/80.0.3987.122 Safari/537.36)
+  -O, --overwrite                 Overwrite existing files
   -v, --version                   Show the version and exit
   -h, --help                      Show this message and exit
 ~~~

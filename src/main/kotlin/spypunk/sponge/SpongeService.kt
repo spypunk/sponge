@@ -43,12 +43,12 @@ private inline fun <T> retry(clazz: KClass<out Exception>, retryCount: Int = 3, 
     var exception: Exception? = null
 
     for (ignored in 0..retryCount) {
-        try {
-            return block.invoke()
+        exception = try {
+            return block()
         } catch (e: Exception) {
             if (!clazz.isSuperclassOf(e::class)) throw e
 
-            exception = e
+            e
         }
     }
 
