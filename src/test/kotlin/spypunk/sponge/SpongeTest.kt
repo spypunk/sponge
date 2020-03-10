@@ -18,6 +18,7 @@ import org.jsoup.Connection
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.IOException
+import java.net.URL
 import java.nio.file.Path
 
 class SpongeTest {
@@ -524,12 +525,10 @@ class SpongeTest {
     }
 
     private fun getOutputFilePath(spongeUri: SpongeUri): Path {
-        val uri = spongeUri.toUri()
-
         return spongeInput.outputDirectory
-            .resolve(uri.host)
-            .resolve(FilenameUtils.getPath(uri.path))
-            .resolve(FilenameUtils.getName(uri.path))
+            .resolve(spongeUri.host)
+            .resolve(FilenameUtils.getPath(spongeUri.path))
+            .resolve(FilenameUtils.getName(spongeUri.path))
     }
 
     private fun givenDocument(
@@ -541,7 +540,7 @@ class SpongeTest {
 
         every { response.contentType() } returns contentType.mimeType
         every { response.body() } returns htmlContent
-        every { response.url() } returns spongeUri.toUri().toURL()
+        every { response.url() } returns URL(spongeUri.id)
 
         every { spongeService.request(spongeUri) } returns response
     }

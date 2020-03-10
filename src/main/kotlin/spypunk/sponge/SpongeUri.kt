@@ -15,16 +15,19 @@ private val supportedSchemes = setOf("http", "https")
 
 fun String.toSpongeUri() = SpongeUri(this)
 
-class SpongeUri private constructor(private val uri: String) {
+class SpongeUri private constructor(uri: URI) {
+    val id: String = uri.toASCIIString()
+    val host: String = uri.host
+    val path: String = uri.path
+
     var children = setOf<SpongeUri>()
+    var visited = false
 
-    fun toUri() = URI(uri)
+    override fun toString() = id
 
-    override fun toString() = uri
+    override fun equals(other: Any?) = other is SpongeUri && id == other.id
 
-    override fun equals(other: Any?) = other is SpongeUri && uri == other.uri
-
-    override fun hashCode() = uri.hashCode()
+    override fun hashCode() = id.hashCode()
 
     companion object {
         operator fun invoke(value: String): SpongeUri {
@@ -35,7 +38,7 @@ class SpongeUri private constructor(private val uri: String) {
             if (!supportedSchemes.contains(uri.scheme)) error("Unsupported scheme: ${uri.scheme}")
             if (uri.host.isNullOrEmpty()) error("Hostname cannot be empty")
 
-            return SpongeUri(uri.toASCIIString())
+            return SpongeUri(uri)
         }
     }
 }
