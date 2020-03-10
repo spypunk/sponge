@@ -19,15 +19,14 @@ Options:
   -t, --mime-type TEXT            Mime types to download (example: text/plain)
   -e, --file-extension TEXT       Extensions to download (example: png)
   -d, --depth INT                 Search depth (default: 1)
-  -m, --max-uris INT              Maximum uris to process (default:
-                                  2147483647)
+  -m, --max-uris INT              Maximum uris to visit (default: 1000000)
   -s, --include-subdomains        Include subdomains
   -R, --concurrent-requests INT   Concurrent requests (default: 1)
   -D, --concurrent-downloads INT  Concurrent downloads (default: 1)
   -r, --referrer TEXT             Referrer (default: https://www.google.com)
   -U, --user-agent TEXT           User agent (default: Mozilla/5.0 (X11; Linux
                                   x86_64) AppleWebKit/537.36 (KHTML, like
-                                  Gecko) Chrome/80.0.3987.122 Safari/537.36)
+                                  Gecko) Chrome/80.0.3987.132 Safari/537.36)
   -O, --overwrite                 Overwrite existing files
   -v, --version                   Show the version and exit
   -h, --help                      Show this message and exit

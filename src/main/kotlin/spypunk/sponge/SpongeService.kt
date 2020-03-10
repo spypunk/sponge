@@ -9,6 +9,7 @@
 package spypunk.sponge
 
 import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
 import org.apache.http.HttpHeaders
 import org.jsoup.Connection
 import org.jsoup.Jsoup
@@ -27,6 +28,8 @@ private const val NS_TO_S = 1_000_000_000.0
 private const val KB_TO_B = 1_000.0
 
 private fun copy(inputStream: InputStream, path: Path) {
+    Files.createDirectories(path.parent)
+
     val duration = measureNanoTime {
         Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING)
     }
@@ -39,7 +42,7 @@ private fun copy(inputStream: InputStream, path: Path) {
     println("↓ $path [$humanSize] [$humanSpeed]")
 }
 
-private inline fun <T> retry(clazz: KClass<out Exception>, retryCount: Int = 3, block: () -> T): T {
+private fun <T> retry(clazz: KClass<out Exception>, retryCount: Int = 3, block: () -> T): T {
     var exception: Exception? = null
 
     for (ignored in 0..retryCount) {
@@ -55,13 +58,13 @@ private inline fun <T> retry(clazz: KClass<out Exception>, retryCount: Int = 3, 
     throw exception!!
 }
 
-class SpongeService(private val referrer: String, private val userAgent: String) {
+class SpongeService(private val spongeServiceConfig: SpongeServiceConfig) {
     fun request(spongeUri: SpongeUri, timeout: Int = DEFAULT_REQUEST_TIMEOUT): Connection.Response {
-        return Jsoup.connect(spongeUri.toString())
+        return Jsoup.connect(spongeUri.uri)
             .timeout(timeout)
             .header(HttpHeaders.ACCEPT_ENCODING, ENCODING)
-            .referrer(referrer)
-            .userAgent(userAgent)
+            .referrer(spongeServiceConfig.referrer)
+            .userAgent(spongeServiceConfig.userAgent)
             .maxBodySize(0)
             .ignoreHttpErrors(true)
             .ignoreContentType(true)
@@ -69,11 +72,23 @@ class SpongeService(private val referrer: String, private val userAgent: String)
             .let { retry(IOException::class) { it.execute() } }
     }
 
-    fun download(spongeUri: SpongeUri, path: Path) {
+    fun download(spongeUri: SpongeUri) {
         request(spongeUri, 0).bodyStream()
             .use {
-                Files.createDirectories(path.parent)
-                copy(it, path)
+                val path = getDownloadPath(spongeUri)
+
+                if (!spongeServiceConfig.overwriteExistingFiles && Files.exists(path)) {
+                    println("∃ $path")
+                } else {
+                    copy(it, path)
+                }
             }
+    }
+
+    private fun getDownloadPath(spongeUri: SpongeUri): Path {
+        return spongeServiceConfig.outputDirectory.resolve(spongeUri.host)
+            .resolve(FilenameUtils.getPath(spongeUri.path))
+            .resolve(FilenameUtils.getName(spongeUri.path))
+            .toAbsolutePath()
     }
 }

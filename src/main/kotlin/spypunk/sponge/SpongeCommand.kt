@@ -29,17 +29,13 @@ import com.natpryce.konfig.stringType
 import java.util.regex.Pattern
 import kotlin.system.exitProcess
 
-private const val DEFAULT_REFERRER = "https://www.google.com"
-private const val DEFAULT_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
-    "Chrome/80.0.3987.122 Safari/537.36"
-
 private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
 private val version = ConfigurationProperties
     .fromResource("sponge.properties")[Key("version", stringType)]
 
 class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true) {
     private val spongeUri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
-        .convert { it.toSpongeUri() }
+        .convert { SpongeUri(it) }
         .required()
 
     private val outputDirectory by option("-o", "--output", help = "Output directory where files are downloaded")
@@ -60,12 +56,12 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
     private val maximumDepth by option("-d", "--depth", help = "Search depth")
         .int()
         .restrictTo(1)
-        .default(1)
+        .default(DEFAULT_MAXIMUM_DEPTH)
 
-    private val maximumUris by option("-m", "--max-uris", help = "Maximum uris to process")
+    private val maximumUris by option("-m", "--max-uris", help = "Maximum uris to visit")
         .int()
         .restrictTo(1)
-        .default(Int.MAX_VALUE)
+        .default(DEFAULT_MAXIMUM_URIS)
 
     private val includeSubdomains by option("-s", "--include-subdomains", help = "Include subdomains")
         .flag()
@@ -73,12 +69,12 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
     private val concurrentRequests by option("-R", "--concurrent-requests", help = "Concurrent requests")
         .int()
         .restrictTo(1)
-        .default(1)
+        .default(DEFAULT_CONCURRENT_REQUESTS)
 
     private val concurrentDownloads by option("-D", "--concurrent-downloads", help = "Concurrent downloads")
         .int()
         .restrictTo(1)
-        .default(1)
+        .default(DEFAULT_CONCURRENT_DOWNLOADS)
 
     private val referrer by option("-r", "--referrer", help = "Referrer")
         .default(DEFAULT_REFERRER)
@@ -87,7 +83,7 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
         .default(DEFAULT_USER_AGENT)
 
     private val overwriteExistingFiles by option("-O", "--overwrite", help = "Overwrite existing files")
-        .flag(default = false)
+        .flag(default = DEFAULT_OVERWRITE_EXISTING_FILES)
 
     init {
         versionOption(names = setOf("-v", "--version"), version = version) { it }
@@ -103,23 +99,29 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
         }
 
         try {
-            val spongeInput = SpongeInput(
-                spongeUri,
+            val spongeServiceConfig = SpongeServiceConfig(
                 outputDirectory,
+                referrer,
+                userAgent,
+                overwriteExistingFiles
+            )
+
+            val spongeService = SpongeService(spongeServiceConfig)
+
+            val spongeConfig = SpongeConfig(
+                spongeUri,
                 mimeTypes.toSet(),
                 fileExtensions.toSet(),
                 maximumDepth,
                 maximumUris,
                 includeSubdomains,
                 concurrentRequests,
-                concurrentDownloads,
-                overwriteExistingFiles)
+                concurrentDownloads
+            )
 
-            val spongeService = SpongeService(referrer, userAgent)
-
-            Sponge(spongeService, spongeInput).execute()
+            Sponge(spongeService, spongeConfig).execute()
         } catch (t: Throwable) {
-            System.err.println("Unexpected error encountered: : ${t.rootMessage()}")
+            System.err.println("Unexpected error encountered: : ${t.rootMessage}")
 
             exitProcess(1)
         }

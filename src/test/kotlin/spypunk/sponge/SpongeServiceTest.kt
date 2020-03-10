@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.mockserver.integration.ClientAndServer.startClientAndServer
@@ -23,9 +24,11 @@ import java.nio.file.Paths
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SpongeServiceTest {
-    private val spongeService = SpongeService("https://test.com", "test")
     private val outputDirectory = Path.of("testOutput").toAbsolutePath()
-    private val filePath = Paths.get("$outputDirectory/test.txt").toAbsolutePath()
+    private val spongeServiceConfig = SpongeServiceConfig(outputDirectory)
+    private val spongeService = SpongeService(spongeServiceConfig)
+    private val host = "localhost"
+    private val filePath = Paths.get("$outputDirectory/$host/test.txt").toAbsolutePath()
     private val fileContent = "test"
     private val port = 12_345
 
@@ -43,15 +46,29 @@ class SpongeServiceTest {
         }
 
     @BeforeAll
-    fun before() {
+    fun beforeAll() {
         FileUtils.deleteDirectory(outputDirectory.toFile())
+    }
+
+    @BeforeEach
+    fun beforeEach() {
+        FileUtils.deleteQuietly(filePath.toFile())
     }
 
     @Test
     fun testDownload() {
-        spongeService.download("http://localhost:$port/${filePath.fileName}".toSpongeUri(), filePath)
+        spongeService.download(SpongeUri("http://$host:$port/${filePath.fileName}"))
 
         Assertions.assertEquals(fileContent, FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8))
+    }
+
+    @Test
+    fun testDownloadWithFileAlreadyDownloaded() {
+        FileUtils.touch(filePath.toFile())
+
+        spongeService.download(SpongeUri("http://$host:$port/${filePath.fileName}"))
+
+        Assertions.assertNotEquals(fileContent, FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8))
     }
 
     @AfterAll
