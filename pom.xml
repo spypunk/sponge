@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>spypunk</groupId>
     <artifactId>sponge</artifactId>
-    <version>1.30-SNAPSHOT</version>
+    <version>1.30</version>
     <name>sponge</name>
     <description>A website crawler and links downloader command line tool</description>
     <url>https://github.com/spypunk/sponge</url>
@@ -26,7 +26,7 @@
         <url>git@github.com:spypunk/sponge.git</url>
         <connection>scm:git:https://github.com/spypunk/sponge.git</connection>
         <developerConnection>scm:git:git@github.com:spypunk/sponge.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>1.30</tag>
     </scm>
 
     <properties>
