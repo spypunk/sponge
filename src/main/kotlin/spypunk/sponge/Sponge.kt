@@ -28,6 +28,28 @@ private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.AP
 val Throwable.rootMessage: String
     get() = ExceptionUtils.getRootCauseMessage(this)
 
+private fun getChildren(document: Document) = (getHrefChildren(document) + getImgChildren(document)).distinct()
+
+private fun getHrefChildren(document: Document) = getChildren(document, "a[href]", "abs:href")
+
+private fun getImgChildren(document: Document) = getChildren(document, "img[src]", "abs:src")
+
+private fun getChildren(document: Document, cssQuery: String, attributeKey: String): Sequence<SpongeUri> {
+    return document.select(cssQuery)
+        .asSequence()
+        .mapNotNull { toSpongeUri(it, attributeKey) }
+}
+
+private fun toSpongeUri(element: Element, attributeKey: String): SpongeUri? {
+    return try {
+        element.attr(attributeKey)?.let {
+            SpongeUri(it)
+        }
+    } catch (ignored: Exception) {
+        null
+    }
+}
+
 class Sponge(private val spongeService: SpongeService, private val spongeConfig: SpongeConfig) {
     private val requestContext = newFixedThreadPoolContext(spongeConfig.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeConfig.concurrentDownloads, "download")
@@ -62,7 +84,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
             if (htmlMimeTypes.contains(mimeType)) {
                 val document = Jsoup.parse(response.body(), response.url().toExternalForm())
 
-                spongeUri.children = getChildren(document, spongeUri)
+                loadChildren(spongeUri, document)
             } else if (spongeConfig.mimeTypes.contains(mimeType)) {
                 spongeUri.download = true
             }
@@ -91,32 +113,10 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
             .awaitAll()
     }
 
-    private fun getChildren(document: Document, parent: SpongeUri): Set<SpongeUri> {
-        val children = getHrefChildren(document) + getImgChildren(document)
-
-        return children.distinct()
-            .filter { it != parent && isHostVisitable(it.host) }
+    private fun loadChildren(spongeUri: SpongeUri, document: Document) {
+        spongeUri.children = getChildren(document)
+            .filter { it != spongeUri && isHostVisitable(it.host) }
             .toSet()
-    }
-
-    private fun getHrefChildren(document: Document) = getChildren(document, "a[href]", "abs:href")
-
-    private fun getImgChildren(document: Document) = getChildren(document, "img[src]", "abs:src")
-
-    private fun getChildren(document: Document, cssQuery: String, attributeKey: String): Sequence<SpongeUri> {
-        return document.select(cssQuery)
-            .asSequence()
-            .mapNotNull { toSpongeUri(it, attributeKey) }
-    }
-
-    private fun toSpongeUri(element: Element, attributeKey: String): SpongeUri? {
-        return try {
-            element.attr(attributeKey)?.let {
-                SpongeUri(it)
-            }
-        } catch (ignored: Exception) {
-            null
-        }
     }
 
     private fun isHostVisitable(host: String): Boolean {
