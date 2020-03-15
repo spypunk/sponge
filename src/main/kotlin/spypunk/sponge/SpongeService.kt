@@ -73,16 +73,14 @@ class SpongeService(private val spongeServiceConfig: SpongeServiceConfig) {
     }
 
     fun download(spongeUri: SpongeUri) {
-        request(spongeUri, 0).bodyStream()
-            .use {
-                val path = getDownloadPath(spongeUri)
+        val path = getDownloadPath(spongeUri)
 
-                if (!spongeServiceConfig.overwriteExistingFiles && Files.exists(path)) {
-                    println("∃ $path")
-                } else {
-                    copy(it, path)
-                }
-            }
+        if (!spongeServiceConfig.overwriteExistingFiles && Files.exists(path)) {
+            println("∃ $path")
+        } else {
+            request(spongeUri, 0).bodyStream()
+                .use { copy(it, path) }
+        }
     }
 
     private fun getDownloadPath(spongeUri: SpongeUri): Path {
