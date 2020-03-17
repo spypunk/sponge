@@ -10,6 +10,7 @@ package spypunk.sponge
 
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
+import org.apache.commons.io.input.CountingInputStream
 import org.apache.http.HttpHeaders
 import org.jsoup.Connection
 import org.jsoup.Jsoup
@@ -27,14 +28,18 @@ private const val ENCODING = "gzip, deflate"
 private const val NS_TO_S = 1_000_000_000.0
 private const val KB_TO_B = 1_000.0
 
-private fun copy(inputStream: InputStream, path: Path) {
+private fun download(inputStream: InputStream, path: Path) {
     Files.createDirectories(path.parent)
 
-    val duration = measureNanoTime {
-        Files.copy(inputStream, path, StandardCopyOption.REPLACE_EXISTING)
+    val countingInputStream = CountingInputStream(inputStream)
+
+    val duration = countingInputStream.use {
+        measureNanoTime {
+            Files.copy(countingInputStream, path, StandardCopyOption.REPLACE_EXISTING)
+        }
     }
 
-    val size = Files.size(path)
+    val size = countingInputStream.byteCount
     val humanSize = FileUtils.byteCountToDisplaySize(size)
     val speed = NS_TO_S * size / (KB_TO_B * duration)
     val humanSpeed = "%.2f kB/s".format(speed)
@@ -79,7 +84,7 @@ class SpongeService(private val spongeServiceConfig: SpongeServiceConfig) {
             println("∃ $path")
         } else {
             request(spongeUri, 0).bodyStream()
-                .use { copy(it, path) }
+                .use { download(it, path) }
         }
     }
 
