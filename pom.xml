@@ -80,9 +80,6 @@
                             <mainClass>spypunk.sponge.MainKt</mainClass>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
-                        <manifestEntries>
-                            <Built-By />
-                        </manifestEntries>
                         <addMavenDescriptor>false</addMavenDescriptor>
                     </archive>
                 </configuration>
