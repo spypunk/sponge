@@ -88,9 +88,7 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
     init {
         versionOption(names = setOf("-v", "--version"), version = version) { it }
 
-        context {
-            helpFormatter = CliktHelpFormatter(showDefaultValues = true)
-        }
+        context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
     }
 
     override fun run() {

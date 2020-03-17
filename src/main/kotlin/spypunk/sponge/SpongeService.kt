@@ -8,6 +8,16 @@
 
 package spypunk.sponge
 
+import com.github.michaelbull.retry.ContinueRetrying
+import com.github.michaelbull.retry.RetryFailure
+import com.github.michaelbull.retry.RetryInstruction
+import com.github.michaelbull.retry.StopRetrying
+import com.github.michaelbull.retry.policy.RetryPolicy
+import com.github.michaelbull.retry.policy.constantDelay
+import com.github.michaelbull.retry.policy.limitAttempts
+import com.github.michaelbull.retry.policy.plus
+import com.github.michaelbull.retry.retry
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.io.input.CountingInputStream
@@ -19,14 +29,25 @@ import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
-import kotlin.reflect.KClass
-import kotlin.reflect.full.isSuperclassOf
 import kotlin.system.measureNanoTime
 
+private const val MAX_RETRIES = 3
+private const val RETRY_DELAY_MS = 1000L
 private const val DEFAULT_REQUEST_TIMEOUT = 30_000
 private const val ENCODING = "gzip, deflate"
 private const val NS_TO_S = 1_000_000_000.0
 private const val KB_TO_B = 1_000.0
+
+private val retryPolicy: RetryPolicy<Throwable> = {
+    if (reason is IOException) ContinueRetrying else StopRetrying
+}
+
+private val policy: suspend RetryFailure<Throwable>.() -> RetryInstruction =
+    retryPolicy + limitAttempts(MAX_RETRIES) + constantDelay(RETRY_DELAY_MS)
+
+private fun request(connection: Connection) = runBlocking {
+    retry(policy) { connection.execute() }
+}
 
 private fun download(inputStream: InputStream, path: Path) {
     Files.createDirectories(path.parent)
@@ -34,9 +55,7 @@ private fun download(inputStream: InputStream, path: Path) {
     val countingInputStream = CountingInputStream(inputStream)
 
     val duration = countingInputStream.use {
-        measureNanoTime {
-            Files.copy(countingInputStream, path, StandardCopyOption.REPLACE_EXISTING)
-        }
+        measureNanoTime { Files.copy(countingInputStream, path, StandardCopyOption.REPLACE_EXISTING) }
     }
 
     val size = countingInputStream.byteCount
@@ -47,25 +66,9 @@ private fun download(inputStream: InputStream, path: Path) {
     println("↓ $path [$humanSize] [$humanSpeed]")
 }
 
-private fun <T> retry(clazz: KClass<out Exception>, retryCount: Int = 3, block: () -> T): T {
-    var exception: Exception? = null
-
-    for (ignored in 0..retryCount) {
-        exception = try {
-            return block()
-        } catch (e: Exception) {
-            if (!clazz.isSuperclassOf(e::class)) throw e
-
-            e
-        }
-    }
-
-    throw exception!!
-}
-
 class SpongeService(private val spongeServiceConfig: SpongeServiceConfig) {
     fun request(spongeUri: SpongeUri, timeout: Int = DEFAULT_REQUEST_TIMEOUT): Connection.Response {
-        return Jsoup.connect(spongeUri.uri)
+        val connection = Jsoup.connect(spongeUri.uri)
             .timeout(timeout)
             .header(HttpHeaders.ACCEPT_ENCODING, ENCODING)
             .referrer(spongeServiceConfig.referrer)
@@ -74,7 +77,8 @@ class SpongeService(private val spongeServiceConfig: SpongeServiceConfig) {
             .ignoreHttpErrors(true)
             .ignoreContentType(true)
             .followRedirects(true)
-            .let { retry(IOException::class) { it.execute() } }
+
+        return request(connection)
     }
 
     fun download(spongeUri: SpongeUri) {

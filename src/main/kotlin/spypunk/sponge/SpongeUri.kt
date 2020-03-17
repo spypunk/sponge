@@ -37,8 +37,6 @@ class SpongeUri(input: String) {
     }
 
     override fun toString() = uri
-
     override fun equals(other: Any?) = other is SpongeUri && uri == other.uri
-
     override fun hashCode() = uri.hashCode()
 }
