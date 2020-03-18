@@ -401,7 +401,7 @@ style:
     active: true
     conversionFunctionPrefix: 'to'
   DataClassShouldBeImmutable:
-    active: true
+    active: false
   EqualsNullCall:
     active: true
   EqualsOnSignatureLine:
@@ -531,7 +531,7 @@ style:
   UseDataClass:
     active: true
     excludeAnnotatedClasses: ""
-    allowVars: false
+    allowVars: true
   UseIfInsteadOfWhen:
     active: true
   UseRequire:

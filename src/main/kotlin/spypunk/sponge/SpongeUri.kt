@@ -13,30 +13,24 @@ import java.net.URL
 
 private val supportedSchemes = setOf("http", "https")
 
-class SpongeUri(input: String) {
-    val uri: String
-    val host: String
-    val path: String
-
+data class SpongeUri(val uri: String, val host: String, val path: String) {
     var download = false
     var children: Set<SpongeUri> = setOf()
-
-    init {
-        val url = URL(input)
-
-        URI(url.protocol, url.userInfo, url.host, url.port, url.path, url.query, null)
-            .normalize()
-            .let {
-                if (!supportedSchemes.contains(it.scheme)) error("Unsupported scheme: ${it.scheme}")
-                if (it.host.isNullOrEmpty()) error("Hostname cannot be empty")
-
-                uri = it.toASCIIString()
-                host = it.host
-                path = it.path
-            }
-    }
 
     override fun toString() = uri
     override fun equals(other: Any?) = other is SpongeUri && uri == other.uri
     override fun hashCode() = uri.hashCode()
+
+    companion object {
+        operator fun invoke(input: String): SpongeUri {
+            val url = URL(input)
+            val uri = URI(url.protocol, url.userInfo, url.host, url.port, url.path, url.query, null)
+                .normalize()
+
+            if (!supportedSchemes.contains(uri.scheme)) error("Unsupported scheme: ${uri.scheme}")
+            if (uri.host.isNullOrEmpty()) error("Hostname cannot be empty")
+
+            return SpongeUri(uri.toASCIIString(), uri.host, uri.path)
+        }
+    }
 }
