@@ -21,6 +21,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicInteger
 
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
@@ -54,6 +55,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
     private val requestContext = newFixedThreadPoolContext(spongeConfig.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeConfig.concurrentDownloads, "download")
     private val spongeUris = ConcurrentHashMap<String, SpongeUri>()
+    private val downloadedUris = CopyOnWriteArraySet<SpongeUri>()
     private val visitedCount = AtomicInteger()
 
     fun execute() = runBlocking { visit() }
@@ -94,7 +96,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
     }
 
     private suspend fun downloadOrVisitChildren(spongeUri: SpongeUri, parents: Set<SpongeUri>) {
-        if (spongeUri.download) {
+        if (spongeUri.download && downloadedUris.add(spongeUri)) {
             download(spongeUri)
         } else if (spongeUri.children.isNotEmpty() && parents.size < spongeConfig.maximumDepth) {
             visit(spongeUri.children, parents + spongeUri)
@@ -102,8 +104,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
     }
 
     private suspend fun download(spongeUri: SpongeUri) {
-        spongeUri.download = false
-
         withContext(downloadContext) { spongeService.download(spongeUri) }
     }
 

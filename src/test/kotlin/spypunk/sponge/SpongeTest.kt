@@ -160,10 +160,7 @@ class SpongeTest {
 
         verify { spongeService.request(spongeConfigWithSubdomains.spongeUri) }
         verify { spongeService.request(fileUri) }
-
-        verify {
-            spongeService.download(fileUri)
-        }
+        verify { spongeService.download(fileUri) }
     }
 
     @Test
@@ -223,10 +220,7 @@ class SpongeTest {
         verify { spongeService.request(spongeConfigWithDepthTwo.spongeUri) }
         verify { spongeService.request(childDocumentUri) }
         verify { spongeService.request(fileUri) }
-
-        verify {
-            spongeService.download(fileUri)
-        }
+        verify { spongeService.download(fileUri) }
     }
 
     @Test
@@ -264,10 +258,7 @@ class SpongeTest {
         verify { spongeService.request(spongeConfigWithDepthTwo.spongeUri) }
         verify { spongeService.request(childDocumentUri) }
         verify { spongeService.request(fileUri) }
-
-        verify {
-            spongeService.download(fileUri)
-        }
+        verify { spongeService.download(fileUri) }
     }
 
     @Test
@@ -354,10 +345,7 @@ class SpongeTest {
         verify { spongeService.request(spongeConfig.spongeUri) }
         verify { spongeService.request(childDocumentUri) }
         verify(exactly = 0) { spongeService.request(fileUri) }
-
-        verify(exactly = 0) {
-            spongeService.download(fileUri)
-        }
+        verify(exactly = 0) { spongeService.download(fileUri) }
     }
 
     @Test
@@ -428,11 +416,7 @@ class SpongeTest {
 
         verify { spongeService.request(spongeConfig.spongeUri) }
         verify { spongeService.request(failingFileUri) }
-
-        verify(exactly = 0) {
-            spongeService.download(failingFileUri)
-        }
-
+        verify(exactly = 0) { spongeService.download(failingFileUri) }
         verify { spongeService.request(fileUri) }
         verify { spongeService.download(fileUri) }
     }
@@ -466,6 +450,44 @@ class SpongeTest {
 
         verify(exactly = 0) { spongeService.request(otherFileUri) }
         verify(exactly = 0) { spongeService.download(otherFileUri) }
+    }
+
+    @Test
+    fun testDocumentWithDuplicateDownloads() {
+        val childDocumentUri = "https://test.com/test".toSpongeUri()
+        val fileUri = "${spongeConfigWithDepthTwo.spongeUri}/$fileName".toSpongeUri()
+
+        givenDocument(
+            spongeConfigWithDepthTwo.spongeUri,
+            """
+                    <html>
+                        <body>
+                            <a href="$fileUri" />
+                            <a href="$childDocumentUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        givenDocument(
+            childDocumentUri,
+            """
+                    <html>
+                        <body>
+                            <a href="$fileUri" />
+                        </body>
+                    </html>
+                """
+        )
+
+        givenFile(fileUri)
+
+        executeSponge(spongeConfigWithDepthTwo)
+
+        verify { spongeService.request(spongeConfigWithDepthTwo.spongeUri) }
+        verify { spongeService.request(childDocumentUri) }
+        verify { spongeService.request(fileUri) }
+        verify { spongeService.download(fileUri) }
     }
 
     private fun givenDocument(
