@@ -96,7 +96,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
     }
 
     private suspend fun downloadOrVisitChildren(spongeUri: SpongeUri, parents: Set<SpongeUri>) {
-        if (spongeUri.download && downloadedUris.add(spongeUri)) {
+        if (spongeUri.download) {
             download(spongeUri)
         } else if (spongeUri.children.isNotEmpty() && parents.size < spongeConfig.maximumDepth) {
             visit(spongeUri.children, parents + spongeUri)
@@ -104,7 +104,9 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
     }
 
     private suspend fun download(spongeUri: SpongeUri) {
-        withContext(downloadContext) { spongeService.download(spongeUri) }
+        if (downloadedUris.add(spongeUri)) {
+            withContext(downloadContext) { spongeService.download(spongeUri) }
+        }
     }
 
     private suspend fun visit(spongeUris: Set<SpongeUri>, parents: Set<SpongeUri>) {
