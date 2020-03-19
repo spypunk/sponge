@@ -18,13 +18,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.IOException
 import java.net.URL
-import java.nio.file.Path
+import java.nio.file.Paths
 
 private fun String.toSpongeUri() = SpongeUri(this)
 
 class SpongeTest {
     private val spongeService = mockk<SpongeService>(relaxed = true)
-    private val outputDirectory = Path.of("testOutput").toAbsolutePath()
+    private val outputDirectory = Paths.get("testOutput").toAbsolutePath()
     private val fileName = "test.txt"
     private val imageFileName = "test.png"
 

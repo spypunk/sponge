@@ -19,12 +19,11 @@ import org.mockserver.integration.ClientAndServer.startClientAndServer
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
 import java.nio.charset.StandardCharsets
-import java.nio.file.Path
 import java.nio.file.Paths
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SpongeServiceTest {
-    private val outputDirectory = Path.of("testOutput").toAbsolutePath()
+    private val outputDirectory = Paths.get("testOutput").toAbsolutePath()
     private val spongeServiceConfig = SpongeServiceConfig(outputDirectory)
     private val spongeService = SpongeService(spongeServiceConfig)
     private val host = "localhost"
