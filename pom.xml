@@ -33,6 +33,7 @@
         <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
         <kotlin.version>1.3.70</kotlin.version>
         <slf4j.version>2.0.0-alpha1</slf4j.version>
+        <detekt-maven-plugin.version>1.6.0</detekt-maven-plugin.version>
     </properties>
 
     <build>
@@ -99,7 +100,7 @@
             <plugin>
                 <groupId>com.github.ozsie</groupId>
                 <artifactId>detekt-maven-plugin</artifactId>
-                <version>1.1.1</version>
+                <version>${detekt-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <phase>validate</phase>
@@ -307,7 +308,7 @@
         <dependency>
             <groupId>com.github.ozsie</groupId>
             <artifactId>detekt-maven-plugin</artifactId>
-            <version>1.1.1</version>
+            <version>${detekt-maven-plugin.version}</version>
             <type>maven-plugin</type>
             <scope>provided</scope>
         </dependency>

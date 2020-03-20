@@ -70,8 +70,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
             }.let {
                 downloadOrVisitChildren(it, parents)
             }
-        } catch (e: Exception) {
-            System.err.println("⚠ Processing failed for $spongeUri: ${e.rootMessage}")
+        } catch (t: Throwable) {
+            System.err.println("⚠ Processing failed for $spongeUri: ${t.rootMessage}")
         }
     }
 
