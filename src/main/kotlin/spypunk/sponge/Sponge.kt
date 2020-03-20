@@ -26,21 +26,13 @@ import java.util.concurrent.atomic.AtomicInteger
 
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
 
+private val childrenAttributeKeys = mapOf(
+    "a[href]" to "abs:href",
+    "img[src]" to "abs:src"
+)
+
 val Throwable.rootMessage: String
     get() = ExceptionUtils.getRootCauseMessage(this)
-
-private fun getChildren(document: Document) = (getHrefChildren(document) + getImgChildren(document)).distinct()
-
-private fun getHrefChildren(document: Document) = getChildren(document, "a[href]", "abs:href")
-
-private fun getImgChildren(document: Document) = getChildren(document, "img[src]", "abs:src")
-
-private fun getChildren(document: Document, cssQuery: String, attributeKey: String): Sequence<SpongeUri> {
-    return document.select(cssQuery)
-        .asSequence()
-        .distinct()
-        .mapNotNull { toSpongeUri(it, attributeKey) }
-}
 
 private fun toSpongeUri(element: Element, attributeKey: String): SpongeUri? {
     return try {
@@ -87,7 +79,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
             if (htmlMimeTypes.contains(mimeType)) {
                 val document = Jsoup.parse(response.body(), response.url().toExternalForm())
 
-                loadChildren(spongeUri, document)
+                spongeUri.children = getChildren(spongeUri, document)
             } else if (spongeConfig.mimeTypes.contains(mimeType)) {
                 spongeUri.download = true
             }
@@ -116,9 +108,17 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
             .awaitAll()
     }
 
-    private fun loadChildren(spongeUri: SpongeUri, document: Document) {
-        spongeUri.children = getChildren(document)
-            .filter { it != spongeUri && isHostVisitable(it.host) && !downloadedUris.contains(it) }
+    private fun getChildren(spongeUri: SpongeUri, document: Document): Set<SpongeUri> {
+        return childrenAttributeKeys.entries
+            .asSequence()
+            .map { entry ->
+                document.select(entry.key)
+                    .asSequence()
+                    .distinct()
+                    .mapNotNull { toSpongeUri(it, entry.value) }
+                    .filter { it != spongeUri && isHostVisitable(it.host) && !downloadedUris.contains(it) }
+            }
+            .flatMap { it }
             .toSet()
     }
 
