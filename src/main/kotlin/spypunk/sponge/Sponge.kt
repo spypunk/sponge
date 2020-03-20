@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
 
-private val childrenAttributeKeys = mapOf(
+private val attributeKeys = mapOf(
     "a[href]" to "abs:href",
     "img[src]" to "abs:src"
 )
@@ -109,17 +109,24 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
     }
 
     private fun getChildren(spongeUri: SpongeUri, document: Document): Set<SpongeUri> {
-        return childrenAttributeKeys.entries
+        return attributeKeys.entries
             .asSequence()
-            .map { entry ->
-                document.select(entry.key)
-                    .asSequence()
-                    .distinct()
-                    .mapNotNull { toSpongeUri(it, entry.value) }
-                    .filter { it != spongeUri && isHostVisitable(it.host) && !downloadedUris.contains(it) }
-            }
+            .map { getChildren(spongeUri, document, it.key, it.value) }
             .flatMap { it }
             .toSet()
+    }
+
+    private fun getChildren(
+        spongeUri: SpongeUri,
+        document: Document,
+        cssQuery: String,
+        attributeKey: String
+    ): Sequence<SpongeUri> {
+        return document.select(cssQuery)
+            .asSequence()
+            .distinct()
+            .mapNotNull { toSpongeUri(it, attributeKey) }
+            .filter { it != spongeUri && isHostVisitable(it.host) && !downloadedUris.contains(it) }
     }
 
     private fun isHostVisitable(host: String): Boolean {
