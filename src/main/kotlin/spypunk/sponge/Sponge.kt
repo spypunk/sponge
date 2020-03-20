@@ -38,6 +38,7 @@ private fun getImgChildren(document: Document) = getChildren(document, "img[src]
 private fun getChildren(document: Document, cssQuery: String, attributeKey: String): Sequence<SpongeUri> {
     return document.select(cssQuery)
         .asSequence()
+        .distinct()
         .mapNotNull { toSpongeUri(it, attributeKey) }
 }
 
@@ -117,7 +118,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
 
     private fun loadChildren(spongeUri: SpongeUri, document: Document) {
         spongeUri.children = getChildren(document)
-            .filter { it != spongeUri && isHostVisitable(it.host) }
+            .filter { it != spongeUri && isHostVisitable(it.host) && !downloadedUris.contains(it) }
             .toSet()
     }
 
