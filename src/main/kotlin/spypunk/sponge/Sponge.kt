@@ -87,6 +87,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
         try {
             getSpongeAction(spongeUri).execute(parents)
         } catch (t: Throwable) {
+            spongeActions[spongeUri] = doNothingSpongeAction
+
             System.err.println("⚠ Processing failed for $spongeUri: ${t.rootMessage}")
         }
     }
