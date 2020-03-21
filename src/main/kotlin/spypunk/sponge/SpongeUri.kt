@@ -14,13 +14,6 @@ import java.net.URL
 private val supportedSchemes = setOf("http", "https")
 
 data class SpongeUri(val uri: String, val host: String, val path: String) {
-    var download = false
-    var children: Set<SpongeUri> = setOf()
-
-    override fun toString() = uri
-    override fun equals(other: Any?) = other is SpongeUri && uri == other.uri
-    override fun hashCode() = uri.hashCode()
-
     companion object {
         operator fun invoke(input: String): SpongeUri {
             val url = URL(input)
@@ -33,4 +26,8 @@ data class SpongeUri(val uri: String, val host: String, val path: String) {
             return SpongeUri(uri.toASCIIString(), uri.host, uri.path)
         }
     }
+
+    override fun toString() = uri
+    override fun equals(other: Any?) = other is SpongeUri && uri == other.uri
+    override fun hashCode() = uri.hashCode()
 }
