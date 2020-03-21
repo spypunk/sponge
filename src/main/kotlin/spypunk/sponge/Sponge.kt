@@ -25,14 +25,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicInteger
 
-private interface Action {
-    suspend fun execute(parents: Set<SpongeUri>)
-}
-
-private val doNothingAction = object : Action {
-    override suspend fun execute(parents: Set<SpongeUri>) {}
-}
-
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
 
 private val attributeKeys = mapOf(
@@ -54,15 +46,20 @@ private fun toSpongeUri(element: Element, attributeKey: String): SpongeUri? {
 }
 
 class Sponge(private val spongeService: SpongeService, private val spongeConfig: SpongeConfig) {
-    private inner class DownloadAction(val spongeUri: SpongeUri) : Action {
+    private inner class DownloadSpongeAction(val spongeUri: SpongeUri) : SpongeAction {
         override suspend fun execute(parents: Set<SpongeUri>) {
             if (downloadedUris.add(spongeUri)) {
+                spongeActions[spongeUri] = doNothingSpongeAction
+
                 withContext(downloadContext) { spongeService.download(spongeUri) }
             }
         }
     }
 
-    private inner class VisitChildrenAction(val spongeUri: SpongeUri, val children: Set<SpongeUri>) : Action {
+    private inner class VisitChildrenSpongeAction(
+        val spongeUri: SpongeUri,
+        val children: Set<SpongeUri>
+    ) : SpongeAction {
         override suspend fun execute(parents: Set<SpongeUri>) {
             if (parents.size < spongeConfig.maximumDepth) {
                 visit(children, parents + spongeUri)
@@ -78,7 +75,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
 
     private val requestContext = newFixedThreadPoolContext(spongeConfig.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeConfig.concurrentDownloads, "download")
-    private val actions = ConcurrentHashMap<SpongeUri, Action>()
+    private val spongeActions = ConcurrentHashMap<SpongeUri, SpongeAction>()
     private val downloadedUris = CopyOnWriteArraySet<SpongeUri>()
     private val visitedCount = AtomicInteger()
 
@@ -88,43 +85,47 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
         if (visitedCount.incrementAndGet() > spongeConfig.maximumUris) return
 
         try {
-            getAction(spongeUri).execute(parents)
+            getSpongeAction(spongeUri).execute(parents)
         } catch (t: Throwable) {
             System.err.println("⚠ Processing failed for $spongeUri: ${t.rootMessage}")
         }
     }
 
-    private fun getAction(spongeUri: SpongeUri) =
-        actions.computeIfAbsent(spongeUri) { createAction(spongeUri) }
+    private fun getSpongeAction(spongeUri: SpongeUri) =
+        spongeActions.computeIfAbsent(spongeUri) { createSpongeAction(spongeUri) }
 
-    private fun createAction(spongeUri: SpongeUri): Action {
+    private fun createSpongeAction(spongeUri: SpongeUri): SpongeAction {
         val extension = FilenameUtils.getExtension(spongeUri.path)
 
         if (spongeConfig.fileExtensions.contains(extension)) {
-            return DownloadAction(spongeUri)
+            return DownloadSpongeAction(spongeUri)
         }
 
         val response = spongeService.request(spongeUri)
         val mimeType = ContentType.parse(response.contentType()).mimeType
 
-        return createAction(spongeUri, mimeType, response)
+        return createSpongeAction(spongeUri, mimeType, response)
     }
 
-    private fun createAction(spongeUri: SpongeUri, mimeType: String, response: Connection.Response): Action {
-        var action: Action = doNothingAction
+    private fun createSpongeAction(
+        spongeUri: SpongeUri,
+        mimeType: String,
+        response: Connection.Response
+    ): SpongeAction {
+        var spongeAction: SpongeAction = doNothingSpongeAction
 
         if (htmlMimeTypes.contains(mimeType)) {
             val document = Jsoup.parse(response.body(), response.url().toExternalForm())
             val children = getChildren(spongeUri, document)
 
             if (children.isNotEmpty()) {
-                action = VisitChildrenAction(spongeUri, children)
+                spongeAction = VisitChildrenSpongeAction(spongeUri, children)
             }
         } else if (spongeConfig.mimeTypes.contains(mimeType)) {
-            action = DownloadAction(spongeUri)
+            spongeAction = DownloadSpongeAction(spongeUri)
         }
 
-        return action
+        return spongeAction
     }
 
     private fun getChildren(spongeUri: SpongeUri, document: Document): Set<SpongeUri> {
