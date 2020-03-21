@@ -17,6 +17,7 @@ import kotlinx.coroutines.withContext
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.http.entity.ContentType
+import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -42,7 +43,7 @@ private val attributeKeys = mapOf(
 val Throwable.rootMessage: String
     get() = ExceptionUtils.getRootCauseMessage(this)
 
-private fun toNormalizedUri(element: Element, attributeKey: String): SpongeUri? {
+private fun toSpongeUri(element: Element, attributeKey: String): SpongeUri? {
     return try {
         element.attr(attributeKey)?.let {
             SpongeUri(it)
@@ -77,7 +78,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
 
     private val requestContext = newFixedThreadPoolContext(spongeConfig.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeConfig.concurrentDownloads, "download")
-    private val spongeUriDetails = ConcurrentHashMap<SpongeUri, Action>()
+    private val actions = ConcurrentHashMap<SpongeUri, Action>()
     private val downloadedUris = CopyOnWriteArraySet<SpongeUri>()
     private val visitedCount = AtomicInteger()
 
@@ -94,33 +95,36 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
     }
 
     private fun getAction(spongeUri: SpongeUri) =
-        spongeUriDetails.computeIfAbsent(spongeUri) { createAction(spongeUri) }
+        actions.computeIfAbsent(spongeUri) { createAction(spongeUri) }
 
     private fun createAction(spongeUri: SpongeUri): Action {
         val extension = FilenameUtils.getExtension(spongeUri.path)
-        var download = false
-        var children = setOf<SpongeUri>()
 
         if (spongeConfig.fileExtensions.contains(extension)) {
-            download = true
-        } else {
-            val response = spongeService.request(spongeUri)
-            val mimeType = ContentType.parse(response.contentType()).mimeType
+            return DownloadAction(spongeUri)
+        }
 
-            if (htmlMimeTypes.contains(mimeType)) {
-                val document = Jsoup.parse(response.body(), response.url().toExternalForm())
+        val response = spongeService.request(spongeUri)
+        val mimeType = ContentType.parse(response.contentType()).mimeType
 
-                children = getChildren(spongeUri, document)
-            } else if (spongeConfig.mimeTypes.contains(mimeType)) {
-                download = true
+        return createAction(spongeUri, mimeType, response)
+    }
+
+    private fun createAction(spongeUri: SpongeUri, mimeType: String, response: Connection.Response): Action {
+        var action: Action = doNothingAction
+
+        if (htmlMimeTypes.contains(mimeType)) {
+            val document = Jsoup.parse(response.body(), response.url().toExternalForm())
+            val children = getChildren(spongeUri, document)
+
+            if (children.isNotEmpty()) {
+                action = VisitChildrenAction(spongeUri, children)
             }
+        } else if (spongeConfig.mimeTypes.contains(mimeType)) {
+            action = DownloadAction(spongeUri)
         }
 
-        return when {
-            download -> DownloadAction(spongeUri)
-            children.isNotEmpty() -> VisitChildrenAction(spongeUri, children)
-            else -> doNothingAction
-        }
+        return action
     }
 
     private fun getChildren(spongeUri: SpongeUri, document: Document): Set<SpongeUri> {
@@ -140,7 +144,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
         return document.select(cssQuery)
             .asSequence()
             .distinct()
-            .mapNotNull { toNormalizedUri(it, attributeKey) }
+            .mapNotNull { toSpongeUri(it, attributeKey) }
             .filter { it != spongeUri && isHostVisitable(it.host) && !downloadedUris.contains(it) }
     }
 
