@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicInteger
 
-data class VisitResult(val download: Boolean = false, val children: Set<SpongeUri> = setOf())
+private data class VisitResult(val download: Boolean = false, val children: Set<SpongeUri> = setOf())
 
 private val skipVisitResult = VisitResult()
 private val downloadVisitResult = VisitResult(download = true)
