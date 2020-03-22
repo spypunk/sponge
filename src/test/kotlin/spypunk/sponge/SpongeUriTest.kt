@@ -12,22 +12,21 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class SpongeUriTest {
-
     @Test
     fun testUnsupportedScheme() {
-        try {
+        val exception = Assertions.assertThrows(IllegalStateException::class.java) {
             SpongeUri("ftp://test.com")
-        } catch (e: IllegalStateException) {
-            Assertions.assertEquals("Unsupported scheme: ftp", e.message)
         }
+
+        Assertions.assertEquals("Unsupported scheme: ftp", exception.message)
     }
 
     @Test
     fun testEmptyHost() {
-        try {
+        val exception = Assertions.assertThrows(IllegalStateException::class.java) {
             SpongeUri("http:///www.test.com")
-        } catch (e: IllegalStateException) {
-            Assertions.assertEquals("Hostname cannot be empty", e.message)
         }
+
+        Assertions.assertEquals("Hostname cannot be empty", exception.message)
     }
 }
