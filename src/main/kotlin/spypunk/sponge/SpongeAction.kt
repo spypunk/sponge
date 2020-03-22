@@ -9,9 +9,9 @@
 package spypunk.sponge
 
 val doNothingSpongeAction = object : SpongeAction {
-    override suspend fun execute(parents: Set<SpongeUri>) {}
+    override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {}
 }
 
 interface SpongeAction {
-    suspend fun execute(parents: Set<SpongeUri>)
+    suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>)
 }
