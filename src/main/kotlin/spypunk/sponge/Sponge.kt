@@ -51,14 +51,19 @@ private fun toSpongeUri(element: Element, attributeKey: String): SpongeUri? {
 
 class Sponge(private val spongeService: SpongeService, private val spongeConfig: SpongeConfig) {
     private inner class VisitChildrenSpongeAction(val children: Set<SpongeUri>) : SpongeAction {
-        override suspend fun execute(
-            spongeUri: SpongeUri,
-            parents: Set<SpongeUri>
-        ) = visit(children, parents + spongeUri)
+        override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {
+            if (parents.size < spongeConfig.maximumDepth) {
+                visit(children, parents + spongeUri)
+            }
+        }
     }
 
     private val downloadSpongeAction = object : SpongeAction {
-        override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) = download(spongeUri)
+        override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {
+            if (downloadedUris.add(spongeUri)) {
+                withContext(downloadContext) { spongeService.download(spongeUri) }
+            }
+        }
     }
 
     private val requestContext = newFixedThreadPoolContext(spongeConfig.concurrentRequests, "request")
@@ -135,16 +140,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
     }
 
     private suspend fun visit(spongeUris: Set<SpongeUri>, parents: Set<SpongeUri>) {
-        if (parents.size <= spongeConfig.maximumDepth) {
-            spongeUris.minus(parents)
-                .map { GlobalScope.async(requestContext) { visit(it, parents) } }
-                .awaitAll()
-        }
-    }
-
-    private suspend fun download(spongeUri: SpongeUri) {
-        if (downloadedUris.add(spongeUri)) {
-            withContext(downloadContext) { spongeService.download(spongeUri) }
-        }
+        spongeUris.minus(parents)
+            .map { GlobalScope.async(requestContext) { visit(it, parents) } }
+            .awaitAll()
     }
 }
