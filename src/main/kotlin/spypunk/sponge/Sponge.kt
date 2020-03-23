@@ -24,6 +24,11 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicInteger
 
+private interface SpongeAction {
+    suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {}
+}
+
+private val skipSpongeAction = object : SpongeAction {}
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
 
 private val attributeKeys = mapOf(
