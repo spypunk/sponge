@@ -45,7 +45,7 @@ private fun toSpongeUri(element: Element, attributeKey: String): SpongeUri? {
 }
 
 class Sponge(private val spongeService: SpongeService, private val spongeConfig: SpongeConfig) {
-    private inner class VisitChildrenSpongeAction(override val children: Set<SpongeUri>) : SpongeAction() {
+    private inner class VisitChildrenSpongeAction(val children: Set<SpongeUri>) : SpongeAction {
         override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {
             if (parents.size < spongeConfig.maximumDepth) {
                 visit(children, parents + spongeUri)
@@ -53,7 +53,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
         }
     }
 
-    private val downloadSpongeAction = object : SpongeAction() {
+    private val downloadSpongeAction = object : SpongeAction {
         override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {
             if (downloadedUris.add(spongeUri)) {
                 withContext(downloadContext) { spongeService.download(spongeUri) }
@@ -85,7 +85,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
 
     private fun getSpongeAction(spongeUri: SpongeUri): SpongeAction {
         val extension = FilenameUtils.getExtension(spongeUri.path)
-        var spongeAction: SpongeAction = SpongeAction.SkipSpongeAction
+        var spongeAction: SpongeAction = skipSpongeAction
 
         if (spongeConfig.fileExtensions.contains(extension)) {
             spongeAction = downloadSpongeAction

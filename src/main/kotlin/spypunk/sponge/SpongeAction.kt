@@ -8,13 +8,8 @@
 
 package spypunk.sponge
 
-abstract class SpongeAction {
-    object SkipSpongeAction : SpongeAction() {
-        override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {}
-    }
-
-    open val children: Set<SpongeUri>
-        get() = setOf()
-
-    abstract suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>)
+interface SpongeAction {
+    suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {}
 }
+
+val skipSpongeAction = object : SpongeAction {}
