@@ -24,11 +24,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicInteger
 
-private data class VisitResult(val download: Boolean = false, val children: Set<SpongeUri> = setOf())
-
-private val skipVisitResult = VisitResult()
-private val downloadVisitResult = VisitResult(download = true)
-
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
 
 private val attributeKeys = mapOf(
@@ -50,9 +45,25 @@ private fun toSpongeUri(element: Element, attributeKey: String): SpongeUri? {
 }
 
 class Sponge(private val spongeService: SpongeService, private val spongeConfig: SpongeConfig) {
+    private inner class VisitChildrenSpongeAction(override val children: Set<SpongeUri>) : SpongeAction() {
+        override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {
+            if (parents.size < spongeConfig.maximumDepth) {
+                visit(children, parents + spongeUri)
+            }
+        }
+    }
+
+    private val downloadSpongeAction = object : SpongeAction() {
+        override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {
+            if (downloadedUris.add(spongeUri)) {
+                withContext(downloadContext) { spongeService.download(spongeUri) }
+            }
+        }
+    }
+
     private val requestContext = newFixedThreadPoolContext(spongeConfig.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeConfig.concurrentDownloads, "download")
-    private val visitResults = ConcurrentHashMap<SpongeUri, VisitResult>()
+    private val spongeActions = ConcurrentHashMap<SpongeUri, SpongeAction>()
     private val downloadedUris = CopyOnWriteArraySet<SpongeUri>()
     private val visitedCount = AtomicInteger()
 
@@ -62,25 +73,22 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
         if (visitedCount.incrementAndGet() > spongeConfig.maximumUris) return
 
         try {
-            val visitResult = getVisitResult(spongeUri)
-
-            if (visitResult !== skipVisitResult) {
-                downloadOrVisitChildren(visitResult, spongeUri, parents)
+            val spongeAction = spongeActions.computeIfAbsent(spongeUri) {
+                getSpongeAction(spongeUri)
             }
+
+            spongeAction.execute(spongeUri, parents)
         } catch (t: Throwable) {
             System.err.println("⚠ Processing failed for $spongeUri: ${t.rootMessage}")
         }
     }
 
-    private fun getVisitResult(spongeUri: SpongeUri) =
-        visitResults.computeIfAbsent(spongeUri) { createVisitResult(spongeUri) }
-
-    private fun createVisitResult(spongeUri: SpongeUri): VisitResult {
+    private fun getSpongeAction(spongeUri: SpongeUri): SpongeAction {
         val extension = FilenameUtils.getExtension(spongeUri.path)
-        var visitResult = skipVisitResult
+        var spongeAction: SpongeAction = SpongeAction.SkipSpongeAction
 
         if (spongeConfig.fileExtensions.contains(extension)) {
-            visitResult = downloadVisitResult
+            spongeAction = downloadSpongeAction
         } else {
             val response = spongeService.request(spongeUri)
             val mimeType = ContentType.parse(response.contentType()).mimeType
@@ -90,14 +98,14 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
                 val children = getChildren(spongeUri, document)
 
                 if (children.isNotEmpty()) {
-                    visitResult = VisitResult(children = children)
+                    spongeAction = VisitChildrenSpongeAction(children)
                 }
             } else if (spongeConfig.mimeTypes.contains(mimeType)) {
-                visitResult = downloadVisitResult
+                spongeAction = downloadSpongeAction
             }
         }
 
-        return visitResult
+        return spongeAction
     }
 
     private fun getChildren(spongeUri: SpongeUri, document: Document): Set<SpongeUri> {
@@ -124,24 +132,6 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
     private fun isHostVisitable(host: String): Boolean {
         return host == spongeConfig.spongeUri.host ||
             spongeConfig.includeSubdomains && host.endsWith(spongeConfig.spongeUri.host)
-    }
-
-    private suspend fun downloadOrVisitChildren(
-        visitResult: VisitResult,
-        spongeUri: SpongeUri,
-        parents: Set<SpongeUri>
-    ) {
-        if (visitResult.download) {
-            download(spongeUri)
-        } else if (parents.size < spongeConfig.maximumDepth) {
-            visit(visitResult.children, parents + spongeUri)
-        }
-    }
-
-    private suspend fun download(spongeUri: SpongeUri) {
-        if (downloadedUris.add(spongeUri)) {
-            withContext(downloadContext) { spongeService.download(spongeUri) }
-        }
     }
 
     private suspend fun visit(spongeUris: Set<SpongeUri>, parents: Set<SpongeUri>) {
