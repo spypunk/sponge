@@ -73,6 +73,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
     private val spongeActions = ConcurrentHashMap<SpongeUri, SpongeAction>()
     private val downloadedUris = CopyOnWriteArraySet<SpongeUri>()
     private val visitedCount = AtomicInteger()
+    private val completedDownloadCount = AtomicInteger()
 
     fun execute() = runBlocking { visit() }
 
@@ -172,7 +173,8 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
         val humanSize = FileUtils.byteCountToDisplaySize(spongeDownload.size)
         val speed = NS_TO_S * spongeDownload.size / (KB_TO_B * spongeDownload.duration)
         val humanSpeed = "%.2f kB/s".format(speed)
+        val completedDownloads = "${completedDownloadCount.incrementAndGet()}/${downloadedUris.size}"
 
-        println("↓ $path [$humanSize] [$humanSpeed]")
+        println("↓ $path [$humanSize] [$humanSpeed] [$completedDownloads]")
     }
 }
