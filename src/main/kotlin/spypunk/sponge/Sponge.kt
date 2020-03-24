@@ -14,19 +14,21 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicInteger
 
-private interface SpongeAction {
-    suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {}
-}
+private const val NS_TO_S = 1_000_000_000.0
+private const val KB_TO_B = 1_000.0
 
 private val skipSpongeAction = object : SpongeAction {}
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
@@ -49,6 +51,10 @@ private fun toSpongeUri(element: Element, attributeKey: String): SpongeUri? {
     }
 }
 
+private interface SpongeAction {
+    suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {}
+}
+
 class Sponge(private val spongeService: SpongeService, private val spongeConfig: SpongeConfig) {
     private inner class VisitChildrenSpongeAction(val children: Set<SpongeUri>) : SpongeAction {
         override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {
@@ -59,11 +65,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
     }
 
     private val downloadSpongeAction = object : SpongeAction {
-        override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {
-            if (downloadedUris.add(spongeUri)) {
-                withContext(downloadContext) { spongeService.download(spongeUri) }
-            }
-        }
+        override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) = download(spongeUri)
     }
 
     private val requestContext = newFixedThreadPoolContext(spongeConfig.concurrentRequests, "request")
@@ -95,7 +97,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
         if (spongeConfig.fileExtensions.contains(extension)) {
             spongeAction = downloadSpongeAction
         } else {
-            val response = spongeService.request(spongeUri)
+            val response = spongeService.request(spongeUri.uri)
             val mimeType = ContentType.parse(response.contentType()).mimeType
 
             if (htmlMimeTypes.contains(mimeType)) {
@@ -143,5 +145,34 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
         spongeUris.minus(parents)
             .map { GlobalScope.async(requestContext) { visit(it, parents) } }
             .awaitAll()
+    }
+
+    private suspend fun download(spongeUri: SpongeUri) {
+        val path = getDownloadPath(spongeUri)
+
+        if (!spongeConfig.overwriteExistingFiles && Files.exists(path)) {
+            println("∃ $path")
+        } else if (downloadedUris.add(spongeUri)) {
+            withContext(downloadContext) {
+                val spongeDownload = spongeService.download(spongeUri.uri, path)
+
+                printSpongeDownload(path, spongeDownload)
+            }
+        }
+    }
+
+    private fun getDownloadPath(spongeUri: SpongeUri): Path {
+        return spongeConfig.outputDirectory.resolve(spongeUri.host)
+            .resolve(FilenameUtils.getPath(spongeUri.path))
+            .resolve(FilenameUtils.getName(spongeUri.path))
+            .toAbsolutePath()
+    }
+
+    private fun printSpongeDownload(path: Path, spongeDownload: SpongeDownload) {
+        val humanSize = FileUtils.byteCountToDisplaySize(spongeDownload.size)
+        val speed = NS_TO_S * spongeDownload.size / (KB_TO_B * spongeDownload.duration)
+        val humanSpeed = "%.2f kB/s".format(speed)
+
+        println("↓ $path [$humanSize] [$humanSpeed]")
     }
 }

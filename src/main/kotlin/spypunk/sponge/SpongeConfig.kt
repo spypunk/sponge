@@ -8,19 +8,24 @@
 
 package spypunk.sponge
 
+import java.nio.file.Path
+
 const val DEFAULT_MAXIMUM_DEPTH = 1
 const val DEFAULT_MAXIMUM_URIS = 1_000_000
 const val DEFAULT_INCLUDE_SUBDOMAINS = false
 const val DEFAULT_CONCURRENT_REQUESTS = 1
 const val DEFAULT_CONCURRENT_DOWNLOADS = 1
+const val DEFAULT_OVERWRITE_EXISTING_FILES = false
 
 data class SpongeConfig(
     val spongeUri: SpongeUri,
+    val outputDirectory: Path,
     val mimeTypes: Set<String>,
     val fileExtensions: Set<String>,
     val maximumDepth: Int = DEFAULT_MAXIMUM_DEPTH,
     val maximumUris: Int = DEFAULT_MAXIMUM_URIS,
     val includeSubdomains: Boolean = DEFAULT_INCLUDE_SUBDOMAINS,
     val concurrentRequests: Int = DEFAULT_CONCURRENT_REQUESTS,
-    val concurrentDownloads: Int = DEFAULT_CONCURRENT_DOWNLOADS
+    val concurrentDownloads: Int = DEFAULT_CONCURRENT_DOWNLOADS,
+    val overwriteExistingFiles: Boolean = DEFAULT_OVERWRITE_EXISTING_FILES
 )

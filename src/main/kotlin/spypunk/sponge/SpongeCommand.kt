@@ -98,23 +98,23 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
 
         try {
             val spongeServiceConfig = SpongeServiceConfig(
-                outputDirectory,
                 referrer,
-                userAgent,
-                overwriteExistingFiles
+                userAgent
             )
 
             val spongeService = SpongeService(spongeServiceConfig)
 
             val spongeConfig = SpongeConfig(
                 spongeUri,
+                outputDirectory,
                 mimeTypes.toSet(),
                 fileExtensions.toSet(),
                 maximumDepth,
                 maximumUris,
                 includeSubdomains,
                 concurrentRequests,
-                concurrentDownloads
+                concurrentDownloads,
+                overwriteExistingFiles
             )
 
             Sponge(spongeService, spongeConfig).execute()

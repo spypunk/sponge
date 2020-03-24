@@ -24,8 +24,7 @@ import java.nio.file.Paths
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SpongeServiceTest {
     private val outputDirectory = Paths.get("testOutput").toAbsolutePath()
-    private val spongeServiceConfig = SpongeServiceConfig(outputDirectory)
-    private val spongeService = SpongeService(spongeServiceConfig)
+    private val spongeService = SpongeService(SpongeServiceConfig())
     private val host = "localhost"
     private val filePath = Paths.get("$outputDirectory/$host/test.txt").toAbsolutePath()
     private val fileContent = "test"
@@ -33,10 +32,7 @@ class SpongeServiceTest {
 
     private val server = startClientAndServer(port)
         .also {
-            it.`when`(
-                    request()
-                        .withPath("/${filePath.fileName}")
-                )
+            it.`when`(request().withPath("/${filePath.fileName}"))
                 .respond(
                     response()
                         .withStatusCode(200)
@@ -56,18 +52,12 @@ class SpongeServiceTest {
 
     @Test
     fun testDownload() {
-        spongeService.download(SpongeUri("http://$host:$port/${filePath.fileName}"))
+        val spongeUri = SpongeUri("http://$host:$port/${filePath.fileName}")
+        val spongeDownload = spongeService.download(spongeUri.uri, filePath)
 
         Assertions.assertEquals(fileContent, FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8))
-    }
-
-    @Test
-    fun testDownloadWithFileAlreadyDownloaded() {
-        FileUtils.touch(filePath.toFile())
-
-        spongeService.download(SpongeUri("http://$host:$port/${filePath.fileName}"))
-
-        Assertions.assertNotEquals(fileContent, FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8))
+        Assertions.assertTrue(spongeDownload.duration > 0)
+        Assertions.assertEquals(fileContent.length.toLong(), spongeDownload.size)
     }
 
     @AfterAll
