@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger
 private const val NS_TO_S = 1_000_000_000.0
 private const val KB_TO_B = 1_000.0
 
-private val skipSpongeAction = object : SpongeAction {}
+private val skipAction: Action = { _: SpongeUri, _: Set<SpongeUri> -> }
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
 
 private val attributeKeys = mapOf(
@@ -51,29 +51,16 @@ private fun toSpongeUri(element: Element, attributeKey: String): SpongeUri? {
     }
 }
 
-private interface SpongeAction {
-    suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {}
-}
+typealias Action = suspend (spongeUri: SpongeUri, parents: Set<SpongeUri>) -> Unit
 
 class Sponge(private val spongeService: SpongeService, private val spongeConfig: SpongeConfig) {
-    private inner class VisitChildrenSpongeAction(val children: Set<SpongeUri>) : SpongeAction {
-        override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) {
-            if (parents.size < spongeConfig.maximumDepth) {
-                visit(children, parents + spongeUri)
-            }
-        }
-    }
-
-    private val downloadSpongeAction = object : SpongeAction {
-        override suspend fun execute(spongeUri: SpongeUri, parents: Set<SpongeUri>) = download(spongeUri)
-    }
-
     private val requestContext = newFixedThreadPoolContext(spongeConfig.concurrentRequests, "request")
     private val downloadContext = newFixedThreadPoolContext(spongeConfig.concurrentDownloads, "download")
-    private val spongeActions = ConcurrentHashMap<SpongeUri, SpongeAction>()
+    private val actions = ConcurrentHashMap<SpongeUri, Action>()
     private val downloadedUris = CopyOnWriteArraySet<SpongeUri>()
     private val visitedCount = AtomicInteger()
     private val completedDownloadCount = AtomicInteger()
+    private val downloadAction: Action = { spongeUri: SpongeUri, _: Set<SpongeUri> -> download(spongeUri) }
 
     fun execute() = runBlocking { visit() }
 
@@ -81,22 +68,18 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
         if (visitedCount.incrementAndGet() > spongeConfig.maximumUris) return
 
         try {
-            val spongeAction = spongeActions.computeIfAbsent(spongeUri) {
-                getSpongeAction(spongeUri)
-            }
-
-            spongeAction.execute(spongeUri, parents)
+            actions.computeIfAbsent(spongeUri) { createAction(spongeUri) }.invoke(spongeUri, parents)
         } catch (t: Throwable) {
             System.err.println("⚠ Processing failed for $spongeUri: ${t.rootMessage}")
         }
     }
 
-    private fun getSpongeAction(spongeUri: SpongeUri): SpongeAction {
+    private fun createAction(spongeUri: SpongeUri): Action {
         val extension = FilenameUtils.getExtension(spongeUri.path)
-        var spongeAction: SpongeAction = skipSpongeAction
+        var action: Action = skipAction
 
         if (spongeConfig.fileExtensions.contains(extension)) {
-            spongeAction = downloadSpongeAction
+            action = downloadAction
         } else {
             val response = spongeService.request(spongeUri.uri)
             val mimeType = ContentType.parse(response.contentType()).mimeType
@@ -106,14 +89,22 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
                 val children = getChildren(spongeUri, document)
 
                 if (children.isNotEmpty()) {
-                    spongeAction = VisitChildrenSpongeAction(children)
+                    action = createVisitAction(children)
                 }
             } else if (spongeConfig.mimeTypes.contains(mimeType)) {
-                spongeAction = downloadSpongeAction
+                action = downloadAction
             }
         }
 
-        return spongeAction
+        return action
+    }
+
+    private fun createVisitAction(spongeUris: Set<SpongeUri>): Action {
+        return { spongeUri: SpongeUri, parents: Set<SpongeUri> ->
+            if (parents.size < spongeConfig.maximumDepth) {
+                visit(spongeUris, parents + spongeUri)
+            }
+        }
     }
 
     private fun getChildren(spongeUri: SpongeUri, document: Document): Set<SpongeUri> {
