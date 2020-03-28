@@ -120,7 +120,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
         return attributeKeys.entries
             .asSequence()
             .map { getChildren(spongeUri, document, it.key, it.value) }
-            .flatMap { it }
+            .flatten()
             .toSet()
     }
 
