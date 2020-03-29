@@ -10,6 +10,6 @@ package spypunk.sponge
 
 const val DEFAULT_REFERRER = "https://www.google.com"
 const val DEFAULT_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
-    "Chrome/80.0.3987.132 Safari/537.36"
+    "Chrome/80.0.3987.149 Safari/537.36"
 
 data class SpongeServiceConfig(val referrer: String = DEFAULT_REFERRER, val userAgent: String = DEFAULT_USER_AGENT)

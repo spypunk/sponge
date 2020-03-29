@@ -97,11 +97,7 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
         }
 
         try {
-            val spongeServiceConfig = SpongeServiceConfig(
-                referrer,
-                userAgent
-            )
-
+            val spongeServiceConfig = SpongeServiceConfig(referrer, userAgent)
             val spongeService = SpongeService(spongeServiceConfig)
 
             val spongeConfig = SpongeConfig(
