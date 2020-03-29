@@ -68,7 +68,9 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
         if (visitedCount.incrementAndGet() > spongeConfig.maximumUris) return
 
         try {
-            actions.computeIfAbsent(spongeUri) { createAction(spongeUri) }.invoke(spongeUri, parents)
+            val action = actions.computeIfAbsent(spongeUri) { createAction(spongeUri) }
+
+            action(spongeUri, parents)
         } catch (t: Throwable) {
             System.err.println("⚠ Processing failed for $spongeUri: ${t.rootMessage}")
         }
@@ -140,15 +142,17 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
     }
 
     private suspend fun download(spongeUri: SpongeUri) {
-        val path = getDownloadPath(spongeUri)
+        if (downloadedUris.add(spongeUri)) {
+            val path = getDownloadPath(spongeUri)
 
-        if (!spongeConfig.overwriteExistingFiles && Files.exists(path)) {
-            println("∃ $path")
-        } else if (downloadedUris.add(spongeUri)) {
-            withContext(downloadContext) {
-                val spongeDownload = spongeService.download(spongeUri.uri, path)
+            if (!spongeConfig.overwriteExistingFiles && Files.exists(path)) {
+                println("∃ $path")
+            } else {
+                withContext(downloadContext) {
+                    val spongeDownload = spongeService.download(spongeUri.uri, path)
 
-                printSpongeDownload(path, spongeDownload)
+                    printSpongeDownload(path, spongeDownload)
+                }
             }
         }
     }
