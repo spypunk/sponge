@@ -29,10 +29,6 @@ import com.natpryce.konfig.stringType
 import java.util.regex.Pattern
 import kotlin.system.exitProcess
 
-private val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
-private val version = ConfigurationProperties
-    .fromResource("sponge.properties")[Key("version", stringType)]
-
 class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true) {
     private val spongeUri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
         .convert { SpongeUri(it) }
@@ -45,6 +41,8 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
     private val mimeTypes by option("-t", "--mime-type", help = "Mime types to download (example: text/plain)")
         .multiple()
         .validate {
+            val mimeTypePattern = Pattern.compile("^[-\\w.]+/[-\\w.]+\$")
+
             it.forEach { mimeType ->
                 require(mimeTypePattern.matcher(mimeType).matches()) { "$mimeType is not a valid mime type" }
             }
@@ -86,7 +84,11 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
         .flag(default = DEFAULT_OVERWRITE_EXISTING_FILES)
 
     init {
-        versionOption(names = setOf("-v", "--version"), version = version) { it }
+        val properties = ConfigurationProperties.fromResource("sponge.properties")
+        val version = properties[Key("version", stringType)]
+        val buildTimestamp = properties[Key("buildTimestamp", stringType)]
+
+        versionOption(names = setOf("-v", "--version"), version = "$version ($buildTimestamp)")
 
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
     }
