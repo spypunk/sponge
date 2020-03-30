@@ -167,11 +167,11 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
         withContext(downloadContext) {
             val spongeDownload = spongeService.download(uri, path)
 
-            printSpongeDownload(path, spongeDownload)
+            printDownload(path, spongeDownload)
         }
     }
 
-    private fun printSpongeDownload(path: Path, spongeDownload: SpongeDownload) {
+    private fun printDownload(path: Path, spongeDownload: SpongeDownload) {
         val humanSize = FileUtils.byteCountToDisplaySize(spongeDownload.size)
         val speed = NS_TO_S * spongeDownload.size / (KB_TO_B * spongeDownload.duration)
         val humanSpeed = "%.2f kB/s".format(speed)
