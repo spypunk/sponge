@@ -127,8 +127,11 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
             .asSequence()
             .distinct()
             .mapNotNull { toSpongeUri(it, attributeKey) }
-            .filter { it != spongeUri && isHostVisitable(it.host) }
+            .filter { isVisitable(it, spongeUri) }
     }
+
+    private fun isVisitable(spongeUri: SpongeUri, parent: SpongeUri) =
+        spongeUri != parent && isHostVisitable(spongeUri.host)
 
     private fun isHostVisitable(host: String): Boolean {
         return host == spongeConfig.spongeUri.host ||
@@ -148,11 +151,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
             if (!spongeConfig.overwriteExistingFiles && Files.exists(path)) {
                 println("∃ $path")
             } else {
-                withContext(downloadContext) {
-                    val spongeDownload = spongeService.download(spongeUri.uri, path)
-
-                    printSpongeDownload(path, spongeDownload)
-                }
+                download(spongeUri.uri, path)
             }
         }
     }
@@ -162,6 +161,14 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
             .resolve(FilenameUtils.getPath(spongeUri.path))
             .resolve(FilenameUtils.getName(spongeUri.path))
             .toAbsolutePath()
+    }
+
+    private suspend fun download(uri: String, path: Path) {
+        withContext(downloadContext) {
+            val spongeDownload = spongeService.download(uri, path)
+
+            printSpongeDownload(path, spongeDownload)
+        }
     }
 
     private fun printSpongeDownload(path: Path, spongeDownload: SpongeDownload) {
