@@ -9,9 +9,9 @@
 package spypunk.sponge
 
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.apache.commons.io.FileUtils
@@ -25,6 +25,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 
 private const val NS_TO_S = 1_000_000_000.0
@@ -51,18 +52,27 @@ private fun toSpongeUri(element: Element, attributeKey: String): SpongeUri? {
     }
 }
 
+private fun createDispatcher(threadCount: Int) = Executors.newFixedThreadPool(threadCount).asCoroutineDispatcher()
+
 typealias Action = suspend (spongeUri: SpongeUri, parents: Set<SpongeUri>) -> Unit
 
 class Sponge(private val spongeService: SpongeService, private val spongeConfig: SpongeConfig) {
-    private val requestContext = newFixedThreadPoolContext(spongeConfig.concurrentRequests, "request")
-    private val downloadContext = newFixedThreadPoolContext(spongeConfig.concurrentDownloads, "download")
+    private val requestDispatcher = createDispatcher(spongeConfig.concurrentRequests)
+    private val downloadDispatcher = createDispatcher(spongeConfig.concurrentDownloads)
     private val actions = ConcurrentHashMap<SpongeUri, Action>()
     private val downloadedUris = CopyOnWriteArraySet<SpongeUri>()
     private val visitedCount = AtomicInteger()
     private val completedDownloadCount = AtomicInteger()
     private val downloadAction: Action = { spongeUri: SpongeUri, _: Set<SpongeUri> -> download(spongeUri) }
 
-    fun execute() = runBlocking { visit() }
+    fun execute() {
+        try {
+            runBlocking { visit() }
+        } finally {
+            downloadDispatcher.close()
+            requestDispatcher.close()
+        }
+    }
 
     private suspend fun visit(spongeUri: SpongeUri = spongeConfig.spongeUri, parents: Set<SpongeUri> = setOf()) {
         if (visitedCount.incrementAndGet() > spongeConfig.maximumUris) return
@@ -140,7 +150,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
 
     private suspend fun visit(spongeUris: Set<SpongeUri>, parents: Set<SpongeUri>) {
         spongeUris.minus(parents)
-            .map { GlobalScope.async(requestContext) { visit(it, parents) } }
+            .map { GlobalScope.async(requestDispatcher) { visit(it, parents) } }
             .awaitAll()
     }
 
@@ -164,7 +174,7 @@ class Sponge(private val spongeService: SpongeService, private val spongeConfig:
     }
 
     private suspend fun download(uri: String, path: Path) {
-        withContext(downloadContext) {
+        withContext(downloadDispatcher) {
             val spongeDownload = spongeService.download(uri, path)
 
             printDownload(path, spongeDownload)
