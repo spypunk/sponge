@@ -1,7 +1,11 @@
 sponge - A website crawler and links downloader command line tool [![Awesome Kotlin Badge](https://kotlin.link/awesome-kotlin.svg)](https://github.com/KotlinBy/awesome-kotlin) [![License](http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png)](http://www.wtfpl.net/)
 ===
+
 ## How to build and run it?
-You will need a Java JDK 8+ and maven 3.3.9 or above.
+
+- Java JDK 11+
+- Maven 3.6.3+
+
 ~~~
 mvn clean package assembly:single
 
@@ -9,8 +13,12 @@ cd target && unzip sponge-X.X-SNAPSHOT.zip && cd sponge-X.X-SNAPSHOT
 
 ./sponge [OPTIONS]
 ~~~
+
 ## How to use it?
+
 ~~~
+./sponge -h
+
 Usage: sponge [OPTIONS]
 
 Options:
@@ -26,12 +34,14 @@ Options:
   -r, --referrer TEXT             Referrer (default: https://www.google.com)
   -U, --user-agent TEXT           User agent (default: Mozilla/5.0 (X11; Linux
                                   x86_64) AppleWebKit/537.36 (KHTML, like
-                                  Gecko) Chrome/80.0.3987.132 Safari/537.36)
+                                  Gecko) Chrome/119.0.0.0 Safari/537.36)
   -O, --overwrite                 Overwrite existing files
   -v, --version                   Show the version and exit
   -h, --help                      Show this message and exit
 ~~~
+
 ### Examples
+
 ~~~
 ./sponge -u https://freemusicarchive.org/genre/Blues \
          -o output \
@@ -52,6 +62,7 @@ Options:
 ↓ /home/spypunk/output/files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/My_Yearnings/Traveling_Horse_ID_1207.mp3 [6 MB] [3411.93 kB/s] [10/101]
 ...
 ~~~
+
 ~~~
 ./sponge -u https://www.gutenberg.org/ebooks/search/?sort_order=release_date \
          -o output \
@@ -72,6 +83,7 @@ Options:
 ↓ /home/spypunk/output/www.gutenberg.org/files/61661/61661-0.txt [142 KB] [397.52 kB/s] [10/10]
 ...
 ~~~
+
 ~~~
 ./sponge -u https://free-images.com/  \
          -o output \
@@ -95,11 +107,14 @@ Options:
 ↓ /home/spypunk/output/free-images.com/sm/0f6a/golden_arches_omaha.jpg [10 KB] [65179.10 kB/s] [292/300]
 ...
 ~~~
+
 ## What about license?
+
 This project is licensed under the WTFPL (Do What The Fuck You Want To Public License, Version 2)
 
 [![WTFPL](http://www.wtfpl.net/wp-content/uploads/2012/12/logo-160x116.png)](http://www.wtfpl.net/)
 
-Copyright © 2019-2020 spypunk [spypunk@gmail.com](mailto:spypunk@gmail.com)
+Copyright © 2019-2023 spypunk [spypunk@gmail.com](mailto:spypunk@gmail.com)
 
-This work is free. You can redistribute it and/or modify it under the terms of the Do What The Fuck You Want To Public License, Version 2, as published by Sam Hocevar. See the COPYING file for more details.
+This work is free. You can redistribute it and/or modify it under the terms of the Do What The Fuck You Want To Public
+License, Version 2, as published by Sam Hocevar. See the COPYING file for more details.

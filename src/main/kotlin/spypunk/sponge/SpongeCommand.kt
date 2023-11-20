@@ -1,5 +1,5 @@
 /**
- * Copyright © 2019-2020 spypunk <spypunk@gmail.com>
+ * Copyright © 2019-2023 spypunk <spypunk@gmail.com>
  *
  * This work is free. You can redistribute it and/or modify it under the
  * terms of the Do What The Fuck You Want To Public License, Version 2,
@@ -30,8 +30,8 @@ import java.util.regex.Pattern
 import kotlin.system.exitProcess
 
 class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true) {
-    private val spongeUri by option("-u", "--uri", help = "URI (example: https://www.google.com)")
-        .convert { SpongeUri(it) }
+    private val spongeURI by option("-u", "--uri", help = "URI (example: https://www.google.com)")
+        .convert { it.toSpongeURI() }
         .required()
 
     private val outputDirectory by option("-o", "--output", help = "Output directory where files are downloaded")
@@ -56,7 +56,7 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
         .restrictTo(1)
         .default(DEFAULT_MAXIMUM_DEPTH)
 
-    private val maximumUris by option("-m", "--max-uris", help = "Maximum uris to visit")
+    private val maximumURIs by option("-m", "--max-uris", help = "Maximum uris to visit")
         .int()
         .restrictTo(1)
         .default(DEFAULT_MAXIMUM_URIS)
@@ -103,12 +103,12 @@ class SpongeCommand : CliktCommand(name = "sponge", printHelpOnEmptyArgs = true)
             val spongeService = SpongeService(spongeServiceConfig)
 
             val spongeConfig = SpongeConfig(
-                spongeUri,
+                spongeURI,
                 outputDirectory,
                 mimeTypes.toSet(),
                 fileExtensions.toSet(),
                 maximumDepth,
-                maximumUris,
+                maximumURIs,
                 includeSubdomains,
                 concurrentRequests,
                 concurrentDownloads,

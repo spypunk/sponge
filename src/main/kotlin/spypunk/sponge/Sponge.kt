@@ -1,5 +1,5 @@
 /**
- * Copyright © 2019-2020 spypunk <spypunk@gmail.com>
+ * Copyright © 2019-2023 spypunk <spypunk@gmail.com>
  *
  * This work is free. You can redistribute it and/or modify it under the
  * terms of the Do What The Fuck You Want To Public License, Version 2,
@@ -8,19 +8,18 @@
 
 package spypunk.sponge
 
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.http.entity.ContentType
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -31,7 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger
 private const val NS_TO_S = 1_000_000_000.0
 private const val KB_TO_B = 1_000.0
 
-private val skipAction: Action = { _: SpongeUri, _: Set<SpongeUri> -> }
 private val htmlMimeTypes = setOf(ContentType.TEXT_HTML.mimeType, ContentType.APPLICATION_XHTML_XML.mimeType)
 
 private val attributeKeys = mapOf(
@@ -42,11 +40,9 @@ private val attributeKeys = mapOf(
 val Throwable.rootMessage: String
     get() = ExceptionUtils.getRootCauseMessage(this)
 
-private fun toSpongeUri(element: Element, attributeKey: String): SpongeUri? {
+private fun String.toSpongeURIOrNull(): SpongeURI? {
     return try {
-        element.attr(attributeKey)?.let {
-            SpongeUri(it)
-        }
+        toSpongeURI()
     } catch (ignored: Exception) {
         null
     }
@@ -54,138 +50,127 @@ private fun toSpongeUri(element: Element, attributeKey: String): SpongeUri? {
 
 private fun createDispatcher(threadCount: Int) = Executors.newFixedThreadPool(threadCount).asCoroutineDispatcher()
 
-typealias Action = suspend (spongeUri: SpongeUri, parents: Set<SpongeUri>) -> Unit
-
+@OptIn(DelicateCoroutinesApi::class)
 class Sponge(private val spongeService: SpongeService, private val spongeConfig: SpongeConfig) {
-    private val requestDispatcher = createDispatcher(spongeConfig.concurrentRequests)
+    private val visitDispatcher = createDispatcher(spongeConfig.concurrentRequests)
     private val downloadDispatcher = createDispatcher(spongeConfig.concurrentDownloads)
-    private val actions = ConcurrentHashMap<SpongeUri, Action>()
-    private val downloadedUris = CopyOnWriteArraySet<SpongeUri>()
-    private val visitedCount = AtomicInteger()
+    private val visitedURIs = ConcurrentHashMap<SpongeURI, Int>()
+    private val downloadedURIs = CopyOnWriteArraySet<SpongeURI>()
     private val completedDownloadCount = AtomicInteger()
-    private val downloadAction: Action = { spongeUri: SpongeUri, _: Set<SpongeUri> -> download(spongeUri) }
 
     fun execute() {
         try {
-            runBlocking { visit() }
+            runBlocking {
+                visit(spongeConfig.spongeURI, setOf())
+            }
         } finally {
             downloadDispatcher.close()
-            requestDispatcher.close()
+            visitDispatcher.close()
         }
     }
 
-    private suspend fun visit(spongeUri: SpongeUri = spongeConfig.spongeUri, parents: Set<SpongeUri> = setOf()) {
-        if (visitedCount.incrementAndGet() > spongeConfig.maximumUris) return
-
+    private suspend fun visit(spongeURI: SpongeURI, parents: Set<SpongeURI>) {
         try {
-            val action = actions.computeIfAbsent(spongeUri) { createAction(spongeUri) }
+            if (!canVisit(spongeURI, parents)) return
 
-            action(spongeUri, parents)
-        } catch (t: Throwable) {
-            System.err.println("⚠ Processing failed for $spongeUri: ${t.rootMessage}")
-        }
-    }
+            val extension = FilenameUtils.getExtension(spongeURI.path)
 
-    private fun createAction(spongeUri: SpongeUri): Action {
-        val extension = FilenameUtils.getExtension(spongeUri.path)
-        var action: Action = skipAction
+            if (spongeConfig.fileExtensions.contains(extension)) {
+                download(spongeURI)
+                return
+            }
 
-        if (spongeConfig.fileExtensions.contains(extension)) {
-            action = downloadAction
-        } else {
-            val response = spongeService.request(spongeUri.uri)
+            val response = spongeService.request(spongeURI)
             val mimeType = ContentType.parse(response.contentType()).mimeType
 
-            if (htmlMimeTypes.contains(mimeType)) {
+            if (htmlMimeTypes.contains(mimeType) && parents.size < spongeConfig.maximumDepth) {
+                val updatedParents = parents + spongeURI
                 val document = Jsoup.parse(response.body(), response.url().toExternalForm())
-                val children = getChildren(spongeUri, document)
 
-                if (children.isNotEmpty()) {
-                    action = createVisitAction(children)
-                }
+                getChildren(document, updatedParents).map {
+                    GlobalScope.async(visitDispatcher) { visit(it, updatedParents) }
+                }.awaitAll()
             } else if (spongeConfig.mimeTypes.contains(mimeType)) {
-                action = downloadAction
+                download(spongeURI)
             }
-        }
-
-        return action
-    }
-
-    private fun createVisitAction(spongeUris: Set<SpongeUri>): Action {
-        return { spongeUri: SpongeUri, parents: Set<SpongeUri> ->
-            if (parents.size < spongeConfig.maximumDepth) {
-                visit(spongeUris, parents + spongeUri)
-            }
+        } catch (t: Throwable) {
+            System.err.println("⚠ Processing failed for $spongeURI: ${t.rootMessage}")
         }
     }
 
-    private fun getChildren(spongeUri: SpongeUri, document: Document): Set<SpongeUri> {
+    private fun canVisit(spongeURI: SpongeURI, parents: Set<SpongeURI>): Boolean {
+        synchronized(visitedURIs) {
+            if (visitedURIs.containsKey(spongeURI)) {
+                if (visitedURIs.getValue(spongeURI) >= parents.size) {
+                    return false
+                }
+            } else if (visitedURIs.size >= spongeConfig.maximumURIs) {
+                return false
+            }
+
+            visitedURIs[spongeURI] = parents.size
+
+            return true
+        }
+    }
+
+    private fun getChildren(document: Document, parents: Set<SpongeURI>): Set<SpongeURI> {
         return attributeKeys.entries
-            .asSequence()
-            .map { getChildren(spongeUri, document, it.key, it.value) }
-            .flatten()
+            .map { getChildren(document, parents, it.key, it.value) }
+            .flatMap { it }
             .toSet()
     }
 
     private fun getChildren(
-        spongeUri: SpongeUri,
         document: Document,
+        parents: Set<SpongeURI>,
         cssQuery: String,
         attributeKey: String
-    ): Sequence<SpongeUri> {
+    ): Sequence<SpongeURI> {
         return document.select(cssQuery)
             .asSequence()
             .distinct()
-            .mapNotNull { toSpongeUri(it, attributeKey) }
-            .filter { isVisitable(it, spongeUri) }
+            .mapNotNull { it.attr(attributeKey).toSpongeURIOrNull() }
+            .filter { !parents.contains(it) && isHostVisitable(it.host) }
     }
-
-    private fun isVisitable(spongeUri: SpongeUri, parent: SpongeUri) =
-        spongeUri != parent && isHostVisitable(spongeUri.host)
 
     private fun isHostVisitable(host: String): Boolean {
-        return host == spongeConfig.spongeUri.host ||
-            spongeConfig.includeSubdomains && host.endsWith(spongeConfig.spongeUri.host)
+        return host == spongeConfig.spongeURI.host ||
+                spongeConfig.includeSubdomains && host.endsWith(spongeConfig.spongeURI.host)
     }
 
-    private suspend fun visit(spongeUris: Set<SpongeUri>, parents: Set<SpongeUri>) {
-        spongeUris.minus(parents)
-            .map { GlobalScope.async(requestDispatcher) { visit(it, parents) } }
-            .awaitAll()
-    }
+    private suspend fun download(spongeURI: SpongeURI) {
+        if (downloadedURIs.add(spongeURI)) {
+            val path = getDownloadPath(spongeURI)
 
-    private suspend fun download(spongeUri: SpongeUri) {
-        if (downloadedUris.add(spongeUri)) {
-            val path = getDownloadPath(spongeUri)
+            if (!spongeConfig.overwriteExistingFiles && Files.exists(path)) return
 
-            if (!spongeConfig.overwriteExistingFiles && Files.exists(path)) {
-                println("∃ $path")
-            } else {
-                download(spongeUri.uri, path)
-            }
+            download(spongeURI, path)
         }
     }
 
-    private fun getDownloadPath(spongeUri: SpongeUri): Path {
-        return spongeConfig.outputDirectory.resolve(spongeUri.host)
-            .resolve(FilenameUtils.getPath(spongeUri.path))
-            .resolve(FilenameUtils.getName(spongeUri.path))
+    private fun getDownloadPath(spongeURI: SpongeURI): Path {
+        return spongeConfig.outputDirectory.resolve(spongeURI.host)
+            .resolve(FilenameUtils.getPath(spongeURI.path))
+            .resolve(FilenameUtils.getName(spongeURI.path))
             .toAbsolutePath()
     }
 
-    private suspend fun download(uri: String, path: Path) {
-        withContext(downloadDispatcher) {
-            val spongeDownload = spongeService.download(uri, path)
-
-            printDownload(path, spongeDownload)
-        }
-    }
+    private suspend fun download(spongeURI: SpongeURI, path: Path) =
+        GlobalScope.async(visitDispatcher) {
+            try {
+                val spongeDownload = spongeService.download(spongeURI, path)
+                printDownload(path, spongeDownload)
+            } catch (t: Throwable) {
+                System.err.println("⚠ Downloading failed for $spongeURI: ${t.rootMessage}")
+            }
+        }.await()
 
     private fun printDownload(path: Path, spongeDownload: SpongeDownload) {
         val humanSize = FileUtils.byteCountToDisplaySize(spongeDownload.size)
         val speed = NS_TO_S * spongeDownload.size / (KB_TO_B * spongeDownload.duration)
         val humanSpeed = "%.2f kB/s".format(speed)
-        val completedDownloads = "${completedDownloadCount.incrementAndGet()}/${downloadedUris.size}"
+        val completedDownloads = "${completedDownloadCount.incrementAndGet()}/${downloadedURIs.size}"
 
         println("↓ $path [$humanSize] [$humanSpeed] [$completedDownloads]")
     }

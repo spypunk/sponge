@@ -1,5 +1,5 @@
 /**
- * Copyright © 2019-2020 spypunk <spypunk@gmail.com>
+ * Copyright © 2019-2023 spypunk <spypunk@gmail.com>
  *
  * This work is free. You can redistribute it and/or modify it under the
  * terms of the Do What The Fuck You Want To Public License, Version 2,
@@ -18,12 +18,12 @@ const val DEFAULT_CONCURRENT_DOWNLOADS = 1
 const val DEFAULT_OVERWRITE_EXISTING_FILES = false
 
 data class SpongeConfig(
-    val spongeUri: SpongeUri,
+    val spongeURI: SpongeURI,
     val outputDirectory: Path,
     val mimeTypes: Set<String>,
     val fileExtensions: Set<String>,
     val maximumDepth: Int = DEFAULT_MAXIMUM_DEPTH,
-    val maximumUris: Int = DEFAULT_MAXIMUM_URIS,
+    val maximumURIs: Int = DEFAULT_MAXIMUM_URIS,
     val includeSubdomains: Boolean = DEFAULT_INCLUDE_SUBDOMAINS,
     val concurrentRequests: Int = DEFAULT_CONCURRENT_REQUESTS,
     val concurrentDownloads: Int = DEFAULT_CONCURRENT_DOWNLOADS,

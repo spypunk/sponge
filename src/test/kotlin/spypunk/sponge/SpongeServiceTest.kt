@@ -1,5 +1,5 @@
 /**
- * Copyright © 2019-2020 spypunk <spypunk@gmail.com>
+ * Copyright © 2019-2023 spypunk <spypunk@gmail.com>
  *
  * This work is free. You can redistribute it and/or modify it under the
  * terms of the Do What The Fuck You Want To Public License, Version 2,
@@ -52,8 +52,8 @@ class SpongeServiceTest {
 
     @Test
     fun testDownload() {
-        val spongeUri = SpongeUri("http://$host:$port/${filePath.fileName}")
-        val spongeDownload = spongeService.download(spongeUri.uri, filePath)
+        val spongeURI = "http://$host:$port/${filePath.fileName}".toSpongeURI()
+        val spongeDownload = spongeService.download(spongeURI, filePath)
 
         Assertions.assertEquals(fileContent, FileUtils.readFileToString(filePath.toFile(), StandardCharsets.UTF_8))
         Assertions.assertTrue(spongeDownload.duration > 0)

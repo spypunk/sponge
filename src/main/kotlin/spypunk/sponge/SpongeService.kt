@@ -1,5 +1,5 @@
 /**
- * Copyright © 2019-2020 spypunk <spypunk@gmail.com>
+ * Copyright © 2019-2023 spypunk <spypunk@gmail.com>
  *
  * This work is free. You can redistribute it and/or modify it under the
  * terms of the Do What The Fuck You Want To Public License, Version 2,
@@ -55,8 +55,8 @@ private fun download(inputStream: InputStream, path: Path): SpongeDownload {
 }
 
 class SpongeService(private val spongeServiceConfig: SpongeServiceConfig) {
-    fun request(uri: String, timeout: Int = DEFAULT_REQUEST_TIMEOUT): Connection.Response {
-        val connection = Jsoup.connect(uri)
+    fun request(spongeURI: SpongeURI, timeout: Int = DEFAULT_REQUEST_TIMEOUT): Connection.Response {
+        val connection = Jsoup.connect(spongeURI.uri)
             .timeout(timeout)
             .header(HttpHeaders.ACCEPT_ENCODING, ENCODING)
             .referrer(spongeServiceConfig.referrer)
@@ -71,8 +71,8 @@ class SpongeService(private val spongeServiceConfig: SpongeServiceConfig) {
         }
     }
 
-    fun download(uri: String, path: Path): SpongeDownload {
-        return request(uri, 0).bodyStream()
+    fun download(spongeURI: SpongeURI, path: Path): SpongeDownload {
+        return request(spongeURI).bodyStream()
             .use { download(it, path) }
     }
 }

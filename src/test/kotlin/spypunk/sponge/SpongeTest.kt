@@ -1,5 +1,5 @@
 /**
- * Copyright © 2019-2020 spypunk <spypunk@gmail.com>
+ * Copyright © 2019-2023 spypunk <spypunk@gmail.com>
  *
  * This work is free. You can redistribute it and/or modify it under the
  * terms of the Do What The Fuck You Want To Public License, Version 2,
@@ -22,8 +22,6 @@ import java.net.URL
 import java.nio.file.Path
 import java.nio.file.Paths
 
-private fun String.toSpongeUri() = SpongeUri(this)
-
 class SpongeTest {
     private val spongeService = mockk<SpongeService>(relaxed = true)
     private val outputDirectory = Paths.get("testOutput").toAbsolutePath()
@@ -31,7 +29,7 @@ class SpongeTest {
     private val spongeDownload = SpongeDownload(1_000_000, 1_000_000_000)
 
     private val spongeConfig = SpongeConfig(
-        "https://test.com".toSpongeUri(),
+        "https://test.com".toSpongeURI(),
         outputDirectory,
         setOf(ContentType.TEXT_PLAIN.mimeType),
         setOf("png")
@@ -49,301 +47,301 @@ class SpongeTest {
 
     @Test
     fun testEmptyDocument() {
-        givenDocument(spongeConfig.spongeUri, "<html></html>")
+        givenDocument(spongeConfig.spongeURI, "<html></html>")
 
         executeSponge(spongeConfig)
 
-        verify { spongeService.request(spongeConfig.spongeUri.uri) }
+        verify { spongeService.request(spongeConfig.spongeURI) }
         verify(exactly = 0) { spongeService.download(any(), any()) }
     }
 
     @Test
     fun testUnsupportedDocument() {
-        givenDocument(spongeConfig.spongeUri, "", ContentType.IMAGE_TIFF)
+        givenDocument(spongeConfig.spongeURI, "", ContentType.IMAGE_TIFF)
 
         executeSponge(spongeConfig)
 
-        verify { spongeService.request(spongeConfig.spongeUri.uri) }
+        verify { spongeService.request(spongeConfig.spongeURI) }
         verify(exactly = 0) { spongeService.download(any(), any()) }
     }
 
     @Test
     fun testDocumentWithLink() {
-        val fileUri = "${spongeConfig.spongeUri}/$fileName".toSpongeUri()
+        val fileURI = "${spongeConfig.spongeURI}/$fileName".toSpongeURI()
 
         givenDocument(
-            spongeConfig.spongeUri,
+            spongeConfig.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
+                            <a href="$fileURI" />
                         </body>
                     </html>
                 """
         )
 
-        givenFile(fileUri)
+        givenFile(fileURI)
 
         executeSponge(spongeConfig)
 
-        verify { spongeService.request(spongeConfig.spongeUri.uri) }
-        verify { spongeService.request(fileUri.uri) }
-        verify { spongeService.download(fileUri.uri, getDownloadPath(fileUri)) }
+        verify { spongeService.request(spongeConfig.spongeURI) }
+        verify { spongeService.request(fileURI) }
+        verify { spongeService.download(fileURI, getDownloadPath(fileURI)) }
     }
 
     @Test
     fun testDocumentWithLinkAlreadyDownloaded() {
-        val fileUri = "${spongeConfig.spongeUri}/$fileName".toSpongeUri()
+        val fileURI = "${spongeConfig.spongeURI}/$fileName".toSpongeURI()
 
         givenDocument(
-            spongeConfig.spongeUri,
+            spongeConfig.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
+                            <a href="$fileURI" />
                         </body>
                     </html>
                 """
         )
 
-        givenFile(fileUri)
+        givenFile(fileURI)
 
-        val downloadPath = getDownloadPath(fileUri)
+        val downloadPath = getDownloadPath(fileURI)
 
         FileUtils.touch(downloadPath.toFile())
 
         executeSponge(spongeConfig)
 
-        verify { spongeService.request(spongeConfig.spongeUri.uri) }
-        verify { spongeService.request(fileUri.uri) }
-        verify(exactly = 0) { spongeService.download(fileUri.uri, downloadPath) }
+        verify { spongeService.request(spongeConfig.spongeURI) }
+        verify { spongeService.request(fileURI) }
+        verify(exactly = 0) { spongeService.download(fileURI, downloadPath) }
     }
 
     @Test
     fun testDocumentWithLinkAlreadyDownloadedAndOverwrite() {
         val config = spongeConfig.copy(overwriteExistingFiles = true)
-        val fileUri = "${spongeConfig.spongeUri}/$fileName".toSpongeUri()
+        val fileURI = "${spongeConfig.spongeURI}/$fileName".toSpongeURI()
 
         givenDocument(
-            config.spongeUri,
+            config.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
+                            <a href="$fileURI" />
                         </body>
                     </html>
                 """
         )
 
-        givenFile(fileUri)
+        givenFile(fileURI)
 
-        val downloadPath = getDownloadPath(fileUri)
+        val downloadPath = getDownloadPath(fileURI)
 
         FileUtils.touch(downloadPath.toFile())
 
         executeSponge(config)
 
-        verify { spongeService.request(config.spongeUri.uri) }
-        verify { spongeService.request(fileUri.uri) }
-        verify { spongeService.download(fileUri.uri, downloadPath) }
+        verify { spongeService.request(config.spongeURI) }
+        verify { spongeService.request(fileURI) }
+        verify { spongeService.download(fileURI, downloadPath) }
     }
 
     @Test
     fun testDocumentWithLinkAndImage() {
-        val fileUri = "${spongeConfig.spongeUri}/$fileName".toSpongeUri()
-        val imageFileUri = "${spongeConfig.spongeUri}/test.png".toSpongeUri()
+        val fileURI = "${spongeConfig.spongeURI}/$fileName".toSpongeURI()
+        val imageFileURI = "${spongeConfig.spongeURI}/test.png".toSpongeURI()
 
         givenDocument(
-            spongeConfig.spongeUri,
+            spongeConfig.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
-                            <img src="$imageFileUri" />
+                            <a href="$fileURI" />
+                            <img src="$imageFileURI" />
                         </body>
                     </html>
                 """
         )
 
-        givenFile(fileUri)
-        givenFile(imageFileUri, ContentType.IMAGE_PNG.mimeType)
+        givenFile(fileURI)
+        givenFile(imageFileURI, ContentType.IMAGE_PNG.mimeType)
 
         executeSponge(spongeConfig)
 
-        verify { spongeService.request(spongeConfig.spongeUri.uri) }
-        verify { spongeService.request(fileUri.uri) }
-        verify { spongeService.download(fileUri.uri, getDownloadPath(fileUri)) }
-        verify(exactly = 0) { spongeService.request(imageFileUri.uri) }
-        verify { spongeService.download(imageFileUri.uri, getDownloadPath(imageFileUri)) }
+        verify { spongeService.request(spongeConfig.spongeURI) }
+        verify { spongeService.request(fileURI) }
+        verify { spongeService.download(fileURI, getDownloadPath(fileURI)) }
+        verify(exactly = 0) { spongeService.request(imageFileURI) }
+        verify { spongeService.download(imageFileURI, getDownloadPath(imageFileURI)) }
     }
 
     @Test
     fun testDocumentWithLinkAndSubdomainDisabled() {
-        val fileUri = "https://www.test.test.com/$fileName".toSpongeUri()
+        val fileURI = "https://www.test.test.com/$fileName".toSpongeURI()
 
         givenDocument(
-            spongeConfig.spongeUri,
+            spongeConfig.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
+                            <a href="$fileURI" />
                         </body>
                     </html>
                 """
         )
 
-        givenFile(fileUri)
+        givenFile(fileURI)
 
         executeSponge(spongeConfig)
 
-        verify { spongeService.request(spongeConfig.spongeUri.uri) }
-        verify(exactly = 0) { spongeService.request(fileUri.uri) }
-        verify(exactly = 0) { spongeService.download(fileUri.uri, getDownloadPath(fileUri)) }
+        verify { spongeService.request(spongeConfig.spongeURI) }
+        verify(exactly = 0) { spongeService.request(fileURI) }
+        verify(exactly = 0) { spongeService.download(fileURI, getDownloadPath(fileURI)) }
     }
 
     @Test
     fun testDocumentWithLinkAndSubdomainEnabled() {
-        val fileUri = "https://test.test.com/$fileName".toSpongeUri()
+        val fileURI = "https://test.test.com/$fileName".toSpongeURI()
 
         givenDocument(
-            spongeConfigWithSubdomains.spongeUri,
+            spongeConfigWithSubdomains.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
+                            <a href="$fileURI" />
                         </body>
                     </html>
                 """
         )
 
-        givenFile(fileUri)
+        givenFile(fileURI)
 
         executeSponge(spongeConfigWithSubdomains)
 
-        verify { spongeService.request(spongeConfigWithSubdomains.spongeUri.uri) }
-        verify { spongeService.request(fileUri.uri) }
-        verify { spongeService.download(fileUri.uri, getDownloadPath(fileUri)) }
+        verify { spongeService.request(spongeConfigWithSubdomains.spongeURI) }
+        verify { spongeService.request(fileURI) }
+        verify { spongeService.download(fileURI, getDownloadPath(fileURI)) }
     }
 
     @Test
     fun testDocumentWithIgnoredLinkAndSubdomainEnabled() {
-        val fileUri = "https://test.test2.com/$fileName".toSpongeUri()
+        val fileURI = "https://test.test2.com/$fileName".toSpongeURI()
 
         givenDocument(
-            spongeConfigWithSubdomains.spongeUri,
+            spongeConfigWithSubdomains.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
+                            <a href="$fileURI" />
                         </body>
                     </html>
                 """
         )
 
-        givenFile(fileUri)
+        givenFile(fileURI)
 
         executeSponge(spongeConfigWithSubdomains)
 
-        verify { spongeService.request(spongeConfigWithSubdomains.spongeUri.uri) }
-        verify(exactly = 0) { spongeService.request(fileUri.uri) }
+        verify { spongeService.request(spongeConfigWithSubdomains.spongeURI) }
+        verify(exactly = 0) { spongeService.request(fileURI) }
     }
 
     @Test
     fun testDocumentWithChildDocumentAndLink() {
-        val childDocumentUri = "https://test.com/test".toSpongeUri()
-        val fileUri = "${spongeConfigWithDepthTwo.spongeUri}/$fileName".toSpongeUri()
+        val childDocumentURI = "https://test.com/test".toSpongeURI()
+        val fileURI = "${spongeConfigWithDepthTwo.spongeURI}/$fileName".toSpongeURI()
 
         givenDocument(
-            spongeConfigWithDepthTwo.spongeUri,
+            spongeConfigWithDepthTwo.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$childDocumentUri" />
+                            <a href="$childDocumentURI" />
                         </body>
                     </html>
                 """
         )
 
         givenDocument(
-            childDocumentUri,
+            childDocumentURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
+                            <a href="$fileURI" />
                         </body>
                     </html>
                 """
         )
 
-        givenFile(fileUri)
+        givenFile(fileURI)
 
         executeSponge(spongeConfigWithDepthTwo)
 
-        verify { spongeService.request(spongeConfigWithDepthTwo.spongeUri.uri) }
-        verify { spongeService.request(childDocumentUri.uri) }
-        verify { spongeService.request(fileUri.uri) }
-        verify { spongeService.download(fileUri.uri, getDownloadPath(fileUri)) }
+        verify { spongeService.request(spongeConfigWithDepthTwo.spongeURI) }
+        verify { spongeService.request(childDocumentURI) }
+        verify { spongeService.request(fileURI) }
+        verify { spongeService.download(fileURI, getDownloadPath(fileURI)) }
     }
 
     @Test
     fun testDocumentWithChildDocumentAndDuplicateLink() {
-        val childDocumentUri = "https://test.com/test".toSpongeUri()
-        val fileUri = "${spongeConfigWithDepthTwo.spongeUri}/$fileName".toSpongeUri()
+        val childDocumentURI = "https://test.com/test".toSpongeURI()
+        val fileURI = "${spongeConfigWithDepthTwo.spongeURI}/$fileName".toSpongeURI()
 
         givenDocument(
-            spongeConfigWithDepthTwo.spongeUri,
+            spongeConfigWithDepthTwo.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
-                            <a href="$childDocumentUri" />
+                            <a href="$fileURI" />
+                            <a href="$childDocumentURI" />
                         </body>
                     </html>
                 """
         )
 
         givenDocument(
-            childDocumentUri,
+            childDocumentURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
+                            <a href="$fileURI" />
                         </body>
                     </html>
                 """
         )
 
-        givenFile(fileUri)
+        givenFile(fileURI)
 
         executeSponge(spongeConfigWithDepthTwo)
 
-        verify { spongeService.request(spongeConfigWithDepthTwo.spongeUri.uri) }
-        verify { spongeService.request(childDocumentUri.uri) }
-        verify { spongeService.request(fileUri.uri) }
-        verify { spongeService.download(fileUri.uri, getDownloadPath(fileUri)) }
+        verify { spongeService.request(spongeConfigWithDepthTwo.spongeURI) }
+        verify { spongeService.request(childDocumentURI) }
+        verify { spongeService.request(fileURI) }
+        verify { spongeService.download(fileURI, getDownloadPath(fileURI)) }
     }
 
     @Test
     fun testDocumentWithChildDocumentEqualsToOneParent() {
-        val childDocumentUri = "https://test.com/test".toSpongeUri()
+        val childDocumentURI = "https://test.com/test".toSpongeURI()
 
         givenDocument(
-            spongeConfigWithDepthTwo.spongeUri,
+            spongeConfigWithDepthTwo.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$childDocumentUri" />
+                            <a href="$childDocumentURI" />
                         </body>
                     </html>
                 """
         )
 
         givenDocument(
-            childDocumentUri,
+            childDocumentURI,
             """
                     <html>
                         <body>
-                           <a href="${spongeConfigWithDepthTwo.spongeUri}" />
+                           <a href="${spongeConfigWithDepthTwo.spongeURI}" />
                         </body>
                     </html>
                 """
@@ -351,18 +349,18 @@ class SpongeTest {
 
         executeSponge(spongeConfigWithDepthTwo)
 
-        verify { spongeService.request(spongeConfigWithDepthTwo.spongeUri.uri) }
-        verify { spongeService.request(childDocumentUri.uri) }
+        verify { spongeService.request(spongeConfigWithDepthTwo.spongeURI) }
+        verify { spongeService.request(childDocumentURI) }
     }
 
     @Test
     fun testDocumentWithChildDocumentEqualsToDirectParent() {
         givenDocument(
-            spongeConfig.spongeUri,
+            spongeConfig.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="${spongeConfig.spongeUri}" />
+                            <a href="${spongeConfig.spongeURI}" />
                         </body>
                     </html>
                 """
@@ -370,56 +368,56 @@ class SpongeTest {
 
         executeSponge(spongeConfig)
 
-        verify { spongeService.request(spongeConfig.spongeUri.uri) }
+        verify { spongeService.request(spongeConfig.spongeURI) }
     }
 
     @Test
     fun testDocumentWithTooDeepChildDocumentAndLink() {
-        val childDocumentUri = "https://test.com/test".toSpongeUri()
-        val fileUri = "${spongeConfig.spongeUri}/$fileName".toSpongeUri()
+        val childDocumentURI = "https://test.com/test".toSpongeURI()
+        val fileURI = "${spongeConfig.spongeURI}/$fileName".toSpongeURI()
 
         givenDocument(
-            spongeConfig.spongeUri,
+            spongeConfig.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$childDocumentUri" />
+                            <a href="$childDocumentURI" />
                         </body>
                     </html>
                 """
         )
 
         givenDocument(
-            childDocumentUri,
+            childDocumentURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
+                            <a href="$fileURI" />
                         </body>
                     </html>
                 """
         )
 
-        givenFile(fileUri)
+        givenFile(fileURI)
 
         executeSponge(spongeConfig)
 
-        verify { spongeService.request(spongeConfig.spongeUri.uri) }
-        verify { spongeService.request(childDocumentUri.uri) }
-        verify(exactly = 0) { spongeService.request(fileUri.uri) }
-        verify(exactly = 0) { spongeService.download(fileUri.uri, getDownloadPath(fileUri)) }
+        verify { spongeService.request(spongeConfig.spongeURI) }
+        verify { spongeService.request(childDocumentURI) }
+        verify(exactly = 0) { spongeService.request(fileURI) }
+        verify(exactly = 0) { spongeService.download(fileURI, getDownloadPath(fileURI)) }
     }
 
     @Test
     fun testDocumentWithIgnoredChildDocument() {
-        val childDocumentUri = "https://test2.com".toSpongeUri()
+        val childDocumentURI = "https://test2.com".toSpongeURI()
 
         givenDocument(
-            spongeConfig.spongeUri,
+            spongeConfig.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$childDocumentUri" />
+                            <a href="$childDocumentURI" />
                         </body>
                     </html>
                 """
@@ -427,20 +425,20 @@ class SpongeTest {
 
         executeSponge(spongeConfig)
 
-        verify { spongeService.request(spongeConfig.spongeUri.uri) }
-        verify(exactly = 0) { spongeService.request(childDocumentUri.uri) }
+        verify { spongeService.request(spongeConfig.spongeURI) }
+        verify(exactly = 0) { spongeService.request(childDocumentURI) }
     }
 
     @Test
-    fun testDocumentWithInvalidChildUri() {
-        val childUri = "http://"
+    fun testDocumentWithInvalidChildURI() {
+        val childURI = "http://"
 
         givenDocument(
-            spongeConfig.spongeUri,
+            spongeConfig.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$childUri" />
+                            <a href="$childURI" />
                         </body>
                     </html>
                 """
@@ -448,112 +446,112 @@ class SpongeTest {
 
         executeSponge(spongeConfig)
 
-        verify { spongeService.request(spongeConfig.spongeUri.uri) }
+        verify { spongeService.request(spongeConfig.spongeURI) }
         verify { spongeService.request(any()) }
     }
 
     @Test
     fun testDocumentWithLinkAndFailedConnection() {
-        val fileUri = "${spongeConfig.spongeUri}/$fileName".toSpongeUri()
+        val fileURI = "${spongeConfig.spongeURI}/$fileName".toSpongeURI()
         val failingFileName = "test2.txt"
-        val failingFileUri = "${spongeConfig.spongeUri}/$failingFileName".toSpongeUri()
+        val failingFileURI = "${spongeConfig.spongeURI}/$failingFileName".toSpongeURI()
 
         givenDocument(
-            spongeConfig.spongeUri,
+            spongeConfig.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$failingFileUri" />
-                            <a href="$fileUri" />
+                            <a href="$failingFileURI" />
+                            <a href="$fileURI" />
                         </body>
                     </html>
                 """
         )
 
-        givenUriFailsConnection(failingFileUri)
+        givenURIFailsConnection(failingFileURI)
 
-        givenFile(fileUri)
+        givenFile(fileURI)
 
         executeSponge(spongeConfig)
 
-        verify { spongeService.request(spongeConfig.spongeUri.uri) }
-        verify { spongeService.request(failingFileUri.uri) }
-        verify(exactly = 0) { spongeService.download(failingFileUri.uri, getDownloadPath(failingFileUri)) }
-        verify { spongeService.request(fileUri.uri) }
-        verify { spongeService.download(fileUri.uri, getDownloadPath(fileUri)) }
+        verify { spongeService.request(spongeConfig.spongeURI) }
+        verify { spongeService.request(failingFileURI) }
+        verify(exactly = 0) { spongeService.download(failingFileURI, getDownloadPath(failingFileURI)) }
+        verify { spongeService.request(fileURI) }
+        verify { spongeService.download(fileURI, getDownloadPath(fileURI)) }
     }
 
     @Test
     fun testDocumentWithLimitedVisitedLinks() {
-        val otherConfig = spongeConfig.copy(maximumUris = 2)
-        val fileUri = "${otherConfig.spongeUri}/$fileName".toSpongeUri()
-        val otherFileUri = "${otherConfig.spongeUri}/test2.txt".toSpongeUri()
+        val otherConfig = spongeConfig.copy(maximumURIs = 2)
+        val fileURI = "${otherConfig.spongeURI}/$fileName".toSpongeURI()
+        val otherFileURI = "${otherConfig.spongeURI}/test2.txt".toSpongeURI()
 
         givenDocument(
-            otherConfig.spongeUri,
+            otherConfig.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
-                            <a href="$otherFileUri" />
+                            <a href="$fileURI" />
+                            <a href="$otherFileURI" />
                         </body>
                     </html>
                 """
         )
 
-        givenFile(fileUri)
-        givenFile(otherFileUri)
+        givenFile(fileURI)
+        givenFile(otherFileURI)
 
         executeSponge(otherConfig)
 
-        verify { spongeService.request(otherConfig.spongeUri.uri) }
-        verify { spongeService.request(fileUri.uri) }
-        verify { spongeService.download(fileUri.uri, getDownloadPath(fileUri)) }
+        verify { spongeService.request(otherConfig.spongeURI) }
+        verify { spongeService.request(fileURI) }
+        verify { spongeService.download(fileURI, getDownloadPath(fileURI)) }
 
-        verify(exactly = 0) { spongeService.request(otherFileUri.uri) }
-        verify(exactly = 0) { spongeService.download(otherFileUri.uri, getDownloadPath(otherFileUri)) }
+        verify(exactly = 0) { spongeService.request(otherFileURI) }
+        verify(exactly = 0) { spongeService.download(otherFileURI, getDownloadPath(otherFileURI)) }
     }
 
     @Test
     fun testDocumentWithDuplicateDownloads() {
-        val childDocumentUri = "https://test.com/test".toSpongeUri()
-        val fileUri = "${spongeConfigWithDepthTwo.spongeUri}/$fileName".toSpongeUri()
+        val childDocumentURI = "https://test.com/test".toSpongeURI()
+        val fileURI = "${spongeConfigWithDepthTwo.spongeURI}/$fileName".toSpongeURI()
 
         givenDocument(
-            spongeConfigWithDepthTwo.spongeUri,
+            spongeConfigWithDepthTwo.spongeURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
-                            <a href="$childDocumentUri" />
+                            <a href="$fileURI" />
+                            <a href="$childDocumentURI" />
                         </body>
                     </html>
                 """
         )
 
         givenDocument(
-            childDocumentUri,
+            childDocumentURI,
             """
                     <html>
                         <body>
-                            <a href="$fileUri" />
+                            <a href="$fileURI" />
                         </body>
                     </html>
                 """
         )
 
-        givenFile(fileUri)
+        givenFile(fileURI)
 
         executeSponge(spongeConfigWithDepthTwo)
 
-        verify { spongeService.request(spongeConfigWithDepthTwo.spongeUri.uri) }
-        verify { spongeService.request(childDocumentUri.uri) }
-        verify { spongeService.request(fileUri.uri) }
-        verify { spongeService.download(fileUri.uri, getDownloadPath(fileUri)) }
+        verify { spongeService.request(spongeConfigWithDepthTwo.spongeURI) }
+        verify { spongeService.request(childDocumentURI) }
+        verify { spongeService.request(fileURI) }
+        verify { spongeService.download(fileURI, getDownloadPath(fileURI)) }
     }
 
     private fun givenDocument(
-        spongeUri: SpongeUri,
+        spongeURI: SpongeURI,
         htmlContent: String,
         contentType: ContentType = ContentType.TEXT_HTML
     ) {
@@ -561,30 +559,30 @@ class SpongeTest {
 
         every { response.contentType() } returns contentType.mimeType
         every { response.body() } returns htmlContent
-        every { response.url() } returns URL(spongeUri.uri)
+        every { response.url() } returns URL(spongeURI.uri)
 
-        every { spongeService.request(spongeUri.uri) } returns response
+        every { spongeService.request(spongeURI) } returns response
     }
 
-    private fun givenFile(spongeUri: SpongeUri, mimeType: String = ContentType.TEXT_PLAIN.mimeType) {
+    private fun givenFile(spongeURI: SpongeURI, mimeType: String = ContentType.TEXT_PLAIN.mimeType) {
         val response = mockk<Connection.Response>()
 
         every { response.contentType() } returns mimeType
-        every { spongeService.request(spongeUri.uri) } returns response
+        every { spongeService.request(spongeURI) } returns response
     }
 
-    private fun givenUriFailsConnection(spongeUri: SpongeUri) {
-        every { spongeService.request(spongeUri.uri) } throws IOException("Error!")
+    private fun givenURIFailsConnection(spongeURI: SpongeURI) {
+        every { spongeService.request(spongeURI) } throws IOException("Error!")
     }
 
     private fun executeSponge(spongeConfig: SpongeConfig) {
         Sponge(spongeService, spongeConfig).execute()
     }
 
-    private fun getDownloadPath(spongeUri: SpongeUri): Path {
-        return outputDirectory.resolve(spongeUri.host)
-            .resolve(FilenameUtils.getPath(spongeUri.path))
-            .resolve(FilenameUtils.getName(spongeUri.path))
+    private fun getDownloadPath(spongeURI: SpongeURI): Path {
+        return outputDirectory.resolve(spongeURI.host)
+            .resolve(FilenameUtils.getPath(spongeURI.path))
+            .resolve(FilenameUtils.getName(spongeURI.path))
             .toAbsolutePath()
     }
 }
